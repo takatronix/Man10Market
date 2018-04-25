@@ -31,6 +31,7 @@ public class MarketCommand implements CommandExecutor {
 
         p.sendMessage("/mm price [id/this] - (id/手に持ったアイテム)の金額を表示する");
         p.sendMessage("/mm order　現在の自分の注文を表示する");
+        p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
         p.sendMessage("/mm orderbuy [id/this] [一つあたりの金額] [個数]- 指定した金額で買い注文を出す");
         p.sendMessage("/mm ordersell [id/this] [一つあたりの金額] [個数] -  指定した金額で売り注文を出す");
         p.sendMessage("/mm marketbuy [id/this] [個数] - 成り行き注文（市場価格で購入)");
