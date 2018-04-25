@@ -1,0 +1,13 @@
+name: Man10Market
+version: ${project.version}
+main: red.man10.MarketPlugin
+prefix: Man10Maket
+authors: [takatronix]
+description: Minecraft Market System
+website: http://man10.red
+
+commands:
+   mm:
+      description: Man10 Minecraft Market System
+      permission: red.man10.market
+      permission-message: You don't have <permission>
