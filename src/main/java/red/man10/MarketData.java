@@ -34,6 +34,64 @@ public class MarketData {
         boolean result;
     }
 
+    public boolean canBuy(Player p,double price,int count ,PriceResult current) {
+        double bal = plugin.vault.getBalance(p.getUniqueId());
+        if(bal < price*count){
+            plugin.showError(p,"残額がたりません! 必要金額:$"+getPriceString(price*count) +" 残額:$"+ getPriceString(bal));
+            return false;
+        }
+        if(current.price < price){
+            plugin.showError(p,"現在値より高い値段で注文はできません。購入したい場合は、成り行き買いをおこなってください /marketbuy or /buy");
+            return false;
+        }
+
+
+        return true;
+    }
+    public boolean orderBuy(Player p,String idOrKey,double price,int count){
+
+        //      まず現在価格を求める
+        PriceResult current = getItemPrice(p,idOrKey);
+        if(current.result == false){
+            plugin.showError(p,"このアイテムは販売されていません");
+            return false;
+        }
+        //      値段が正当かチェック
+        if(canBuy(p,price,count,current) == false){
+            return false;
+        }
+
+
+
+        String playerName = p.getName();
+        String uuid = p.getUniqueId().toString();
+
+
+        boolean ret = mysql.execute("insert into order_tbl values(0,"
+                +current.id +","
+                +"'" +current.key +"',"
+
+                +"'" +uuid +"',"
+                +"'" +playerName +"',"
+                +price+","
+                +count+",1,"
+
+                +"'"+currentTime()+"'"
+                +");");
+
+
+        return ret;
+    }
+
+
+
+    public boolean showboard(Player p,int item_id){
+        //      売りデータ
+        String sql = "select sum(count),price from order_tbl where item_id = "+item_id+ " and buy = 0 group by price order by price desc ;";
+
+
+        return true;
+    }
 
 
     public boolean canSell(Player p,ItemStack item,double price,int count,PriceResult current){
@@ -50,6 +108,8 @@ public class MarketData {
             plugin.showPrice(p);
             return false;
         }
+
+
         if(price < current.price / plugin.sellLimitRatio){
             plugin.showError(p,"現在値の1/" +plugin.sellLimitRatio +"以下の金額で売ることはできません");
             plugin.showPrice(p);
@@ -93,7 +153,57 @@ public class MarketData {
 
         return ret;
     }
+    /// アイテム価格を取得する
+    public PriceResult  getItemPrice(Player p,String idOrKey) {
+    //    p.sendMessage("getItemPrice()->"+idOrKey);
 
+        int id = -1;
+        try{
+            id = Integer.parseInt(idOrKey);
+           // p.sendMessage("id = "+id);
+        }catch(Exception e){
+           //     p.sendMessage("パース失敗");
+
+          //  plugin.log(e.getMessage());
+        }
+
+        String sql = "";
+        //      IDが数値ではない -> key
+        if(id == -1){
+            sql =  "select * from item where item_key = '"+idOrKey+"';";
+        }else{
+            sql =  "select * from item where  id = "+id+";";
+        }
+//        p.sendMessage(sql);
+        PriceResult ret = new PriceResult();
+        ret.result = false;
+        ret.price = 0;
+        ResultSet rs = mysql.query(sql);
+        if(rs == null){
+            plugin.showError(p,"データ取得失敗");
+            return ret;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                ret.id = rs.getInt("id");
+                ret.key = rs.getString("item_key");
+                ret.price = rs.getDouble("price");
+                ret.sell = rs.getInt("sell");
+                ret.buy = rs.getInt("buy");
+                ret.result = true;
+            }
+        }
+        catch (SQLException e)
+        {
+            plugin.showError(p,"データ取得失敗");
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return ret;
+        }
+
+        return ret;
+    }
 
     /// アイテム価格を取得する
     public PriceResult  getItemPrice(Player p,ItemStack item){
@@ -117,7 +227,7 @@ public class MarketData {
             while(rs.next())
             {
                 ret.id = rs.getInt("id");
-                ret.key = rs.getString("key");
+                ret.key = rs.getString("item_key");
                 ret.price = rs.getDouble("price");
                 ret.sell = rs.getInt("sell");
                 ret.buy = rs.getInt("buy");
@@ -150,7 +260,7 @@ public class MarketData {
             {
                 int id = rs.getInt("id");
                 String idString = String.format("ID:%3d",id);
-                String key = rs.getString("key");
+                String key = rs.getString("item_key");
                 double price = rs.getDouble("price");
                 int sell = rs.getInt("sell");
                 int buy = rs.getInt("buy");

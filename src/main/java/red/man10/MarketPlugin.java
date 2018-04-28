@@ -25,6 +25,20 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
 
+
+    ///  売り注文を出す
+    public boolean orderBuy(Player p,String idOrKey,double price,int count){
+
+        if(data.orderBuy(p,idOrKey,price,count)){
+            showMessage(p,"買い注文成功 $"+ data.getPriceString(price) + "/"+count+"個" );
+            return true;
+        }
+
+
+        return false;
+    }
+
+
     // アイテムの値段を表示
     public boolean showPrice(Player p){
         ItemStack item = p.getInventory().getItemInMainHand();
