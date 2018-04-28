@@ -20,6 +20,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     MarketData data = null;
 
 
+    public double buyLimitRatio = 2;
+    public double sellLimitRatio = 2;
+
+
 
     // アイテムの値段を表示
     public boolean showPrice(Player p){
@@ -30,6 +34,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         if(ret.result == true){
             double st = ret.price * 64;
             showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
+            showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
         }else{
             showError(p,"データ取得失敗");
         }
@@ -39,13 +44,38 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     ///  売り注文を出す
     public boolean orderSell(Player p,double price,int count){
+
+
+       // showMessage(p,"orderSell" + price + " count:"+count);
+
         ItemStack item = p.getInventory().getItemInMainHand();
-        if(item.getAmount() < count){
-            showError(p,"アイテムを"+count+"個もっていません");
-            return false;
+
+
+        //      もっているだけ販売
+        if(count == -1){
+            count = item.getAmount();
+
+        }else{
+            if(item.getAmount() < count){
+                showError(p,"アイテムを"+count+"個もっていません");
+                return false;
+            }
         }
 
-        return true;
+        if(data.orderSell(p,item,price,count)){
+
+          //  ItemStack sold = new ItemStack(item);
+           // sold.setAmount(count);
+            int from = item.getAmount();
+            item.setAmount(from - count);
+        //    p.getInventory().remove(sold);
+
+            showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+count+"個" );
+            return true;
+        }
+        showError(p,"売り注文失敗");
+
+        return false;
     }
 
 

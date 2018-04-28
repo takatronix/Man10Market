@@ -55,14 +55,22 @@ public class MarketCommand implements CommandExecutor {
             plugin.showPrice(p);
             return true;
         }
+
+
+
         //////////////////////////
         //      売り注文
-        if(command.equals("ordersell")){
-            if(args.length != 3){
-                p.sendMessage("§2§l/mm ordersell [一つあたりの金額] [個数] -  指定した金額で売り注文を出す");
+        if(command.equals("sell")){
+            if(args.length < 2 || args.length >3){
+                p.sendMessage("§2§l/mm ordersell [一つあたりの金額] (個数) -  指定した金額で売り注文を出す");
                 return false;
             }
-            return plugin.orderSell(p,Double.parseDouble(args[2]), Integer.parseInt(args[3]));
+            if(args.length == 3){
+                return plugin.orderSell(p,Double.parseDouble(args[1]), Integer.parseInt(args[2]));
+            }
+            if(args.length == 2){
+                return plugin.orderSell(p,Double.parseDouble(args[1]),-1);
+            }
         }
 
 
