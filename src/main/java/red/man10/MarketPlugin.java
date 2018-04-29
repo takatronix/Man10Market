@@ -34,8 +34,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             showMessage(p,"買い注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
 
 
-            data.logTransaction(p,"OrderBuy",price,amount);
-
             return true;
         }
 
@@ -90,7 +88,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         //    p.getInventory().remove(sold);
 
             showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
-            data.logTransaction(p,"OrderSell",price,amount);
+
             return true;
         }
         showError(p,"売り注文失敗");
@@ -116,10 +114,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         }
 
 
-        if(data.registerItem(p.getUniqueId(),item,key,price,tick)){
+        if(data.registerItem(p,item,key,price,tick)){
            showMessage(p,"マーケットにアイテムを登録しました");
 
-           data.logTransaction(p,"RegisterItem",price,1);
+
 
         }else{
             showError(p,"登録に失敗しました");
@@ -160,11 +158,15 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
     //      プレイヤーメッセージ
     void showMessage(Player p,String text){
-        p.sendMessage(prefix + text);
+        if(p != null){
+            p.sendMessage(prefix + text);
+        }
     }
 
     void showError(Player p,String text){
-        p.sendMessage("§4§lエラー:" + text);
+        if(p != null){
+            p.sendMessage("§4§lエラー:" + text);
+        }
     }
 
     @Override

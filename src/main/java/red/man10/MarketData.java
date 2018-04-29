@@ -1,6 +1,7 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -50,7 +51,7 @@ public class MarketData {
     }
 
     ///   オーダー情報を得る
-    public List<OrderInfo> getOrderInfo(Player p,int item_id, double price, boolean buy){
+    public ArrayList<OrderInfo> getOrderInfo(Player p,int item_id, double price, boolean buy){
         String sql = "select * from order_tbl where item_id = "+item_id+ " and buy="+buy+";";
 
         ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
@@ -86,16 +87,39 @@ public class MarketData {
     }
 
 
+    //      オーダー更新
+    public boolean updateOrder(Player p,int id,int amount){
+        String sql = "update order_tbl set amount = "+amount+" where id = "+id+";";
+        return mysql.execute(sql);
+    }
+    //   　オーダー削除
+    public boolean deleteOrder(Player p,int id){
+        String sql = "delete from order_tbl where id = "+id+";";
+        return mysql.execute(sql);
+    }
     ///  ログ
-    public boolean logTransaction(Player player,String action,double price,int amount){
+    public boolean logTransaction(OfflinePlayer player,String action,String idOrKey,double price,int amount,int order_id,String targetUUID){
         String playerName =player.getName();
-        String world = player.getLocation().getWorld().getName().toString();
-        double x = player.getLocation().getX();
-        double y = player.getLocation().getY();
-        double z = player.getLocation().getZ();
+
+
+        String world = "offline";
+        double x = 0;
+        double y = 0;
+        double z = 0;
+        if(player.isOnline()){
+            Player online = (Player)player;
+            world = online.getWorld().getName().toString();
+            x = online.getLocation().getX();
+            y = online.getLocation().getY();
+            z = online.getLocation().getZ();
+        }
 
         boolean ret = mysql.execute("insert into transaction_log values(0,"
+                +"'"+idOrKey+"',"
+
+                +order_id+","
                 +"'" +player.getUniqueId() +"',"
+                +"'" +targetUUID +"',"
                 +"'" +playerName +"',"
                 +"'" +action +"',"
                 +price+","
@@ -108,41 +132,124 @@ public class MarketData {
                 +"'"+ currentTime() +"'"
                 +");");
 
-
-
+        //  opへ通知
         plugin.opLog(" "+playerName + ":"+action+" $"+getPriceString(price) + ":"+amount);
         return ret;
-
-
     }
 
+
+    //  アイテムがうれた
+    public boolean sendMoney(String uuid,int item_id,double price,int amount,String uuidBuyer){
+
+        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+        String playerName = player.getName();
+
+        PriceResult info =  getItemPrice(String.valueOf(item_id));
+        double money =  price*amount;
+
+
+        plugin.vault.deposit(player.getUniqueId(),money);
+        logTransaction(player,"ReceivedMoney",info.key,price,amount,0,uuidBuyer);
+
+        if(player.isOnline()){
+            Player online = (Player)player;
+            plugin.showMessage(online,info.key + "が"+amount+"個売れ、§e§l$"+getPriceString(money)+"受け取りました");
+            return true;
+        }
+        return false;
+    }
+
+    //   アイテムボックスへアイテムを送信する
+    public boolean sendItemToStorage(String uuid,int item_id,int amount,String uuidSeller,String info){
+
+
+        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+        String playerName = player.getName();
+
+        PriceResult result =  getItemPrice(String.valueOf(item_id));
+        boolean ret = mysql.execute("insert into item_storage values(0,"
+                +"'" +uuid +"',"
+                +"'" +playerName +"',"
+                +item_id +","
+                +"'" +result.key +"',"
+                +amount+","
+                +"'"+uuidSeller+"',"
+                +"'"+ currentTime() +"',"
+                +"'"+ info +"'"
+
+                +");");
+
+        if(player.isOnline()){
+            Player online = (Player)player;
+            plugin.showMessage(online,"注文アイテム:" + result.key +"が"+ amount+"個購入できました!/mm ");
+        }
+        logTransaction(player,"ReceivedItem",result.key,result.price,0,0,uuidSeller);
+        return ret;
+    }
+
+
+    /////////////////////////////////////////
+    //  売り交換処理(ここ重要)
     public boolean sellExchange(Player p,int item_id,double price,int amount){
 
         // 同じ価格で、買いがあれば、交換
-        List<OrderInfo> orders = getOrderInfo(p,item_id,price,true);
+
+        //  買い注文を列挙
+        ArrayList<OrderInfo> orders = getOrderInfo(p,item_id,price,true);
+        plugin.opLog("orders="+orders.size());
         for (OrderInfo o : orders) {
+            plugin.showMessage(p,"id:"+o.id +":"+o.price);
+
 
             //   買い注文 < 売り注文
             if(o.amount < amount){
+                //  売れるだけさばき次注文へ
+                plugin.opLog("買い注文:"+o.amount +"< 売り注文"+amount );
+                // オーダー削除
+                deleteOrder(p,o.id);
 
+                //    購入者へアイテムを届ける
+                sendItemToStorage(o.uuid,item_id,o.amount,p.getUniqueId().toString(),"Order ID:"+o.id);
 
+                //   料金を支払
+                sendMoney(p.getUniqueId().toString(),item_id,price,o.amount,o.uuid);
 
-            //  売り注文 > 買い注文
+                amount -= o.amount;
+            //  買い注文 > 売り注文
             }else if(o.amount > amount){
+                plugin.opLog("買い注文:"+o.amount +"> 売り注文"+amount );
 
+                int leftAmount = o.amount - amount;
 
-                //  売り注文 == 買い注
-                // 消滅
+                //  購入者の注文量を減らす
+                updateOrder(p,o.id,leftAmount);
+                //    購入者へアイテムを届ける
+                sendItemToStorage(o.uuid,item_id,amount,p.getUniqueId().toString(),"Order ID:"+o.id);
+
+                //   料金を支払
+                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
+
+                return true;
+                //  売り注文 == 買い注文
             }else if(o.amount == amount){
 
+                plugin.opLog("買い注文:"+o.amount +"= 売り注文"+amount );
+                // オーダー削除
+                deleteOrder(p,o.id);
+
+                //    購入者へアイテムを届ける
+                sendItemToStorage(o.uuid,item_id,amount,p.getUniqueId().toString(),"Order ID:"+o.id);
+
+                //   料金を支払
+                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
+
+                return true;
             }
 
 
         }
 
-
-
-        return true;
+        return false;
     }
 
 
@@ -164,7 +271,7 @@ public class MarketData {
     public boolean orderBuy(Player p,String idOrKey,double price,int amount){
 
         //      まず現在価格を求める
-        PriceResult current = getItemPrice(p,idOrKey);
+        PriceResult current = getItemPrice(idOrKey);
         if(current.result == false){
             plugin.showError(p,"このアイテムは販売されていません");
             return false;
@@ -191,6 +298,10 @@ public class MarketData {
 
                 +"'"+currentTime()+"'"
                 +");");
+
+
+        logTransaction(p,"OrderBuy",current.key,price,amount,0,"");
+
 
         return ret;
     }
@@ -262,12 +373,14 @@ public class MarketData {
                 +"'"+currentTime()+"'"
                 +");");
 
+        logTransaction(p,"OrderSell",current.key,price,amount,0,"");
 
+        //  アイテムの売買をおこなう
+        sellExchange(p,current.id,price,amount);
         return ret;
     }
     /// アイテム価格を取得する
-    public PriceResult  getItemPrice(Player p,String idOrKey) {
-    //    p.sendMessage("getItemPrice()->"+idOrKey);
+    public PriceResult  getItemPrice(String idOrKey) {
 
         int id = -1;
         try{
@@ -292,7 +405,8 @@ public class MarketData {
         ret.price = 0;
         ResultSet rs = mysql.query(sql);
         if(rs == null){
-            plugin.showError(p,"データ取得失敗");
+
+            //plugin.showError(p,"データ取得失敗");
             return ret;
         }
         try
@@ -309,7 +423,7 @@ public class MarketData {
         }
         catch (SQLException e)
         {
-            plugin.showError(p,"データ取得失敗");
+         //   plugin.showError(p,"データ取得失敗");
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
             return ret;
         }
@@ -397,11 +511,11 @@ public class MarketData {
 
 
     // アイテム登録
-    public boolean registerItem(UUID uuid, ItemStack item,String key, double initialPrice, double tick){
+    public boolean registerItem(Player player, ItemStack item,String key, double initialPrice, double tick){
 
 
-        String playerName = Bukkit.getOfflinePlayer(uuid).getName();
-
+        String playerName = player.getName();
+        String uuid = player.getUniqueId().toString();
         String itemName = item.getItemMeta().getDisplayName();
         String itemType = item.getType().toString();
 
@@ -410,7 +524,7 @@ public class MarketData {
         }
 
         boolean ret = mysql.execute("insert into item values(0,"
-                +"'" +uuid.toString() +"',"
+                +"'" +uuid +"',"
                 +"'" +playerName +"',"
                 +"'" +key +"',"
                 +"'" +itemName +"',"
@@ -424,6 +538,7 @@ public class MarketData {
                 +"'"+ itemToBase64(item) +"'"
                 +");");
 
+        logTransaction(player,"Register",key,initialPrice,0,0,"");
 
         return ret;
     }
