@@ -1,6 +1,7 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -27,10 +28,14 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     ///  売り注文を出す
-    public boolean orderBuy(Player p,String idOrKey,double price,int count){
+    public boolean orderBuy(Player p,String idOrKey,double price,int amount){
 
-        if(data.orderBuy(p,idOrKey,price,count)){
-            showMessage(p,"買い注文成功 $"+ data.getPriceString(price) + "/"+count+"個" );
+        if(data.orderBuy(p,idOrKey,price,amount)){
+            showMessage(p,"買い注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
+
+
+            data.logTransaction(p,"OrderBuy",price,amount);
+
             return true;
         }
 
@@ -57,34 +62,35 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
     ///  売り注文を出す
-    public boolean orderSell(Player p,double price,int count){
+    public boolean orderSell(Player p,double price,int amount){
 
 
-       // showMessage(p,"orderSell" + price + " count:"+count);
+       // showMessage(p,"orderSell" + price + " amount:"+amount);
 
         ItemStack item = p.getInventory().getItemInMainHand();
 
 
         //      もっているだけ販売
-        if(count == -1){
-            count = item.getAmount();
+        if(amount == -1){
+            amount = item.getAmount();
 
         }else{
-            if(item.getAmount() < count){
-                showError(p,"アイテムを"+count+"個もっていません");
+            if(item.getAmount() < amount){
+                showError(p,"アイテムを"+amount+"個もっていません");
                 return false;
             }
         }
 
-        if(data.orderSell(p,item,price,count)){
+        if(data.orderSell(p,item,price,amount)){
 
           //  ItemStack sold = new ItemStack(item);
-           // sold.setAmount(count);
+           // sold.setAmount(amount);
             int from = item.getAmount();
-            item.setAmount(from - count);
+            item.setAmount(from - amount);
         //    p.getInventory().remove(sold);
 
-            showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+count+"個" );
+            showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
+            data.logTransaction(p,"OrderSell",price,amount);
             return true;
         }
         showError(p,"売り注文失敗");
@@ -112,6 +118,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         if(data.registerItem(p.getUniqueId(),item,key,price,tick)){
            showMessage(p,"マーケットにアイテムを登録しました");
+
+           data.logTransaction(p,"RegisterItem",price,1);
+
         }else{
             showError(p,"登録に失敗しました");
         }
@@ -138,7 +147,16 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
     //     サーバーメッセージ
     void serverMessage(String text){
+        log(text);
         Bukkit.getServer().broadcastMessage(prefix +  text);
+    }
+    void opLog(String text){
+        log(text);
+        for(Player p : Bukkit.getServer().getOnlinePlayers()){
+            if(p.isOp()){
+                p.sendMessage("§4§l[mMarket(OP)] "+text);
+            }
+        }
     }
     //      プレイヤーメッセージ
     void showMessage(Player p,String text){

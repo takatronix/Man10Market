@@ -13,7 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public class MarketData {
@@ -34,10 +36,121 @@ public class MarketData {
         boolean result;
     }
 
-    public boolean canBuy(Player p,double price,int count ,PriceResult current) {
+    class OrderInfo{
+        int id;
+        int item_id;
+        String key;
+        String uuid;
+        String player;
+        double price;
+        int amount;
+        boolean isBuy = false;
+        boolean result;
+//        DateTime datetime;
+    }
+
+    ///   オーダー情報を得る
+    public List<OrderInfo> getOrderInfo(Player p,int item_id, double price, boolean buy){
+        String sql = "select * from order_tbl where item_id = "+item_id+ " and buy="+buy+";";
+
+        ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
+
+        ResultSet rs = mysql.query(sql);
+        if(rs == null){
+            plugin.showError(p,"データ取得失敗");
+            return ret;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                OrderInfo info = new OrderInfo();
+                info.id = rs.getInt("id");
+                info.item_id = rs.getInt("item_id");
+                info.key = rs.getString("key");
+                info.uuid = rs.getString("uuid");
+                info.player = rs.getString("player");
+                info.price = rs.getDouble("price");
+                info.amount = rs.getInt("amount");
+                ret.add(info);
+            }
+        }
+        catch (SQLException e)
+        {
+            plugin.showError(p,"データ取得失敗");
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return ret;
+        }
+
+        return ret;
+    }
+
+
+    ///  ログ
+    public boolean logTransaction(Player player,String action,double price,int amount){
+        String playerName =player.getName();
+        String world = player.getLocation().getWorld().getName().toString();
+        double x = player.getLocation().getX();
+        double y = player.getLocation().getY();
+        double z = player.getLocation().getZ();
+
+        boolean ret = mysql.execute("insert into transaction_log values(0,"
+                +"'" +player.getUniqueId() +"',"
+                +"'" +playerName +"',"
+                +"'" +action +"',"
+                +price+","
+                +amount+","
+                +"'" +world +"',"
+                +x+","
+                +y+","
+                +z+","
+
+                +"'"+ currentTime() +"'"
+                +");");
+
+
+
+        plugin.opLog(" "+playerName + ":"+action+" $"+getPriceString(price) + ":"+amount);
+        return ret;
+
+
+    }
+
+    public boolean sellExchange(Player p,int item_id,double price,int amount){
+
+        // 同じ価格で、買いがあれば、交換
+        List<OrderInfo> orders = getOrderInfo(p,item_id,price,true);
+        for (OrderInfo o : orders) {
+
+            //   買い注文 < 売り注文
+            if(o.amount < amount){
+
+
+
+            //  売り注文 > 買い注文
+            }else if(o.amount > amount){
+
+
+                //  売り注文 == 買い注
+                // 消滅
+            }else if(o.amount == amount){
+
+            }
+
+
+        }
+
+
+
+        return true;
+    }
+
+
+
+    public boolean canBuy(Player p,double price,int amount ,PriceResult current) {
         double bal = plugin.vault.getBalance(p.getUniqueId());
-        if(bal < price*count){
-            plugin.showError(p,"残額がたりません! 必要金額:$"+getPriceString(price*count) +" 残額:$"+ getPriceString(bal));
+        if(bal < price*amount){
+            plugin.showError(p,"残額がたりません! 必要金額:$"+getPriceString(price*amount) +" 残額:$"+ getPriceString(bal));
             return false;
         }
         if(current.price < price){
@@ -48,7 +161,7 @@ public class MarketData {
 
         return true;
     }
-    public boolean orderBuy(Player p,String idOrKey,double price,int count){
+    public boolean orderBuy(Player p,String idOrKey,double price,int amount){
 
         //      まず現在価格を求める
         PriceResult current = getItemPrice(p,idOrKey);
@@ -57,7 +170,7 @@ public class MarketData {
             return false;
         }
         //      値段が正当かチェック
-        if(canBuy(p,price,count,current) == false){
+        if(canBuy(p,price,amount,current) == false){
             return false;
         }
 
@@ -74,11 +187,10 @@ public class MarketData {
                 +"'" +uuid +"',"
                 +"'" +playerName +"',"
                 +price+","
-                +count+",1,"
+                +amount+",1,"
 
                 +"'"+currentTime()+"'"
                 +");");
-
 
         return ret;
     }
@@ -87,17 +199,17 @@ public class MarketData {
 
     public boolean showboard(Player p,int item_id){
         //      売りデータ
-        String sql = "select sum(count),price from order_tbl where item_id = "+item_id+ " and buy = 0 group by price order by price desc ;";
+        String sql = "select sum(amount),price from order_tbl where item_id = "+item_id+ " and buy = 0 group by price order by price desc ;";
 
 
         return true;
     }
 
 
-    public boolean canSell(Player p,ItemStack item,double price,int count,PriceResult current){
+    public boolean canSell(Player p,ItemStack item,double price,int amount,PriceResult current){
 
-        if(item.getAmount() < count){
-            plugin.showError(p,"指定された"+count+"個のアイテムをもっていない");
+        if(item.getAmount() < amount){
+            plugin.showError(p,"指定された"+amount+"個のアイテムをもっていない");
             return false;
         }
 
@@ -119,7 +231,7 @@ public class MarketData {
         return true;
     }
 
-    public boolean orderSell(Player p,ItemStack item,double price,int count){
+    public boolean orderSell(Player p,ItemStack item,double price,int amount){
 
         //      まず現在価格を求める
         PriceResult current = getItemPrice(p,item);
@@ -129,7 +241,7 @@ public class MarketData {
         }
 
         //      値段が正当かチェック
-        if(canSell(p,item,price,count,current) == false){
+        if(canSell(p,item,price,amount,current) == false){
             return false;
         }
 
@@ -145,7 +257,7 @@ public class MarketData {
                 +"'" +uuid +"',"
                 +"'" +playerName +"',"
                 +price+","
-                +count+",0,"
+                +amount+",0,"
 
                 +"'"+currentTime()+"'"
                 +");");
@@ -247,7 +359,7 @@ public class MarketData {
 
     public boolean showItemList(Player p){
 
-        String sql = "select * from item order_tbl order by id;";
+        String sql = "select * from item order by id;";
 
         ResultSet rs = mysql.query(sql);
         if(rs == null){
