@@ -164,16 +164,26 @@ public class MarketData {
         }
 
         int sell = 0;
-        double price = current.price;
+        double bid = current.price;
         for(OrderInfo o : sellList){
             sell += o.amount;
-            price = o.price;  // 高い順のリストなので最後の数値が最安値
+            bid = o.price;  // 高い順のリストなので最後の数値が最安値
         }
 
         int buy = 0;
+        double ask = current.price;
+        boolean isFirst = true;
         for(OrderInfo o : buyList){
             buy += o.amount;
+            //  高値＝ask
+            if(isFirst){
+                ask = o.price;
+                isFirst  = false;
+            }
         }
+
+        //  現在値はbid/askの中間点とする
+        double price = (bid+ask)/2;
 
         double max = current.maxPrice;
         double min = current.minPrice;
@@ -208,7 +218,10 @@ public class MarketData {
         }
 
 
-        String sql = "update item_index set price="+price+", sell="+sell+",buy="+buy+",max_price="+max+",min_price="+min+",datetime='"+currentTime()+"' where id="+item_id+";";
+        String sql = "update item_index set price="+price+", sell="+sell+",buy="+buy+",max_price="+max+",min_price="+min+"" +
+                ",bid="+bid+
+                ",ask="+ask+
+                ",datetime='"+currentTime()+"' where id="+item_id+";";
         boolean ret = this.mysql.execute(sql);
 
 
@@ -883,7 +896,10 @@ public class MarketData {
                 +initialPrice+","
                 +tick+","
                 +"'"+ currentTime() +"',0,0,"
-                +"'"+ itemToBase64(item) +"',0,0"
+                +"'"+ itemToBase64(item) +"',0,0,"
+                +initialPrice +","
+                +initialPrice
+
                 +");");
 
         logTransaction(uuid,"Register",key,initialPrice,0,0,"");

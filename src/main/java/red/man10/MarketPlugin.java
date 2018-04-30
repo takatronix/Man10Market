@@ -26,6 +26,18 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
 
+    //  注文表示
+    public boolean showOrder(Player p,String user){
+
+
+
+
+
+        return true;
+    }
+
+
+
 
     ///  売り注文を出す
     public boolean orderBuy(Player p,String idOrKey,double price,int amount){
