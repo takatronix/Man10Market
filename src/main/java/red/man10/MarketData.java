@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+
 public class MarketData {
 
     private final MarketPlugin plugin;
@@ -55,8 +56,74 @@ public class MarketData {
         int amount;
         boolean isBuy = false;
         boolean result;
-//        DateTime datetime;
+
+        Date date;
+        Date time;
     }
+
+
+
+
+
+    public ArrayList<OrderInfo> getOrderOfUser(Player p,String uuid){
+
+        String sql = "select * from order_tbl where uuid = '"+uuid+"';";
+        return getOrderByQuery(sql);
+    }
+
+    public ArrayList<OrderInfo> getOrderByQuery(String sql){
+        ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
+
+        ResultSet rs = mysql.query(sql);
+        if(rs == null){
+//            showError(p.getUniqueId().toString(),"データ取得失敗");
+            return ret;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                OrderInfo info = new OrderInfo();
+                info.id = rs.getInt("id");
+                info.item_id = rs.getInt("item_id");
+                info.key = rs.getString("key");
+                info.uuid = rs.getString("uuid");
+                info.player = rs.getString("player");
+                info.price = rs.getDouble("price");
+                info.amount = rs.getInt("amount");
+                info.time = rs.getTime("datetime");
+                info.date = rs.getDate("datetime");
+
+                info.isBuy = rs.getBoolean("buy");
+
+                ret.add(info);
+            }
+        }
+        catch (SQLException e)
+        {
+  //          showError(p.getUniqueId().toString(),"データ取得失敗");
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return ret;
+        }
+
+        return ret;
+    }
+    public ArrayList<OrderInfo> getOrderOfItem(Player p,int item_id){
+
+        String sql = "select * from order_tbl where item_id = "+item_id+";";
+
+        return getOrderByQuery(sql);
+
+    }
+    //  アイテムのオーダー表示
+    public ArrayList<OrderInfo> getOrderOfPlayerName(Player p,String name){
+
+        String sql = "select * from order_tbl where player = '"+name+"';";
+
+        return getOrderByQuery(sql);
+       // return true;
+    }
+
 
     void showError(String uuid,String message){
         Player player = Bukkit.getPlayer(UUID.fromString(uuid));
@@ -69,6 +136,8 @@ public class MarketData {
     public ArrayList<OrderInfo> getOrderInfo(String uuid,int item_id, double price, boolean buy){
         String sql = "select * from order_tbl where item_id = "+item_id+ " and buy="+buy+" and price="+price+";";
 
+        return getOrderByQuery(sql);
+        /*
         ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
 
         ResultSet rs = mysql.query(sql);
@@ -99,6 +168,7 @@ public class MarketData {
         }
 
         return ret;
+        */
     }
 
 

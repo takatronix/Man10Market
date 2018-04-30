@@ -12,6 +12,10 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public final class MarketPlugin extends JavaPlugin implements Listener {
 
@@ -27,16 +31,73 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     //  注文表示
-    public boolean showOrder(Player p,String user){
+    public boolean showOrder(Player p,String target){
 
 
+        //  引数なし->自分の注文
+        if(target == null){
+            return showOrderOfUser(p,p.getUniqueId().toString());
+        }
 
+
+        //
+        MarketData.PriceResult pr = data.getItemPrice(target);
+        if(pr != null){
+            if(pr.key != null){
+                return showOrderOfItem(p,pr.id);
+            }
+        }
+
+        Player player = Bukkit.getPlayer(target);
+        if(player == null) {
+            return showOrderOfUserName(p,target);
+        }
+        if(player != null){
+            return showOrderOfUser(p,player.getUniqueId().toString());
+        }
+        return false;
+    }
+
+    public boolean showOrderOfUser(Player p,String uuid){
+        ArrayList<MarketData.OrderInfo> orders = data.getOrderOfUser(p,uuid);
+        showOrders(p,orders);
+        return true;
+    }
+
+    public boolean showOrderOfUserName(Player p,String name){
+        ArrayList<MarketData.OrderInfo> orders = data.getOrderOfPlayerName(p,name);
+        showOrders(p,orders);
+        return true;
+    }
+    public boolean showOrderOfItem(Player p,int item_id){
+        ArrayList<MarketData.OrderInfo> orders = data.getOrderOfItem(p,item_id);
+        showOrders(p,orders);
+        return true;
+    }
+    public boolean showOrders(Player p, ArrayList<MarketData.OrderInfo> orders){
+
+
+        p.sendMessage("§f--------------------------");
+        for(MarketData.OrderInfo o : orders){
+
+            String buyOrSell = "§a売";
+            if(o.isBuy){
+                buyOrSell = "§9買";
+            }
+           // String strDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(o.datetime);
+            String price = "$"+data.getPriceString(o.price);
+            p.sendMessage(String.format("%5d:%3s:%-10s:%-16s%7s /%7s個 %s:%s"
+                ,o.id,buyOrSell,o.key,o.player,price,data.getPriceString(o.amount),o.date.toString(),o.time.toString()
+
+
+            ));
+
+
+        }
 
 
         return true;
     }
-
-
 
 
     ///  売り注文を出す
