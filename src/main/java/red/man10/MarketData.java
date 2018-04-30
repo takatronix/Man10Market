@@ -36,13 +36,19 @@ public class MarketData {
         int buy;
         boolean result;
     }
-
+    class ItemStorage{
+        int item_id;
+        String item_key;
+        long amount;
+    }
     class OrderInfo{
         int id;
         int item_id;
         String key;
         String uuid;
         String player;
+        int buy;
+        int sell;
         double price;
         int amount;
         boolean isBuy = false;
@@ -52,7 +58,7 @@ public class MarketData {
 
     ///   オーダー情報を得る
     public ArrayList<OrderInfo> getOrderInfo(Player p,int item_id, double price, boolean buy){
-        String sql = "select * from order_tbl where item_id = "+item_id+ " and buy="+buy+";";
+        String sql = "select * from order_tbl where item_id = "+item_id+ " and buy="+buy+" and price="+price+";";
 
         ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
 
@@ -86,6 +92,99 @@ public class MarketData {
         return ret;
     }
 
+
+    //////////////////////////////////////////////////////////////////////
+    ///             グループ化した価格帯を取得
+    public ArrayList<OrderInfo> getGroupedOrderList(Player p,int item_id,boolean isBuy,int limit){
+        String sql = "select sum(amount),price from order_tbl where item_id = "+item_id+ " and buy = "+isBuy+ " group by price order by price desc;";
+
+        ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
+
+        ResultSet rs = mysql.query(sql);
+        if(rs == null){
+            plugin.showError(p,"データ取得失敗");
+            return ret;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                OrderInfo info = new OrderInfo();
+                info.price = rs.getDouble("price");
+                info.amount  = rs.getInt("sum(amount)");
+
+                if(isBuy){
+                    info.isBuy = true;
+                    info.buy = info.amount;
+                }else{
+                    info.isBuy = false;
+                    info.sell = info.amount;
+                }
+                ret.add(info);
+            }
+        }
+        catch (SQLException e)
+        {
+            plugin.showError(p,"データ取得失敗");
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return ret;
+        }
+
+        return ret;
+    }
+
+
+    ///////////////////////////////
+    //         板情報を表示する
+    public boolean showOrderBook(Player p,int item_id,int limit){
+
+        PriceResult item = getItemPrice(String.valueOf(item_id));
+        if(item == null) {
+            plugin.showError(p,"このアイテムは売買できません");
+            return false;
+        }
+
+        ArrayList<OrderInfo> sellList = this.getGroupedOrderList(p,item_id,false,-1);
+        ArrayList<OrderInfo> buyList = this.getGroupedOrderList(p,item_id,true,-1);
+
+        plugin.showMessage(p,"---------["+item.key+"]-----------");
+        plugin.showMessage(p,"§5§l売数量      値段         買数量");
+        for(int i = 0;i < sellList.size();i++){
+            OrderInfo o = sellList.get(i);
+            String color ="§e§l";
+            if(i ==  sellList.size() -1){
+                color  = "§a§l";
+            }
+            plugin.showMessage(p,String.format("%s%7d  %7s",color,o.amount,getPriceString(o.price)));
+        }
+        for(int i = 0;i < buyList.size();i++){
+            OrderInfo o = buyList.get(i);
+            String color ="§e§l";
+            if(i == 0){
+                color  = "§c§l";
+            }
+            plugin.showMessage(p,String.format("%s         %7s  %7d",color,getPriceString(o.price),o.amount));
+        }
+
+
+
+
+        return true;
+    }
+
+
+    ////  価格帯リストを作成する
+    public ArrayList<OrderInfo> createOrderList(Player p,int item_id, double price,int limit){
+
+        //      買い注文リスト
+        ArrayList<OrderInfo> sellList = this.getGroupedOrderList(p,item_id,false,-1);
+        ArrayList<OrderInfo> buyList = this.getGroupedOrderList(p,item_id,false,-1);
+
+
+
+        ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
+        return ret;
+    }
 
     //      オーダー更新
     public boolean updateOrder(Player p,int id,int amount){
@@ -158,10 +257,79 @@ public class MarketData {
         }
         return false;
     }
+    //  お金支払い
+    public boolean payMoney(String uuid,int item_id,double price,int amount){
 
-    //   アイテムボックスへアイテムを送信する
-    public boolean sendItemToStorage(String uuid,int item_id,int amount,String uuidSeller,String info){
+        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+        String playerName = player.getName();
 
+        PriceResult info =  getItemPrice(String.valueOf(item_id));
+        double money =  price*amount;
+
+
+        if(plugin.vault.withdraw(player.getUniqueId(),money) == false){
+            Player online = (Player)player;
+            plugin.showError(online,"$"+getPriceString(money)+"の引き出しに失敗しました");
+            return false;
+
+        }
+
+        logTransaction(player,"WithdrawMoney",info.key,price,amount,0,"");
+
+        if(player.isOnline()){
+            Player online = (Player)player;
+            plugin.showMessage(online,info.key + "を"+amount+"個注文し、§e§l$"+getPriceString(money)+"引き出されました");
+            return true;
+        }
+        return true;
+    }
+
+
+
+    //      アイテムストレージから取得
+    public ItemStorage getItemStorage(String uuid,int item_id){
+        String sql = "select * from item_storage where item_id = "+item_id +" and uuid= '"+uuid+"';";
+
+        ItemStorage ret = new ItemStorage();
+        ret.item_id = 0;
+        ret.item_key = null;
+        ret.amount = 0;
+
+        ResultSet rs = mysql.query(sql);
+      //  Bukkit.getLogger().info(sql);
+        if(rs == null){
+
+            return ret;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                ret.item_id = rs.getInt("item_id");
+                ret.item_key = rs.getString("key");
+                ret.amount = rs.getLong("amount");
+
+              //  Bukkit.getLogger().info("amount:"+ret.amount);
+            }
+        }
+        catch (SQLException e)
+        {
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return ret;
+        }
+
+        return ret;
+
+    }
+
+    public boolean updateItemStorage(String uuid,int item_id,long amount){
+        String sql= "update item_storage set amount="+amount+" where item_id = "+item_id+";";
+        boolean ret =  this.mysql.execute(sql);
+
+
+        return ret;
+    }
+    public boolean insertItemStorage(String uuid,int item_id,long amount) {
 
         OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
         String playerName = player.getName();
@@ -173,19 +341,90 @@ public class MarketData {
                 +item_id +","
                 +"'" +result.key +"',"
                 +amount+","
-                +"'"+uuidSeller+"',"
-                +"'"+ currentTime() +"',"
-                +"'"+ info +"'"
-
+                +"'"+ currentTime() +"'"
                 +");");
+        return ret;
+    }
+
+
+    //   アイテムボックスへアイテムを送信する
+    public boolean sendItemToStorage(String uuid,int item_id,int amount){
+
+
+        OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+
+        PriceResult result =  getItemPrice(String.valueOf(item_id));
+        if(result == null){
+            if(player.isOnline()){
+                plugin.showError((Player)player,"登録されていない");
+            }
+            return false;
+        }
+
+
+        long total = amount;
+        ItemStorage store = getItemStorage(uuid,item_id);
+        if(store.item_key == null){
+            this.insertItemStorage(uuid,item_id,total);
+        }else{
+            total += store.amount;
+            this.updateItemStorage(uuid,item_id,total);
+        }
 
         if(player.isOnline()){
             Player online = (Player)player;
-            plugin.showMessage(online,"注文アイテム:" + result.key +"が"+ amount+"個購入できました!/mm ");
+            plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個ストレージに追加されました/mm ");
+            plugin.showMessage(online,"現在トータル:" +total+"個");
         }
-        logTransaction(player,"ReceivedItem",result.key,result.price,0,0,uuidSeller);
-        return ret;
+
+
+        logTransaction(player,"ReceivedItem",result.key,result.price,0,0,"");
+        return true;
     }
+
+    ////////////////////////////////////////////
+    ///         ストレージからアイテムを引き出す
+    public boolean removeItemFromStorage(String uuid,int item_id,int amount){
+
+
+        OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+
+        PriceResult result =  getItemPrice(String.valueOf(item_id));
+        if(result == null){
+            if(player.isOnline()){
+                plugin.showError((Player)player,"登録されていない");
+            }
+            return false;
+        }
+
+
+        ItemStorage store = getItemStorage(uuid,item_id);
+        if(store.item_key == null){
+            return false;
+        }
+        long total = store.amount - amount;
+        if(total > 0){
+            this.updateItemStorage(uuid,item_id,total);
+            if(player.isOnline()){
+                Player online = (Player)player;
+                plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個ストレージからひきだされました ");
+                plugin.showMessage(online,"現在トータル:" +getPriceString(total)+"個");
+            }
+            logTransaction(player,"ReceivedItem",result.key,result.price,0,0,"");
+            return true;
+        }
+
+        //      引き出し失敗
+        if(player.isOnline()){
+            Player online = (Player)player;
+            plugin.showError(online,"アイテムの引き出しに失敗しました！"+result.key +":"+ amount+"個");
+            plugin.showMessage(online,"現在トータル:" +getPriceString(total)+"個");
+        }
+
+
+        return false;
+    }
+
 
 
     /////////////////////////////////////////
@@ -196,9 +435,9 @@ public class MarketData {
 
         //  買い注文を列挙
         ArrayList<OrderInfo> orders = getOrderInfo(p,item_id,price,true);
-        plugin.opLog("orders="+orders.size());
+       // plugin.opLog("orders="+orders.size());
         for (OrderInfo o : orders) {
-            plugin.showMessage(p,"id:"+o.id +":"+o.price);
+           // plugin.showMessage(p,"id:"+o.id +":"+o.price);
 
 
             //   買い注文 < 売り注文
@@ -209,7 +448,7 @@ public class MarketData {
                 deleteOrder(p,o.id);
 
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,o.amount,p.getUniqueId().toString(),"Order ID:"+o.id);
+                sendItemToStorage(o.uuid,item_id,o.amount);
 
                 //   料金を支払
                 sendMoney(p.getUniqueId().toString(),item_id,price,o.amount,o.uuid);
@@ -217,14 +456,14 @@ public class MarketData {
                 amount -= o.amount;
             //  買い注文 > 売り注文
             }else if(o.amount > amount){
-                plugin.opLog("買い注文:"+o.amount +"> 売り注文"+amount );
+              //  plugin.opLog("買い注文:"+o.amount +"> 売り注文"+amount );
 
                 int leftAmount = o.amount - amount;
 
                 //  購入者の注文量を減らす
                 updateOrder(p,o.id,leftAmount);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,amount,p.getUniqueId().toString(),"Order ID:"+o.id);
+                sendItemToStorage(o.uuid,item_id,amount);
 
                 //   料金を支払
                 sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
@@ -233,12 +472,12 @@ public class MarketData {
                 //  売り注文 == 買い注文
             }else if(o.amount == amount){
 
-                plugin.opLog("買い注文:"+o.amount +"= 売り注文"+amount );
+          //      plugin.opLog("買い注文:"+o.amount +"= 売り注文"+amount );
                 // オーダー削除
                 deleteOrder(p,o.id);
 
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,amount,p.getUniqueId().toString(),"Order ID:"+o.id);
+                sendItemToStorage(o.uuid,item_id,amount);
 
                 //   料金を支払
                 sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
@@ -252,7 +491,69 @@ public class MarketData {
         return false;
     }
 
+    /////////////////////////////////////////
+    //  買い交換処理(ここ重要)
+    public boolean buyExchange(Player p,int item_id,double price,int amount){
 
+        // 同じ価格で、売りがあれば、交換
+
+        //  売り注文を列挙
+        ArrayList<OrderInfo> orders = getOrderInfo(p,item_id,price,false);
+        // plugin.opLog("orders="+orders.size());
+        for (OrderInfo o : orders) {
+            // plugin.showMessage(p,"id:"+o.id +":"+o.price);
+
+
+            //   買い注文 < 売り注文
+            if(o.amount < amount){
+                //  売れるだけさばき次注文へ
+                plugin.opLog("買い注文:"+o.amount +"< 売り注文"+amount );
+                // オーダー削除
+                deleteOrder(p,o.id);
+
+                //    購入者へアイテムを届ける
+                sendItemToStorage(o.uuid,item_id,o.amount);
+
+                //   料金を支払
+                sendMoney(p.getUniqueId().toString(),item_id,price,o.amount,o.uuid);
+
+                amount -= o.amount;
+                //  買い注文 > 売り注文
+            }else if(o.amount > amount){
+                //  plugin.opLog("買い注文:"+o.amount +"> 売り注文"+amount );
+
+                int leftAmount = o.amount - amount;
+
+                //  購入者の注文量を減らす
+                updateOrder(p,o.id,leftAmount);
+                //    購入者へアイテムを届ける
+                sendItemToStorage(o.uuid,item_id,amount);
+
+                //   料金を支払
+                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
+
+                return true;
+                //  売り注文 == 買い注文
+            }else if(o.amount == amount){
+
+                //      plugin.opLog("買い注文:"+o.amount +"= 売り注文"+amount );
+                // オーダー削除
+                deleteOrder(p,o.id);
+
+                //    購入者へアイテムを届ける
+                sendItemToStorage(o.uuid,item_id,amount);
+
+                //   料金を支払
+                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
+
+                return true;
+            }
+
+
+        }
+
+        return false;
+    }
 
     public boolean canBuy(Player p,double price,int amount ,PriceResult current) {
         double bal = plugin.vault.getBalance(p.getUniqueId());
@@ -260,11 +561,12 @@ public class MarketData {
             plugin.showError(p,"残額がたりません! 必要金額:$"+getPriceString(price*amount) +" 残額:$"+ getPriceString(bal));
             return false;
         }
+        /*
         if(current.price < price){
             plugin.showError(p,"現在値より高い値段で注文はできません。購入したい場合は、成り行き買いをおこなってください /marketbuy or /buy");
             return false;
         }
-
+*/
 
         return true;
     }
@@ -286,6 +588,10 @@ public class MarketData {
         String playerName = p.getName();
         String uuid = p.getUniqueId().toString();
 
+        //      引き出し
+        if(payMoney(uuid,current.id,price,amount) == false){
+            return false;
+        }
 
         boolean ret = mysql.execute("insert into order_tbl values(0,"
                 +current.id +","
@@ -317,12 +623,8 @@ public class MarketData {
     }
 
 
-    public boolean canSell(Player p,ItemStack item,double price,int amount,PriceResult current){
+    public boolean canSell(Player p,double price,int amount,PriceResult current){
 
-        if(item.getAmount() < amount){
-            plugin.showError(p,"指定された"+amount+"個のアイテムをもっていない");
-            return false;
-        }
 
 
         ///  値段の正当性チェック
@@ -342,23 +644,31 @@ public class MarketData {
         return true;
     }
 
-    public boolean orderSell(Player p,ItemStack item,double price,int amount){
+
+
+    public boolean orderSell(Player p,String idOrKey,double price,int amount){
 
         //      まず現在価格を求める
-        PriceResult current = getItemPrice(p,item);
+        PriceResult current = getItemPrice(idOrKey);
         if(current.result == false){
-            plugin.showError(p,"このアイテムは販売できません");
+            plugin.showError(p,"このアイテムは販売されていません");
             return false;
         }
 
+
         //      値段が正当かチェック
-        if(canSell(p,item,price,amount,current) == false){
+        if(canSell(p,price,amount,current) == false){
             return false;
         }
 
 
         String playerName = p.getName();
         String uuid = p.getUniqueId().toString();
+
+
+
+
+
 
 
         boolean ret = mysql.execute("insert into order_tbl values(0,"
@@ -395,9 +705,9 @@ public class MarketData {
         String sql = "";
         //      IDが数値ではない -> key
         if(id == -1){
-            sql =  "select * from item where item_key = '"+idOrKey+"';";
+            sql =  "select * from item_index where item_key = '"+idOrKey+"';";
         }else{
-            sql =  "select * from item where  id = "+id+";";
+            sql =  "select * from item_index where  id = "+id+";";
         }
 //        p.sendMessage(sql);
         PriceResult ret = new PriceResult();
@@ -407,7 +717,7 @@ public class MarketData {
         if(rs == null){
 
             //plugin.showError(p,"データ取得失敗");
-            return ret;
+            return null;
         }
         try
         {
@@ -425,7 +735,7 @@ public class MarketData {
         {
          //   plugin.showError(p,"データ取得失敗");
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
-            return ret;
+            return null;
         }
 
         return ret;
@@ -441,17 +751,19 @@ public class MarketData {
         ret.result = false;
         ret.price = 0;
 
-        String sql = "select * from item where base64 = '"+base64+"';";
+        String sql = "select * from item_index where base64 = '"+base64+"';";
+        Bukkit.getLogger().info(sql);
 
         ResultSet rs = mysql.query(sql);
         if(rs == null){
             plugin.showError(p,"データ取得失敗");
-            return ret;
+            return null;
         }
         try
         {
             while(rs.next())
             {
+                Bukkit.getLogger().info("result true");
                 ret.id = rs.getInt("id");
                 ret.key = rs.getString("item_key");
                 ret.price = rs.getDouble("price");
@@ -464,7 +776,7 @@ public class MarketData {
         {
             plugin.showError(p,"データ取得失敗");
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
-            return ret;
+            return null;
         }
 
         return ret;
@@ -473,7 +785,7 @@ public class MarketData {
 
     public boolean showItemList(Player p){
 
-        String sql = "select * from item order by id;";
+        String sql = "select * from item_index order by id;";
 
         ResultSet rs = mysql.query(sql);
         if(rs == null){
@@ -491,7 +803,15 @@ public class MarketData {
                 int sell = rs.getInt("sell");
                 int buy = rs.getInt("buy");
 
-                p.sendMessage(idString + " §f§l"+key+ " §e§lPrice:$" + getPriceString(price) + " §c§l売り注文数(Sell):"+sell +"/§9§l買い注文数(Sell):"+buy);
+
+                //      ストレージに合う個数
+                ItemStorage store = getItemStorage(p.getUniqueId().toString(),id);
+                long amount = 0;
+                if(store != null){
+                    amount = store.amount;
+                }
+
+                p.sendMessage(idString + " §f§l"+key+ "(" +amount +") §e§lPrice:$" + getPriceString(price) + " §c§l売り注文数(Sell):"+sell +"/§9§l買い注文数(Sell):"+buy);
             }
         }
         catch (SQLException e)
@@ -523,7 +843,7 @@ public class MarketData {
             itemName = item.getType().toString();
         }
 
-        boolean ret = mysql.execute("insert into item values(0,"
+        boolean ret = mysql.execute("insert into item_index values(0,"
                 +"'" +uuid +"',"
                 +"'" +playerName +"',"
                 +"'" +key +"',"

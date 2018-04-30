@@ -52,6 +52,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             double st = ret.price * 64;
             showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
             showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
+
+            //      板表示
+            data.showOrderBook(p,ret.id,-1);
         }else{
             showError(p,"データ取得失敗");
         }
@@ -60,10 +63,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
     ///  売り注文を出す
-    public boolean orderSell(Player p,double price,int amount){
+    public boolean orderSell(Player p,String idOrKey,double price,int amount){
 
-
-       // showMessage(p,"orderSell" + price + " amount:"+amount);
+/*
+        // showMessage(p,"orderSell" + price + " amount:"+amount);
 
         ItemStack item = p.getInventory().getItemInMainHand();
 
@@ -78,14 +81,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 return false;
             }
         }
+*/
+        if(data.orderSell(p,idOrKey,price,amount)){
 
-        if(data.orderSell(p,item,price,amount)){
 
-          //  ItemStack sold = new ItemStack(item);
-           // sold.setAmount(amount);
-            int from = item.getAmount();
-            item.setAmount(from - amount);
-        //    p.getInventory().remove(sold);
+
 
             showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
 
@@ -96,7 +96,47 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return false;
     }
 
+    public boolean storeItem(Player p,int amount){
 
+
+        // showMessage(p,"orderSell" + price + " amount:"+amount);
+
+        ItemStack item = p.getInventory().getItemInMainHand();
+        if(item == null){
+            showError(p,"空のアイテムは登録できません");
+            return false;
+        }
+
+        //      もっているだけ販売
+        if(amount == -1){
+            amount = item.getAmount();
+
+        }else{
+            if(item.getAmount() < amount){
+                showError(p,"アイテムを"+amount+"個もっていません");
+                return false;
+            }
+        }
+
+        MarketData.PriceResult result =  data.getItemPrice(p,item);
+        if(result.result == false){
+            showError(p,"このアイテムは登録対象外です");
+            return false;
+        }
+
+        String uuid = p.getUniqueId().toString();
+
+        MarketData.ItemStorage store = data.getItemStorage(uuid,result.id);
+        this.data.sendItemToStorage(uuid,result.id,amount);
+
+
+        //      アイテム個数をへらす
+        int from = item.getAmount();
+        item.setAmount(from - amount);
+
+
+        return true;
+    }
     //  アイテムリスト表示
     public void showList(Player p){
         data.showItemList(p);

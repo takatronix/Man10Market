@@ -173,6 +173,7 @@ public class MySQLManager {
             rs = this.st.executeQuery(query);
         } catch (SQLException var4) {
             this.plugin.getLogger().info("[" + this.conName + "] Error executing query: " + var4.getErrorCode());
+            this.plugin.getLogger().info(query);
         }
 
         return rs;
