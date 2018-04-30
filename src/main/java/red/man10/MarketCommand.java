@@ -157,21 +157,26 @@ public class MarketCommand implements CommandExecutor {
 
         p.sendMessage("§c-------注文管理------------------");
 
-        p.sendMessage("/mm order (user) 注文を表示する");
+        p.sendMessage("/mm order  注文を表示する");
         p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
-        p.sendMessage("/mm cancellall (userid) 全ての注文をキャンセルする");
+        p.sendMessage("/mm cancellall  全ての注文をキャンセルする");
 
         p.sendMessage("/mm marketbuy/mb [id/this] [個数] - 成り行き注文（市場価格で購入)");
         p.sendMessage("/mm marketsell/ms [id/this] [個数] - 成り行き注文（市場価格で売り)");
         p.sendMessage("§c--------------------------------");
-        p.sendMessage("§c§l/mm register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
-        p.sendMessage("§c/mm unregister - 手にもったアイテムをマーケットから削除する");
-        p.sendMessage("§c--------------------------------");
         p.sendMessage("§e created by takatronix http://twitter.com/takatronix");
         p.sendMessage("§e http://man10.red");
 
+        if(p.hasPermission("red.man10.admin")){
+            showAdminHelp(p);
+        }
+
     }
-    void showTable(CommandSender p){
+    void showAdminHelp(CommandSender p){
+        p.sendMessage("§c-----------Admin Commands---------------------");
+        p.sendMessage("§c§l/mm order (user/id/key) 注文を表示する");
+        p.sendMessage("§c§l/mm register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
+        p.sendMessage("§c/mm unregister - 手にもったアイテムをマーケットから削除する");
 
     }
 }
