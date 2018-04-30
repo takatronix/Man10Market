@@ -62,13 +62,37 @@ public class MarketData {
     }
 
 
+    public OrderInfo getOrderByOrderId(int order_id){
+
+        ArrayList<OrderInfo> orders = getOrderByQuery("select * from order_tbl where id="+order_id+";");
+        if(orders.size() == 0){
+            return null;
+        }
+        return orders.get(0);
+    }
+
+
+    public boolean cancelOrderByOrderId(int order_id){
+        return mysql.execute("delete from order_tbl where id = "+order_id+";");
+    }
+    public boolean cancelOrderByOrderItemId(int item_id){
+        return mysql.execute("delete from order_tbl where item_id = "+item_id+";");
+    }
+    public boolean cancelOrderByOrderUUID(String uuid){
+        return mysql.execute("delete from order_tbl where uuid = '"+uuid+"';");
+    }
 
 
 
     public ArrayList<OrderInfo> getOrderOfUser(Player p,String uuid){
-
-        String sql = "select * from order_tbl where uuid = '"+uuid+"';";
-        return getOrderByQuery(sql);
+        return getOrderByQuery("select * from order_tbl where uuid = '"+uuid+"';");
+    }
+    public ArrayList<OrderInfo> getOrderOfItem(Player p,int item_id){
+        return getOrderByQuery("select * from order_tbl where item_id = "+item_id+";");
+    }
+    //  アイテムのオーダー表示
+    public ArrayList<OrderInfo> getOrderOfPlayerName(Player p,String name){
+        return getOrderByQuery("select * from order_tbl where player = '"+name+"';");
     }
 
     public ArrayList<OrderInfo> getOrderByQuery(String sql){
@@ -76,7 +100,6 @@ public class MarketData {
 
         ResultSet rs = mysql.query(sql);
         if(rs == null){
-//            showError(p.getUniqueId().toString(),"データ取得失敗");
             return ret;
         }
         try
@@ -108,21 +131,7 @@ public class MarketData {
 
         return ret;
     }
-    public ArrayList<OrderInfo> getOrderOfItem(Player p,int item_id){
 
-        String sql = "select * from order_tbl where item_id = "+item_id+";";
-
-        return getOrderByQuery(sql);
-
-    }
-    //  アイテムのオーダー表示
-    public ArrayList<OrderInfo> getOrderOfPlayerName(Player p,String name){
-
-        String sql = "select * from order_tbl where player = '"+name+"';";
-
-        return getOrderByQuery(sql);
-       // return true;
-    }
 
 
     void showError(String uuid,String message){
@@ -134,41 +143,7 @@ public class MarketData {
 
     ///   オーダー情報を得る
     public ArrayList<OrderInfo> getOrderInfo(String uuid,int item_id, double price, boolean buy){
-        String sql = "select * from order_tbl where item_id = "+item_id+ " and buy="+buy+" and price="+price+";";
-
-        return getOrderByQuery(sql);
-        /*
-        ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
-
-        ResultSet rs = mysql.query(sql);
-        if(rs == null){
-            showError(uuid,"データ取得失敗");
-            return ret;
-        }
-        try
-        {
-            while(rs.next())
-            {
-                OrderInfo info = new OrderInfo();
-                info.id = rs.getInt("id");
-                info.item_id = rs.getInt("item_id");
-                info.key = rs.getString("key");
-                info.uuid = rs.getString("uuid");
-                info.player = rs.getString("player");
-                info.price = rs.getDouble("price");
-                info.amount = rs.getInt("amount");
-                ret.add(info);
-            }
-        }
-        catch (SQLException e)
-        {
-            showError(uuid,"データ取得失敗");
-            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
-            return ret;
-        }
-
-        return ret;
-        */
+        return getOrderByQuery("select * from order_tbl where item_id = "+item_id+ " and buy="+buy+" and price="+price+";");
     }
 
 

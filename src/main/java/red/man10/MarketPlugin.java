@@ -28,8 +28,45 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public double buyLimitRatio = 2;
     public double sellLimitRatio = 2;
 
+    //  注文キャンセル
+    public boolean cancelOrder(Player p,String target) {
+
+        int orderNo = -1;
+        try{
+            orderNo = Integer.parseInt(target);
+        }catch (Exception e){
+
+        }
+
+        if(orderNo == -1){
+            return false;
+        }
+
+        MarketData.OrderInfo order = data.getOrderByOrderId(orderNo);
+        if(order == null){
+            showError(p,"そのIDはみつからない");
+            return false;
+        }
+
+        //      自分の注文ではない
+        if(order.uuid.equalsIgnoreCase(p.getUniqueId().toString()) == false){
+
+            if(p.hasPermission("red.man10.cancelother") == false){
+                showError(p,"自分以外の注文をキャンセルする権限がない");
+                return false;
+            }
+        }
 
 
+        if(data.cancelOrderByOrderId(orderNo)){
+            data.updateCurrentPrice(order.item_id);
+
+            p.sendMessage("注文ID:"+order.id +"をキャンセルしました");
+            return true;
+        }
+
+        return false;
+    }
     //  注文表示
     public boolean showOrder(Player p,String target){
 
