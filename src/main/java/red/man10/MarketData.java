@@ -187,7 +187,7 @@ public class MarketData {
 
             //      過去最高高値更新
             if(current.maxPrice < price){
-                plugin.serverMessage( "§a§lマーケット速報!! "+current.key +": $"+getPriceString(current.price) + "過去最高高値更新!!!");
+                plugin.serverMessage( "§a§lマーケット速報!! "+current.key +": $"+getPriceString(price) + " 過去最高高値更新!!!");
                 max = price;
             }
 
@@ -200,7 +200,7 @@ public class MarketData {
             plugin.serverMessage( "§c§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値下がりしました");
             //      過去最高高値更新
             if(current.minPrice > price){
-                plugin.serverMessage( "§c§lマーケット速報!! "+current.key +": $"+getPriceString(current.price) + "過去最高安値更新!!!");
+                plugin.serverMessage( "§c§lマーケット速報!! "+current.key +": $"+getPriceString(price) + " 過去最高安値更新!!!");
                 min = price;
             }
             //  履歴更新
