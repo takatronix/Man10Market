@@ -32,6 +32,8 @@ public class MarketData {
         int id;
         String key;
         double price;
+        double maxPrice;
+        double minPrice;
         int sell;
         int buy;
         boolean result;
@@ -56,15 +58,22 @@ public class MarketData {
 //        DateTime datetime;
     }
 
+    void showError(String uuid,String message){
+        Player player = Bukkit.getPlayer(UUID.fromString(uuid));
+        if(player != null){
+            plugin.showError(player,message);
+        }
+    }
+
     ///   オーダー情報を得る
-    public ArrayList<OrderInfo> getOrderInfo(Player p,int item_id, double price, boolean buy){
+    public ArrayList<OrderInfo> getOrderInfo(String uuid,int item_id, double price, boolean buy){
         String sql = "select * from order_tbl where item_id = "+item_id+ " and buy="+buy+" and price="+price+";";
 
         ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
 
         ResultSet rs = mysql.query(sql);
         if(rs == null){
-            plugin.showError(p,"データ取得失敗");
+            showError(uuid,"データ取得失敗");
             return ret;
         }
         try
@@ -84,7 +93,7 @@ public class MarketData {
         }
         catch (SQLException e)
         {
-            plugin.showError(p,"データ取得失敗");
+            showError(uuid,"データ取得失敗");
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
             return ret;
         }
@@ -95,14 +104,14 @@ public class MarketData {
 
     //////////////////////////////////////////////////////////////////////
     ///             グループ化した価格帯を取得
-    public ArrayList<OrderInfo> getGroupedOrderList(Player p,int item_id,boolean isBuy,int limit){
+    public ArrayList<OrderInfo> getGroupedOrderList(String uuid,int item_id,boolean isBuy,int limit){
         String sql = "select sum(amount),price from order_tbl where item_id = "+item_id+ " and buy = "+isBuy+ " group by price order by price desc;";
 
         ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
 
         ResultSet rs = mysql.query(sql);
         if(rs == null){
-            plugin.showError(p,"データ取得失敗");
+            showError(uuid,"データ取得失敗");
             return ret;
         }
         try
@@ -125,10 +134,83 @@ public class MarketData {
         }
         catch (SQLException e)
         {
-            plugin.showError(p,"データ取得失敗");
-            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            showError(uuid,"データ取得失敗");
             return ret;
         }
+
+        return ret;
+    }
+
+    //      履歴保存
+    public boolean logHistory(int item_id,double price){
+        String sql = "insert into price_history values(0,"+item_id+","+price+",'"+currentTime()+"');";
+        return mysql.execute(sql);
+    }
+
+    //      現在値更新
+    public boolean updateCurrentPrice(int item_id){
+
+        //  現在価格を求める
+        PriceResult current = getItemPrice(String.valueOf(item_id));
+        if(current == null){
+            return false;
+        }
+
+        ArrayList<OrderInfo> sellList = this.getGroupedOrderList(null,item_id,false,-1);
+        ArrayList<OrderInfo> buyList = this.getGroupedOrderList(null,item_id,true,-1);
+
+        if(sellList.size() == 0){
+            return false;
+        }
+
+        int sell = 0;
+        double price = current.price;
+        for(OrderInfo o : sellList){
+            sell += o.amount;
+            price = o.price;  // 高い順のリストなので最後の数値が最安値
+        }
+
+        int buy = 0;
+        for(OrderInfo o : buyList){
+            buy += o.amount;
+        }
+
+        double max = current.maxPrice;
+        double min = current.minPrice;
+        if(min == 0){
+            min = current.price;
+        }
+        //   値上がり
+        if(current.price < price){
+            plugin.serverMessage( "§a§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値上がりしました");
+
+
+            //      過去最高高値更新
+            if(current.maxPrice < price){
+                plugin.serverMessage( "§a§lマーケット速報!! "+current.key +": $"+getPriceString(current.price) + "過去最高高値更新!!!");
+                max = price;
+            }
+
+
+            //  履歴更新
+            logHistory(item_id,price);
+        }
+        //  値下がり
+        if(current.price > price){
+            plugin.serverMessage( "§c§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値下がりしました");
+            //      過去最高高値更新
+            if(current.minPrice > price){
+                plugin.serverMessage( "§c§lマーケット速報!! "+current.key +": $"+getPriceString(current.price) + "過去最高安値更新!!!");
+                min = price;
+            }
+            //  履歴更新
+            logHistory(item_id,price);
+        }
+
+
+        String sql = "update item_index set price="+price+", sell="+sell+",buy="+buy+",max_price="+max+",min_price="+min+",datetime='"+currentTime()+"' where id="+item_id+";";
+        boolean ret = this.mysql.execute(sql);
+
 
         return ret;
     }
@@ -139,16 +221,18 @@ public class MarketData {
     public boolean showOrderBook(Player p,int item_id,int limit){
 
         PriceResult item = getItemPrice(String.valueOf(item_id));
+        String uuid = p.getUniqueId().toString();
+
         if(item == null) {
-            plugin.showError(p,"このアイテムは売買できません");
+            showError(uuid,"このアイテムは売買できません");
             return false;
         }
 
-        ArrayList<OrderInfo> sellList = this.getGroupedOrderList(p,item_id,false,-1);
-        ArrayList<OrderInfo> buyList = this.getGroupedOrderList(p,item_id,true,-1);
+        ArrayList<OrderInfo> sellList = this.getGroupedOrderList(uuid,item_id,false,-1);
+        ArrayList<OrderInfo> buyList = this.getGroupedOrderList(uuid,item_id,true,-1);
 
         plugin.showMessage(p,"---------["+item.key+"]-----------");
-        plugin.showMessage(p,"§5§l売数量      値段         買数量");
+        plugin.showMessage(p," §b§l売数量    値段     買数量");
         for(int i = 0;i < sellList.size();i++){
             OrderInfo o = sellList.get(i);
             String color ="§e§l";
@@ -166,38 +250,23 @@ public class MarketData {
             plugin.showMessage(p,String.format("%s         %7s  %7d",color,getPriceString(o.price),o.amount));
         }
 
-
-
-
         return true;
     }
-
-
-    ////  価格帯リストを作成する
-    public ArrayList<OrderInfo> createOrderList(Player p,int item_id, double price,int limit){
-
-        //      買い注文リスト
-        ArrayList<OrderInfo> sellList = this.getGroupedOrderList(p,item_id,false,-1);
-        ArrayList<OrderInfo> buyList = this.getGroupedOrderList(p,item_id,false,-1);
-
-
-
-        ArrayList<OrderInfo> ret = new ArrayList<OrderInfo>();
-        return ret;
-    }
-
+    
     //      オーダー更新
-    public boolean updateOrder(Player p,int id,int amount){
+    public boolean updateOrder(String uuid,int id,int amount){
         String sql = "update order_tbl set amount = "+amount+" where id = "+id+";";
         return mysql.execute(sql);
     }
     //   　オーダー削除
-    public boolean deleteOrder(Player p,int id){
+    public boolean deleteOrder(String uuid,int id){
         String sql = "delete from order_tbl where id = "+id+";";
         return mysql.execute(sql);
     }
     ///  ログ
-    public boolean logTransaction(OfflinePlayer player,String action,String idOrKey,double price,int amount,int order_id,String targetUUID){
+    public boolean logTransaction(String uuid,String action,String idOrKey,double price,int amount,int order_id,String targetUUID){
+
+        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
         String playerName =player.getName();
 
 
@@ -248,7 +317,7 @@ public class MarketData {
 
 
         plugin.vault.deposit(player.getUniqueId(),money);
-        logTransaction(player,"ReceivedMoney",info.key,price,amount,0,uuidBuyer);
+        logTransaction(uuid,"ReceivedMoney",info.key,price,amount,0,uuidBuyer);
 
         if(player.isOnline()){
             Player online = (Player)player;
@@ -274,7 +343,7 @@ public class MarketData {
 
         }
 
-        logTransaction(player,"WithdrawMoney",info.key,price,amount,0,"");
+        logTransaction(uuid,"WithdrawMoney",info.key,price,amount,0,"");
 
         if(player.isOnline()){
             Player online = (Player)player;
@@ -361,7 +430,6 @@ public class MarketData {
             return false;
         }
 
-
         long total = amount;
         ItemStorage store = getItemStorage(uuid,item_id);
         if(store.item_key == null){
@@ -378,7 +446,7 @@ public class MarketData {
         }
 
 
-        logTransaction(player,"ReceivedItem",result.key,result.price,0,0,"");
+        logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
         return true;
     }
 
@@ -410,7 +478,7 @@ public class MarketData {
                 plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個ストレージからひきだされました ");
                 plugin.showMessage(online,"現在トータル:" +getPriceString(total)+"個");
             }
-            logTransaction(player,"ReceivedItem",result.key,result.price,0,0,"");
+            logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
             return true;
         }
 
@@ -429,130 +497,93 @@ public class MarketData {
 
     /////////////////////////////////////////
     //  売り交換処理(ここ重要)
-    public boolean sellExchange(Player p,int item_id,double price,int amount){
-
-        // 同じ価格で、買いがあれば、交換
-
+    public int sellExchange(String uuid,int item_id,double price,int amount){
+        int soldAmount = 0;
         //  買い注文を列挙
-        ArrayList<OrderInfo> orders = getOrderInfo(p,item_id,price,true);
-       // plugin.opLog("orders="+orders.size());
+        ArrayList<OrderInfo> orders = getOrderInfo(uuid,item_id,price,true);
         for (OrderInfo o : orders) {
-           // plugin.showMessage(p,"id:"+o.id +":"+o.price);
-
 
             //   買い注文 < 売り注文
             if(o.amount < amount){
                 //  売れるだけさばき次注文へ
-                plugin.opLog("買い注文:"+o.amount +"< 売り注文"+amount );
                 // オーダー削除
-                deleteOrder(p,o.id);
-
+                deleteOrder(uuid,o.id);
                 //    購入者へアイテムを届ける
                 sendItemToStorage(o.uuid,item_id,o.amount);
-
                 //   料金を支払
-                sendMoney(p.getUniqueId().toString(),item_id,price,o.amount,o.uuid);
-
-                amount -= o.amount;
+                sendMoney(uuid.toString(),item_id,price,o.amount,o.uuid);
+                amount -= o.amount; //　残注文
+                soldAmount += o.amount; // 購入で北数
             //  買い注文 > 売り注文
             }else if(o.amount > amount){
-              //  plugin.opLog("買い注文:"+o.amount +"> 売り注文"+amount );
-
                 int leftAmount = o.amount - amount;
-
                 //  購入者の注文量を減らす
-                updateOrder(p,o.id,leftAmount);
+                updateOrder(uuid,o.id,leftAmount);
                 //    購入者へアイテムを届ける
                 sendItemToStorage(o.uuid,item_id,amount);
-
                 //   料金を支払
-                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
-
-                return true;
+                sendMoney(uuid,item_id,price,amount,o.uuid);
+                return amount;
                 //  売り注文 == 買い注文
             }else if(o.amount == amount){
-
-          //      plugin.opLog("買い注文:"+o.amount +"= 売り注文"+amount );
                 // オーダー削除
-                deleteOrder(p,o.id);
-
+                deleteOrder(uuid,o.id);
                 //    購入者へアイテムを届ける
                 sendItemToStorage(o.uuid,item_id,amount);
-
                 //   料金を支払
-                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
-
-                return true;
+                sendMoney(uuid,item_id,price,amount,o.uuid);
+                return amount;
             }
-
-
         }
-
-        return false;
+        return soldAmount;
     }
 
     /////////////////////////////////////////
     //  買い交換処理(ここ重要)
-    public boolean buyExchange(Player p,int item_id,double price,int amount){
+    //   購入できた個数を返す
+    public int buyExchange(String uuidBuyer,int item_id,double price,int amount){
 
-        // 同じ価格で、売りがあれば、交換
+        //      売り注文を列挙
+        ArrayList<OrderInfo> orders = getOrderInfo(uuidBuyer,item_id,price,false);
 
-        //  売り注文を列挙
-        ArrayList<OrderInfo> orders = getOrderInfo(p,item_id,price,false);
-        // plugin.opLog("orders="+orders.size());
+        int retOrderAmount = 0;
         for (OrderInfo o : orders) {
-            // plugin.showMessage(p,"id:"+o.id +":"+o.price);
-
-
             //   買い注文 < 売り注文
             if(o.amount < amount){
-                //  売れるだけさばき次注文へ
-                plugin.opLog("買い注文:"+o.amount +"< 売り注文"+amount );
-                // オーダー削除
-                deleteOrder(p,o.id);
-
-                //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,o.amount);
-
+                //  買い注文数をへらす
+                int leftAmount = o.amount - amount;
+                updateOrder(uuidBuyer,o.id,leftAmount);
+                //    購入できたぶんアイテムを届ける
+                sendItemToStorage(uuidBuyer,item_id,amount);
                 //   料金を支払
-                sendMoney(p.getUniqueId().toString(),item_id,price,o.amount,o.uuid);
-
-                amount -= o.amount;
+                sendMoney(o.uuid,item_id,o.price,amount,uuidBuyer);
+                return amount;
                 //  買い注文 > 売り注文
             }else if(o.amount > amount){
-                //  plugin.opLog("買い注文:"+o.amount +"> 売り注文"+amount );
 
-                int leftAmount = o.amount - amount;
+                // オーダー削除
+                deleteOrder(uuidBuyer,o.id);
 
-                //  購入者の注文量を減らす
-                updateOrder(p,o.id,leftAmount);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,amount);
+                sendItemToStorage(uuidBuyer,item_id,amount);
 
                 //   料金を支払
-                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
+                sendMoney(o.uuid,item_id,o.price,o.amount,uuidBuyer);
 
-                return true;
+                retOrderAmount += amount;
                 //  売り注文 == 買い注文
             }else if(o.amount == amount){
-
-                //      plugin.opLog("買い注文:"+o.amount +"= 売り注文"+amount );
                 // オーダー削除
-                deleteOrder(p,o.id);
-
+                deleteOrder(uuidBuyer,o.id);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,amount);
-
+                sendItemToStorage(uuidBuyer,item_id,amount);
                 //   料金を支払
-                sendMoney(p.getUniqueId().toString(),item_id,price,amount,o.uuid);
-
-                return true;
+                sendMoney(o.uuid,item_id,o.price,amount,uuidBuyer);
+                return amount;
             }
-
-
         }
 
-        return false;
+        return retOrderAmount;
     }
 
     public boolean canBuy(Player p,double price,int amount ,PriceResult current) {
@@ -606,8 +637,9 @@ public class MarketData {
                 +");");
 
 
-        logTransaction(p,"OrderBuy",current.key,price,amount,0,"");
+        logTransaction(uuid,"OrderBuy",current.key,price,amount,0,"");
 
+        updateCurrentPrice(current.id);
 
         return ret;
     }
@@ -630,14 +662,14 @@ public class MarketData {
         ///  値段の正当性チェック
         if(price > current.price * plugin.sellLimitRatio){
             plugin.showError(p,"現在値の" + plugin.sellLimitRatio + "倍以上の金額で売ることはできません");
-            plugin.showPrice(p);
+//            plugin.showPrice(p);
             return false;
         }
 
 
         if(price < current.price / plugin.sellLimitRatio){
             plugin.showError(p,"現在値の1/" +plugin.sellLimitRatio +"以下の金額で売ることはできません");
-            plugin.showPrice(p);
+  //          plugin.showPrice(p);
             return false;
         }
 
@@ -665,12 +697,6 @@ public class MarketData {
         String playerName = p.getName();
         String uuid = p.getUniqueId().toString();
 
-
-
-
-
-
-
         boolean ret = mysql.execute("insert into order_tbl values(0,"
                 +current.id +","
                 +"'" +current.key +"',"
@@ -683,10 +709,12 @@ public class MarketData {
                 +"'"+currentTime()+"'"
                 +");");
 
-        logTransaction(p,"OrderSell",current.key,price,amount,0,"");
+        logTransaction(uuid,"OrderSell",current.key,price,amount,0,"");
 
+
+        updateCurrentPrice(current.id);
         //  アイテムの売買をおこなう
-        sellExchange(p,current.id,price,amount);
+        //sellExchange(p,current.id,price,amount);
         return ret;
     }
     /// アイテム価格を取得する
@@ -699,7 +727,6 @@ public class MarketData {
         }catch(Exception e){
            //     p.sendMessage("パース失敗");
 
-          //  plugin.log(e.getMessage());
         }
 
         String sql = "";
@@ -709,14 +736,11 @@ public class MarketData {
         }else{
             sql =  "select * from item_index where  id = "+id+";";
         }
-//        p.sendMessage(sql);
         PriceResult ret = new PriceResult();
         ret.result = false;
         ret.price = 0;
         ResultSet rs = mysql.query(sql);
         if(rs == null){
-
-            //plugin.showError(p,"データ取得失敗");
             return null;
         }
         try
@@ -728,6 +752,8 @@ public class MarketData {
                 ret.price = rs.getDouble("price");
                 ret.sell = rs.getInt("sell");
                 ret.buy = rs.getInt("buy");
+                ret.minPrice = rs.getDouble("min_price");
+                ret.maxPrice = rs.getDouble("max_price");
                 ret.result = true;
             }
         }
@@ -769,6 +795,8 @@ public class MarketData {
                 ret.price = rs.getDouble("price");
                 ret.sell = rs.getInt("sell");
                 ret.buy = rs.getInt("buy");
+                ret.minPrice = rs.getDouble("min_price");
+                ret.maxPrice = rs.getDouble("max_price");
                 ret.result = true;
             }
         }
@@ -855,10 +883,10 @@ public class MarketData {
                 +initialPrice+","
                 +tick+","
                 +"'"+ currentTime() +"',0,0,"
-                +"'"+ itemToBase64(item) +"'"
+                +"'"+ itemToBase64(item) +"',0,0"
                 +");");
 
-        logTransaction(player,"Register",key,initialPrice,0,0,"");
+        logTransaction(uuid,"Register",key,initialPrice,0,0,"");
 
         return ret;
     }

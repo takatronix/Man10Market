@@ -51,7 +51,13 @@ public class MarketCommand implements CommandExecutor {
         //////////////////////////
         //      売り注文
         if(command.equalsIgnoreCase("price")){
-            plugin.showPrice(p);
+
+            if(args.length == 2){
+               // p.sendMessage("length2"+args[1]);
+                plugin.showPrice(p,args[1]);
+                return true;
+            }
+            plugin.showPrice(p,null);
             return true;
         }
 
@@ -59,7 +65,7 @@ public class MarketCommand implements CommandExecutor {
 
         //////////////////////////
         //      指値売り注文
-        if(command.equalsIgnoreCase("ordersell")){
+        if(command.equalsIgnoreCase("ordersell") || command.equalsIgnoreCase("os")){
             if(args.length != 4){
                 p.sendMessage("§2§l/mm ordersell [id/key] [一つあたりの金額] [個数] -  指定した金額で売り注文を出す");
                 return false;
@@ -69,7 +75,9 @@ public class MarketCommand implements CommandExecutor {
 
         //////////////////////////
         //   指値買い注文
-        if(command.equalsIgnoreCase("orderbuy")){
+        if(command.equalsIgnoreCase("orderbuy") || command.equalsIgnoreCase("ob") )
+
+        {
             if(args.length != 4){
                 p.sendMessage("§2§l/mm orderbuy [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
                 return false;
@@ -79,7 +87,7 @@ public class MarketCommand implements CommandExecutor {
         }
 
 
-        //  登録
+        //    アイテム保存
         if(command.equalsIgnoreCase("store")){
             if(args.length == 1){
                 return plugin.storeItem(p,-1);
@@ -108,10 +116,10 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§2§l/mm list - 登録アイテムリストと価格を表示する");
         p.sendMessage("§2§l/mm price (id/key) - (id or Key/手に持ったアイテム)の金額を表示する");
-        p.sendMessage("§c-------指値注文------------------");
 
-        p.sendMessage("§2§l/mm ordersell [id/key] [一つあたりの金額] [個数] - 指定した金額で売り注文を出す");
-        p.sendMessage("§2§l/mm orderbuy  [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
+        p.sendMessage("§c-------指値注文------------------");
+        p.sendMessage("§2§l/mm ordersell/os [id/key] [一つあたりの金額] [個数] - 指定した金額で売り注文を出す");
+        p.sendMessage("§2§l/mm orderbuy/ob  [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
 
         p.sendMessage("§c--------------------------------");
 
@@ -119,10 +127,8 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
         p.sendMessage("/mm cancellall (userid) 全ての注文をキャンセルする");
 
-        p.sendMessage("/mm orderbuy [id/this] [一つあたりの金額] [個数]- 指定した金額で買い注文を出す");
-
-        p.sendMessage("/mm marketbuy [id/this] [個数] - 成り行き注文（市場価格で購入)");
-        p.sendMessage("/mm marketsell [id/this] [個数] - 成り行き注文（市場価格で売り)");
+        p.sendMessage("/mm marketbuy/mb [id/this] [個数] - 成り行き注文（市場価格で購入)");
+        p.sendMessage("/mm marketsell/b [id/this] [個数] - 成り行き注文（市場価格で売り)");
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§c§l/mm register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
         p.sendMessage("§c/mm unregister - 手にもったアイテムをマーケットから削除する");

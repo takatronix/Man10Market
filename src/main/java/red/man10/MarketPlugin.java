@@ -42,24 +42,45 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
 
-    // アイテムの値段を表示
-    public boolean showPrice(Player p){
-        ItemStack item = p.getInventory().getItemInMainHand();
 
-        MarketData.PriceResult ret = data.getItemPrice(p,item);
+    //      アイテムの値段を表示
+    public boolean showPrice(Player p,String idOrKey){
 
-        if(ret.result == true){
-            double st = ret.price * 64;
-            showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
-            showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
 
-            //      板表示
-            data.showOrderBook(p,ret.id,-1);
-        }else{
-            showError(p,"データ取得失敗");
+        if(idOrKey == null){
+            ItemStack item = p.getInventory().getItemInMainHand();
+
+            MarketData.PriceResult ret = data.getItemPrice(p,item);
+
+            if(ret.result == true){
+                double st = ret.price * 64;
+                showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
+                showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
+
+                //      板表示
+                data.showOrderBook(p,ret.id,-1);
+            }else{
+                showError(p,"データ取得失敗");
+            }
+
+            return ret.result;
+
         }
 
-        return ret.result;
+        MarketData.PriceResult ret = data.getItemPrice(idOrKey);
+        if(ret == null){
+            showError(p,"指定されたアイテムデータは取得できません");
+            return false;
+        }
+
+        double st = ret.price * 64;
+        showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
+        showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
+
+        //      板表示
+        data.showOrderBook(p,ret.id,-1);
+
+        return true;
     }
 
     ///  売り注文を出す
