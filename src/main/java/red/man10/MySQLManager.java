@@ -28,6 +28,7 @@ public class MySQLManager {
     private Connection con = null;
     private String conName;
     private MySQLFunc MySQL;
+
     ////////////////////////////////
     //      コンストラクタ
     ////////////////////////////////
@@ -56,6 +57,15 @@ public class MySQLManager {
         PORT = plugin.getConfig().getString("mysql.port");
         DB = plugin.getConfig().getString("mysql.db");
         plugin.getLogger().info("Config loaded");
+
+    }
+
+    public void commit(){
+        try{
+            this.con.commit();
+        }catch (Exception e){
+
+        }
     }
 
     ////////////////////////////////
@@ -161,11 +171,8 @@ public class MySQLManager {
             return rs;
         }
 
-
-
-
         if (debugMode){
-            plugin.getLogger().info("query:" + query);
+            plugin.getLogger().info("[DEBUG] query:" + query);
         }
 
         try {

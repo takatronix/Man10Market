@@ -28,6 +28,30 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public double buyLimitRatio = 2;
     public double sellLimitRatio = 2;
 
+
+    ///////////////////////////////
+    //      成り行き購入
+    public boolean marketBuy(Player p, String target, int amount){
+
+        int ret = data.marketBuy(p.getUniqueId().toString(),target,amount);
+        if(ret == -1){
+            showError(p,"エラーが発生しました");
+            return false;
+        }
+
+
+        if(ret == 0){
+            showMessage(p,"購入できませんでした");
+            return true;
+        }
+
+        showMessage(p,"購入成功:"+ret+"個購入できました");
+
+        return true;
+    }
+
+
+
     //  注文キャンセル
     public boolean cancelOrder(Player p,String target) {
 
@@ -135,7 +159,42 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return true;
     }
+    ///////////////////////////////
+    //         板情報を表示する
+    public boolean showOrderBook(Player p,int item_id,int limit){
 
+        MarketData.ItemIndex item = data.getItemPrice(String.valueOf(item_id));
+        String uuid = p.getUniqueId().toString();
+
+        if(item == null) {
+            showError(p,"このアイテムは売買できません");
+            return false;
+        }
+
+        ArrayList<MarketData.OrderInfo> sellList = data.getGroupedOrderList(uuid,item_id,false,-1);
+        ArrayList<MarketData.OrderInfo> buyList = data.getGroupedOrderList(uuid,item_id,true,-1);
+
+        showMessage(p,"---------["+item.key+"]-----------");
+        showMessage(p," §b§l売数量    値段     買数量");
+        for(int i = 0;i < sellList.size();i++){
+            MarketData.OrderInfo o = sellList.get(i);
+            String color ="§e§l";
+            if(i ==  sellList.size() -1){
+                color  = "§a§l";
+            }
+            showMessage(p,String.format("%s%7d  %7s",color,o.amount,data.getPriceString(o.price)));
+        }
+        for(int i = 0;i < buyList.size();i++){
+            MarketData.OrderInfo o = buyList.get(i);
+            String color ="§e§l";
+            if(i == 0){
+                color  = "§c§l";
+            }
+            showMessage(p,String.format("%s         %7s  %7d",color,data.getPriceString(o.price),o.amount));
+        }
+
+        return true;
+    }
 
     ///  売り注文を出す
     public boolean orderBuy(Player p,String idOrKey,double price,int amount){
@@ -161,6 +220,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             ItemStack item = p.getInventory().getItemInMainHand();
 
             MarketData.ItemIndex ret = data.getItemPrice(p,item);
+            if(ret == null){
+                showError(p,"取得失敗");
+                return false;
+            }
 
             if(ret.result == true){
                 double st = ret.price * 64;
@@ -168,7 +231,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
 
                 //      板表示
-                data.showOrderBook(p,ret.id,-1);
+                showOrderBook(p,ret.id,-1);
             }else{
                 showError(p,"データ取得失敗");
             }
@@ -188,7 +251,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
 
         //      板表示
-        data.showOrderBook(p,ret.id,-1);
+        showOrderBook(p,ret.id,-1);
 
         return true;
     }
@@ -196,30 +259,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     ///  売り注文を出す
     public boolean orderSell(Player p,String idOrKey,double price,int amount){
 
-/*
-        // showMessage(p,"orderSell" + price + " amount:"+amount);
-
-        ItemStack item = p.getInventory().getItemInMainHand();
-
-
-        //      もっているだけ販売
-        if(amount == -1){
-            amount = item.getAmount();
-
-        }else{
-            if(item.getAmount() < amount){
-                showError(p,"アイテムを"+amount+"個もっていません");
-                return false;
-            }
-        }
-*/
         if(data.orderSell(p,idOrKey,price,amount)){
-
-
-
-
             showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
-
             return true;
         }
         showError(p,"売り注文失敗");
@@ -227,10 +268,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return false;
     }
 
+
     public boolean storeItem(Player p,int amount){
-
-
-        // showMessage(p,"orderSell" + price + " amount:"+amount);
 
         ItemStack item = p.getInventory().getItemInMainHand();
         if(item == null){

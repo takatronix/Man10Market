@@ -38,6 +38,7 @@ public class MySQLFunc {
             Bukkit.getLogger().log(Level.SEVERE, "JDBC driver was not found in this machine.");
         }
 
+
         return this.con;
     }
 

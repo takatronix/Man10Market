@@ -66,8 +66,6 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
 
-
-
         //////////////////////////
         //      指値売り注文
         if(command.equalsIgnoreCase("ordersell") || command.equalsIgnoreCase("os")){
@@ -86,9 +84,7 @@ public class MarketCommand implements CommandExecutor {
 
         //////////////////////////
         //   指値買い注文
-        if(command.equalsIgnoreCase("orderbuy") || command.equalsIgnoreCase("ob") )
-
-        {
+        if(command.equalsIgnoreCase("orderbuy") || command.equalsIgnoreCase("ob") ) {
             if(!p.hasPermission("red.man10.market.orderbuy")){
                 p.sendMessage("§4§lあなたには権限がない");
                 return false;
@@ -99,6 +95,22 @@ public class MarketCommand implements CommandExecutor {
             }
 
             return plugin.orderBuy(p,args[1],Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+        }
+
+
+        ////////////////////////////
+        //   成り行き買い注文
+        if(command.equalsIgnoreCase("buy")) {
+            if(!p.hasPermission("red.man10.market.buy")){
+                p.sendMessage("§4§lあなたには権限がない");
+                return false;
+            }
+            if(args.length != 3){
+                p.sendMessage("§2§l/mm buy [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                return false;
+            }
+
+            return plugin.marketBuy(p,args[1],Integer.parseInt(args[2]));
         }
 
         //    アイテム保存
@@ -150,8 +162,10 @@ public class MarketCommand implements CommandExecutor {
         }
 
 
+
         this.showHelp(p);
         return true;
+
     }
 
     void showHelp(CommandSender p){
@@ -161,19 +175,22 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§2§l/mm restore [id/key] [個数] 倉庫からアイテムを引き出す");
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§2§l/mm list - 登録アイテムリストと価格を表示する");
-        p.sendMessage("§2§l/mm price (id/key) - (id or Key/手に持ったアイテム)の金額を表示する");
-        p.sendMessage("§c-------指値注文------------------");
+        p.sendMessage("§2§l/mm price (id/key) - (id/Key/手に持ったアイテム)の金額を表示する");
+
+        p.sendMessage("§c--成り行き注文（現在値で買う)-------------");
+        p.sendMessage("/mm buy [個数] - 成り行き注文（市場価格で購入)");
+        p.sendMessage("/mm sell [個数] - 成り行き注文（市場価格で売り)");
+
+        p.sendMessage("§c--指値注文(金額を指定して注文を入れる)---------");
         p.sendMessage("§2§l/mm ordersell/os [id/key] [一つあたりの金額] [個数] - 指定した金額で売り注文を出す");
         p.sendMessage("§2§l/mm orderbuy/ob  [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
 
         p.sendMessage("§c-------注文管理------------------");
-
         p.sendMessage("/mm order  注文を表示する");
         p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
         p.sendMessage("/mm cancellall  全ての注文をキャンセルする");
 
-        p.sendMessage("/mm marketbuy/mb [id/this] [個数] - 成り行き注文（市場価格で購入)");
-        p.sendMessage("/mm marketsell/ms [id/this] [個数] - 成り行き注文（市場価格で売り)");
+
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§e created by takatronix http://twitter.com/takatronix");
         p.sendMessage("§e http://man10.red");
