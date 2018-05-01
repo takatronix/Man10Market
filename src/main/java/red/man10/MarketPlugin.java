@@ -246,7 +246,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             if(ret.result == true){
                 double st = ret.price * 64;
                 showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
-                showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
+                showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Buy):"+ret.buy);
 
                 //      板表示
                 showOrderBook(p,ret.id,-1);
@@ -266,7 +266,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         double st = ret.price * 64;
         showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
-        showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Sell):"+ret.buy);
+        showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Buy):"+ret.buy);
 
         //      板表示
         showOrderBook(p,ret.id,-1);
