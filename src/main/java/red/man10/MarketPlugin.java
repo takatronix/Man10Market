@@ -49,8 +49,26 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return true;
     }
+    ///////////////////////////////
+    //      成り行き売り
+    public boolean marketSell(Player p, String target, int amount){
+
+        int ret = data.marketSell(p.getUniqueId().toString(),target,amount);
+        if(ret == -1){
+            showError(p,"エラーが発生しました");
+            return false;
+        }
 
 
+        if(ret == 0){
+            showMessage(p,"売却できませんでした");
+            return true;
+        }
+
+        showMessage(p,"売却成功:"+ret+"個売却できました");
+
+        return true;
+    }
 
     //  注文キャンセル
     public boolean cancelOrder(Player p,String target) {
@@ -175,7 +193,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         ArrayList<MarketData.OrderInfo> buyList = data.getGroupedOrderList(uuid,item_id,true,-1);
 
         showMessage(p,"---------["+item.key+"]-----------");
-        showMessage(p," §b§l売数量    値段     買数量");
+        showMessage(p," §b§l売数量    値段   買数量");
         for(int i = 0;i < sellList.size();i++){
             MarketData.OrderInfo o = sellList.get(i);
             String color ="§e§l";

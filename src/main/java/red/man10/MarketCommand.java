@@ -82,6 +82,21 @@ public class MarketCommand implements CommandExecutor {
             return plugin.orderSell(p,args[1],Double.parseDouble(args[2]),Integer.parseInt(args[3]));
         }
 
+        ////////////////////////////
+        //   成り行き売り注文
+        if(command.equalsIgnoreCase("sell")) {
+            if(!p.hasPermission("red.man10.market.sell")){
+                p.sendMessage("§4§lあなたには権限がない");
+                return false;
+            }
+            if(args.length != 3){
+                p.sendMessage("§2§l/mm sell [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                return false;
+            }
+
+            return plugin.marketSell(p,args[1],Integer.parseInt(args[2]));
+        }
+
         //////////////////////////
         //   指値買い注文
         if(command.equalsIgnoreCase("orderbuy") || command.equalsIgnoreCase("ob") ) {
