@@ -450,7 +450,7 @@ public class MarketData {
     }
 
     public boolean updateItemStorage(String uuid,int item_id,long amount){
-        String sql= "update item_storage set amount="+amount+" where item_id = "+item_id+";";
+        String sql= "update item_storage set amount="+amount+" where item_id = "+item_id+" and uuid='"+uuid+"';";
         boolean ret =  this.mysql.execute(sql);
 
 
