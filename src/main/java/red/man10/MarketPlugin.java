@@ -21,9 +21,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     String  prefix = "§f§l[§2§lm§e§lMarket§f§l]";
-    VaultManager vault = null;
-    MarketData data = null;
 
+    MarketData data = null;
+    MarketVault vault = null;
 
     public double buyLimitRatio = 2;
     public double sellLimitRatio = 2;
@@ -346,7 +346,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents (this,this);
         getCommand("mm").setExecutor(new MarketCommand(this));
 
-        vault = new VaultManager(this);
+
+        vault = new MarketVault(this);
+
         this.saveDefaultConfig();
         this.loadConfig();
 
