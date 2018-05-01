@@ -29,7 +29,7 @@ public class MarketData {
         this.mysql = new MySQLManager(plugin,"Market");
     }
 
-    class PriceResult{
+    class ItemIndex{
         int id;
         String key;
         double price;
@@ -196,7 +196,7 @@ public class MarketData {
     public boolean updateCurrentPrice(int item_id){
 
         //  現在価格を求める
-        PriceResult current = getItemPrice(String.valueOf(item_id));
+        ItemIndex current = getItemPrice(String.valueOf(item_id));
         if(current == null){
             return false;
         }
@@ -278,7 +278,7 @@ public class MarketData {
     //         板情報を表示する
     public boolean showOrderBook(Player p,int item_id,int limit){
 
-        PriceResult item = getItemPrice(String.valueOf(item_id));
+        ItemIndex item = getItemPrice(String.valueOf(item_id));
         String uuid = p.getUniqueId().toString();
 
         if(item == null) {
@@ -370,7 +370,7 @@ public class MarketData {
         OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
         String playerName = player.getName();
 
-        PriceResult info =  getItemPrice(String.valueOf(item_id));
+        ItemIndex info =  getItemPrice(String.valueOf(item_id));
         double money =  price*amount;
 
 
@@ -390,7 +390,7 @@ public class MarketData {
         OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
         String playerName = player.getName();
 
-        PriceResult info =  getItemPrice(String.valueOf(item_id));
+        ItemIndex info =  getItemPrice(String.valueOf(item_id));
         double money =  price*amount;
 
 
@@ -461,7 +461,7 @@ public class MarketData {
         OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
         String playerName = player.getName();
 
-        PriceResult result =  getItemPrice(String.valueOf(item_id));
+        ItemIndex result =  getItemPrice(String.valueOf(item_id));
         boolean ret = mysql.execute("insert into item_storage values(0,"
                 +"'" +uuid +"',"
                 +"'" +playerName +"',"
@@ -480,7 +480,7 @@ public class MarketData {
 
         OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
 
-        PriceResult result =  getItemPrice(String.valueOf(item_id));
+        ItemIndex result =  getItemPrice(String.valueOf(item_id));
         if(result == null){
             if(player.isOnline()){
                 plugin.showError((Player)player,"登録されていない");
@@ -515,7 +515,7 @@ public class MarketData {
 
         OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
 
-        PriceResult result =  getItemPrice(String.valueOf(item_id));
+        ItemIndex result =  getItemPrice(String.valueOf(item_id));
         if(result == null){
             if(player.isOnline()){
                 plugin.showError((Player)player,"登録されていない");
@@ -644,7 +644,7 @@ public class MarketData {
         return retOrderAmount;
     }
 
-    public boolean canBuy(Player p,double price,int amount ,PriceResult current) {
+    public boolean canBuy(Player p,double price,int amount ,ItemIndex current) {
         double bal = plugin.vault.getBalance(p.getUniqueId());
         if(bal < price*amount){
             plugin.showError(p,"残額がたりません! 必要金額:$"+getPriceString(price*amount) +" 残額:$"+ getPriceString(bal));
@@ -662,7 +662,7 @@ public class MarketData {
     public boolean orderBuy(Player p,String idOrKey,double price,int amount){
 
         //      まず現在価格を求める
-        PriceResult current = getItemPrice(idOrKey);
+        ItemIndex current = getItemPrice(idOrKey);
         if(current.result == false){
             plugin.showError(p,"このアイテムは販売されていません");
             return false;
@@ -713,7 +713,7 @@ public class MarketData {
     }
 
 
-    public boolean canSell(Player p,double price,int amount,PriceResult current){
+    public boolean canSell(Player p,double price,int amount,ItemIndex current){
 
 
 
@@ -739,7 +739,7 @@ public class MarketData {
     public boolean orderSell(Player p,String idOrKey,double price,int amount){
 
         //      まず現在価格を求める
-        PriceResult current = getItemPrice(idOrKey);
+        ItemIndex current = getItemPrice(idOrKey);
         if(current.result == false){
             plugin.showError(p,"このアイテムは販売されていません");
             return false;
@@ -776,7 +776,7 @@ public class MarketData {
         return ret;
     }
     /// アイテム価格を取得する
-    public PriceResult  getItemPrice(String idOrKey) {
+    public ItemIndex  getItemPrice(String idOrKey) {
 
         int id = -1;
         try{
@@ -794,7 +794,7 @@ public class MarketData {
         }else{
             sql =  "select * from item_index where  id = "+id+";";
         }
-        PriceResult ret = new PriceResult();
+        ItemIndex ret = new ItemIndex();
         ret.result = false;
         ret.price = 0;
         ResultSet rs = mysql.query(sql);
@@ -826,12 +826,12 @@ public class MarketData {
     }
 
     /// アイテム価格を取得する
-    public PriceResult  getItemPrice(Player p,ItemStack item){
+    public ItemIndex  getItemPrice(Player p,ItemStack item){
         ItemStack newItem = new ItemStack(item);
         newItem.setAmount(1);
         String base64 = itemToBase64(newItem);
 
-        PriceResult ret = new PriceResult();
+        ItemIndex ret = new ItemIndex();
         ret.result = false;
         ret.price = 0;
 

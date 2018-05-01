@@ -78,7 +78,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         //
-        MarketData.PriceResult pr = data.getItemPrice(target);
+        MarketData.ItemIndex pr = data.getItemPrice(target);
         if(pr != null){
             if(pr.key != null){
                 return showOrderOfItem(p,pr.id);
@@ -160,7 +160,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         if(idOrKey == null){
             ItemStack item = p.getInventory().getItemInMainHand();
 
-            MarketData.PriceResult ret = data.getItemPrice(p,item);
+            MarketData.ItemIndex ret = data.getItemPrice(p,item);
 
             if(ret.result == true){
                 double st = ret.price * 64;
@@ -177,7 +177,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         }
 
-        MarketData.PriceResult ret = data.getItemPrice(idOrKey);
+        MarketData.ItemIndex ret = data.getItemPrice(idOrKey);
         if(ret == null){
             showError(p,"指定されたアイテムデータは取得できません");
             return false;
@@ -249,7 +249,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
         }
 
-        MarketData.PriceResult result =  data.getItemPrice(p,item);
+        MarketData.ItemIndex result =  data.getItemPrice(p,item);
         if(result.result == false){
             showError(p,"このアイテムは登録対象外です");
             return false;
