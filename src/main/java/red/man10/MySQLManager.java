@@ -199,6 +199,5 @@ public class MySQLManager {
         } catch (SQLException var4) {
         }
 
-        this.MySQL.close(this.con);
     }
 }
