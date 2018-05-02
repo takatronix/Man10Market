@@ -82,18 +82,35 @@ public class MarketData {
         return orders.get(0);
     }
 
-
     public boolean cancelOrderByOrderId(int order_id){
-        return mysql.execute("delete from order_tbl where id = "+order_id+";");
-    }
-    public boolean cancelOrderByOrderItemId(int item_id){
-        return mysql.execute("delete from order_tbl where item_id = "+item_id+";");
-    }
-    public boolean cancelOrderByOrderUUID(String uuid){
-        return mysql.execute("delete from order_tbl where uuid = '"+uuid+"';");
-    }
 
+        OrderInfo order = getOrderByOrderId(order_id);
+        if(order == null){
+            return false;
+        }
 
+        boolean ret =  mysql.execute("delete from order_tbl where id = "+order_id+";");
+
+        if(order.isBuy == false){
+            sendItemToStorage(order.uuid,order.item_id,order.amount);
+        }
+        if(order.isBuy == true){
+            sendMoney(order.uuid,order.item_id,order.price,order.amount,null);
+        }
+
+        return ret;
+    }
+    /*
+        public boolean cancelOrderByOrderItemId(String uuid,int item_id){
+            return mysql.execute("delete from order_tbl where item_id = "+item_id+" and uuid='"+uuid+"';");
+        }
+        public boolean cancelOrderByUUID(String uuid){
+            return mysql.execute("delete from order_tbl where uuid = '"+uuid+"';");
+        }
+        public boolean cancelOrderByPlayer(String name){
+            return mysql.execute("delete from order_tbl where player = '"+name+"';");
+        }
+    */
     public ArrayList<OrderInfo> getOrderOfUser(Player p,String uuid){
         return getOrderByQuery("select * from order_tbl where uuid = '"+uuid+"';");
     }

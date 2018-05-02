@@ -101,6 +101,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         if(data.cancelOrderByOrderId(orderNo)){
+
+
+
             data.updateCurrentPrice(order.item_id);
 
             p.sendMessage("注文ID:"+order.id +"をキャンセルしました");
@@ -109,6 +112,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return false;
     }
+
+
+
+
     //  注文表示
     public boolean showOrder(Player p,String target){
 
@@ -153,9 +160,19 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         showOrders(p,orders);
         return true;
     }
+
+    public void sendClickableMessage(Player player, String message, String url) {
+        Bukkit.getServer().dispatchCommand(
+                Bukkit.getConsoleSender(),
+                "/tellraw " + player.getName() +
+                        " {text:\"" + message + "\",clickEvent:{action:open_url,value:\"" +
+                        url + "\"}}");
+    }
+
     public boolean showOrders(Player p, ArrayList<MarketData.OrderInfo> orders){
 
 
+        sendClickableMessage(p,"xxx","http://man10.red");
         p.sendMessage("§f--------------------------");
         for(MarketData.OrderInfo o : orders){
 
@@ -173,6 +190,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         }
+
 
 
         return true;

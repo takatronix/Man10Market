@@ -163,6 +163,10 @@ public class MarketCommand implements CommandExecutor {
             }
             return plugin.showOrder(p,null);
         }
+
+
+
+
         //    注文リスト
         if(command.equalsIgnoreCase("cancel")){
             if(!p.hasPermission("red.man10.market.cacel")){
@@ -204,6 +208,7 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("/mm order  注文を表示する");
         p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
         p.sendMessage("/mm cancellall  全ての注文をキャンセルする");
+        p.sendMessage("/mm cancelitem [id/key]");
 
 
         p.sendMessage("§c--------------------------------");
