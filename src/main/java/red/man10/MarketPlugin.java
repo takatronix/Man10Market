@@ -2,8 +2,13 @@ package red.man10;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -26,6 +31,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     MarketData data = null;
     MarketVault vault = null;
+    MarketSignEvent sign = null;
 
     public double buyLimitRatio = 2;
     public double sellLimitRatio = 2;
@@ -453,6 +459,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         this.saveDefaultConfig();
         this.loadConfig();
 
+        sign = new MarketSignEvent(this);
+
         Bukkit.getServer().broadcastMessage(prefix+"Started");
     }
 
@@ -461,7 +469,48 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         // Plugin shutdown logic
     }
 
+    @EventHandler
+    public void onSigncreate(SignChangeEvent e){
+        if(e.getLine(0).equalsIgnoreCase("[Man10market]")){
+            if(!e.getPlayer().hasPermission("red.man10.market.sign.create")){
+                e.getPlayer().sendMessage(prefix + "§4あなたにマーケット看板を作成する権限はありません!");
+                e.getBlock().breakNaturally();
+                return;
+            }
+            sign.Signcreate(e.getPlayer(),e.getBlock().getLocation(),e.getLine(1));
+            e.setLine(0,prefix);
+            String line3 = e.getLine(3);
+            if (line3.equalsIgnoreCase("[成り行き購入]")) {
+                e.setLine(3,"§a§l[成り行き購入]");
+            }else if (line3.equalsIgnoreCase("[成り行き売却]")) {
+                e.setLine(3,"§2§l[成り行き売却]");
+            }
+        }
+    }
 
-
-
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e) {
+        Player p = (Player) e.getPlayer();
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (e.getClickedBlock().getState() instanceof Sign) {
+                Sign signs = (Sign) e.getClickedBlock().getState();
+                if(((Sign)e.getClickedBlock().getState()).getLine(0).equalsIgnoreCase(prefix)) {
+                    String line3 = ((Sign)e.getClickedBlock().getState()).getLine(3);
+                    if (line3.equalsIgnoreCase("§a§l[成り行き購入]")) {
+                        String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
+                        if (line1[1] != null) {
+                            p.chat("/mm buy " + line1[0] + " " + line1[1]);
+                        }
+                    } else if (line3.equalsIgnoreCase("§2§l[成り行き売却]")) {
+                        String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
+                        if (line1[1] != null) {
+                            p.chat("/mm sell " + line1[0] + " " + line1[1]);
+                        }
+                    } else {
+                        e.getPlayer().sendMessage(prefix + "§4この看板には右クリックアクションが実装されていません");
+                    }
+                }
+            }
+        }
+    }
 }
