@@ -19,7 +19,7 @@ import java.util.Date;
 
 public final class MarketPlugin extends JavaPlugin implements Listener {
 
-    //Mr_IK test_push
+    //Mr_IK push test
     // takatronix push test
     String  prefix = "§f§l[§2§lm§e§lMarket§f§l]";
 
