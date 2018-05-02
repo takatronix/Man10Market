@@ -15,6 +15,9 @@ public class MarketCommand implements CommandExecutor {
     }
 
 
+    String  adminPermision = "red.man10.admin";
+
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
@@ -165,11 +168,9 @@ public class MarketCommand implements CommandExecutor {
         }
 
 
-
-
-        //    注文リスト
+        //    注文キャンセル
         if(command.equalsIgnoreCase("cancel")){
-            if(!p.hasPermission("red.man10.market.cacel")){
+            if(!p.hasPermission("red.man10.market.cancel")){
                 p.sendMessage("§4§lあなたには権限がない");
                 return false;
             }
@@ -180,6 +181,28 @@ public class MarketCommand implements CommandExecutor {
             return false;
         }
 
+        /////////////////////////////////////////////
+        //    全注文キャンセル
+        if(command.equalsIgnoreCase("cancelall")){
+            if(!p.hasPermission("red.man10.market.cancel")){
+                p.sendMessage("§4§lあなたには権限がない");
+                return false;
+            }
+
+            if(args.length == 1){
+                return plugin.cancelAll(p,null);
+            }
+
+            //  管理者は人の注文をキャンセルできる
+            if(p.hasPermission(adminPermision)){
+                if(args.length == 2){
+                    return plugin.cancelAll(p,args[1]);
+                }
+            }
+
+            p.sendMessage("/mm cancelall すべての注文をキャンセルする");
+            return false;
+        }
 
 
         this.showHelp(p);
@@ -207,8 +230,8 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§c-------注文管理------------------");
         p.sendMessage("/mm order  注文を表示する");
         p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
-        p.sendMessage("/mm cancellall  全ての注文をキャンセルする");
-        p.sendMessage("/mm cancelitem [id/key]");
+        p.sendMessage("/mm cancelall  全ての注文をキャンセルする");
+        p.sendMessage("/mm canceltem [id/key]");
 
 
         p.sendMessage("§c--------------------------------");
@@ -223,6 +246,8 @@ public class MarketCommand implements CommandExecutor {
     void showAdminHelp(CommandSender p){
         p.sendMessage("§c-----------Admin Commands---------------------");
         p.sendMessage("§c§l/mm order (user/id/key) 注文を表示する");
+        p.sendMessage("/mm cancellall  全ての注文をキャンセルする");
+
         p.sendMessage("§c§l/mm register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
         p.sendMessage("§c/mm unregister - 手にもったアイテムをマーケットから削除する");
 

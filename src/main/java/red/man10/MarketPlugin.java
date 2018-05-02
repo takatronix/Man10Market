@@ -12,6 +12,7 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.text.SimpleDateFormat;
@@ -71,6 +72,30 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return true;
     }
 
+
+    //      すべての注文をキャンセルする
+    public boolean cancelAll(Player p,String playerName) {
+
+        ArrayList<MarketData.OrderInfo> orders = null;
+
+        String uuid = null;
+        if(playerName == null){
+            uuid = p.getUniqueId().toString();
+            orders = data.getOrderOfUser(p,uuid);
+        }else{
+            orders = data.getOrderOfPlayerName(p,playerName);
+        }
+
+        int ret = data.cancelOrderList(orders);
+        if(ret == -1){
+            return false;
+        }
+
+        showMessage(p,""+ret+"件の注文をキャンセルしました");
+        return true;
+    }
+
+
     //  注文キャンセル
     public boolean cancelOrder(Player p,String target) {
 
@@ -100,13 +125,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
         }
 
-
+        //
         if(data.cancelOrderByOrderId(orderNo)){
-
-
-
-            data.updateCurrentPrice(order.item_id);
-
+           data.updateCurrentPrice(order.item_id);
             p.sendMessage("注文ID:"+order.id +"をキャンセルしました");
             return true;
         }
@@ -174,7 +195,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         sendClickableMessage(p,"xxx","http://man10.red");
-        p.sendMessage("§f--------------------------");
+        showMessage(p,"§f§l---------[注文リスト]-----------");
+        int count = 0;
         for(MarketData.OrderInfo o : orders){
 
             String buyOrSell = "§a売";
@@ -183,16 +205,19 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
            // String strDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(o.datetime);
             String price = "$"+data.getPriceString(o.price);
-            p.sendMessage(String.format("%5d:%3s:%-10s:%-16s%7s /%7s個 %s:%s"
+            showMessage(p,String.format("%d:注文ID%d:%3s:%s:%s%7s /%7s個 %s:%s",count+1
                 ,o.id,buyOrSell,o.key,o.player,price,data.getPriceString(o.amount),o.date.toString(),o.time.toString()
 
 
             ));
 
-
+            count++;
         }
-
-
+        if(count == 0){
+            showMessage(p,"注文がありません");
+        }else{
+            showMessage(p,""+count+"件の注文があります");
+        }
 
         return true;
     }

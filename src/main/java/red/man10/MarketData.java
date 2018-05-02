@@ -10,6 +10,7 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -100,6 +101,23 @@ public class MarketData {
 
         return ret;
     }
+
+
+    public int cancelOrderList(ArrayList<OrderInfo> orders){
+
+        int ret = 0;
+        for(OrderInfo o : orders){
+            if(cancelOrderByOrderId(o.id)) {
+                updateCurrentPrice(o.item_id);
+                ret++;
+            }
+        }
+
+
+
+        return ret;
+    }
+
     /*
         public boolean cancelOrderByOrderItemId(String uuid,int item_id){
             return mysql.execute("delete from order_tbl where item_id = "+item_id+" and uuid='"+uuid+"';");
