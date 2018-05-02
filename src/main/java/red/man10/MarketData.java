@@ -437,7 +437,7 @@ public class MarketData {
 
         if(player.isOnline()){
             Player online = (Player)player;
-            plugin.showMessage(online,info.key + "が"+amount+"個売れ、§e§l$"+getPriceString(money)+"受け取りました");
+            plugin.showMessage(online,info.key + "が"+amount+"個移動し、§e§l$"+getPriceString(money)+"受け取りました");
             return true;
         }
         return false;
