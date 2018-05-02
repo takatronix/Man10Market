@@ -88,9 +88,12 @@ public class MarketSignEvent {
         ResultSet rs = plugin.data.mysql.query(sql);
         try {
             if(rs.next()) {
+                plugin.data.mysql.close();
+
                 // 一致するデータが見つかった
                 return true;
             }
+
             return false;
         } catch (SQLException e1) {
             e1.printStackTrace();
@@ -114,6 +117,8 @@ public class MarketSignEvent {
                     break;
                 }
             }
+            plugin.data.mysql.close();
+
             return true;
         } catch (SQLException e1) {
             e1.printStackTrace();

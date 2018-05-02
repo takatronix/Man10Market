@@ -165,6 +165,7 @@ public class MarketData {
                 info.isBuy = rs.getBoolean("buy");
                 ret.add(info);
             }
+            rs.close();
         }
         catch (SQLException e)
         {
@@ -172,6 +173,7 @@ public class MarketData {
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
             return ret;
         }
+        mysql.close();
 
         return ret;
     }
@@ -227,13 +229,14 @@ public class MarketData {
                 }
                 ret.add(info);
             }
+            rs.close();
         }
         catch (SQLException e)
         {
             showError(uuid,"データ取得失敗");
             return ret;
         }
-
+        mysql.close();
         return ret;
     }
 
@@ -493,6 +496,7 @@ public class MarketData {
                 ret.item_key = rs.getString("key");
                 ret.amount = rs.getLong("amount");
             }
+            rs.close();
         }
         catch (SQLException e)
         {
@@ -500,6 +504,8 @@ public class MarketData {
             return ret;
         }
 
+
+        mysql.close();
         return ret;
 
     }
@@ -1051,6 +1057,7 @@ public class MarketData {
                 item.result = true;
                 ret.add(item);
             }
+            rs.close();
         }
         catch (SQLException e)
         {
@@ -1058,7 +1065,7 @@ public class MarketData {
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
             return null;
         }
-
+        mysql.close();
         return ret;
     }
 
@@ -1136,6 +1143,7 @@ public class MarketData {
                 ret.maxPrice = rs.getDouble("max_price");
                 ret.result = true;
             }
+            rs.close();
         }
         catch (SQLException e)
         {
@@ -1143,7 +1151,7 @@ public class MarketData {
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
             return null;
         }
-
+        mysql.close();
         return ret;
     }
 
@@ -1186,6 +1194,7 @@ public class MarketData {
                 showMessage(p.getUniqueId().toString(),"§f§l"+idString +" " +key+ ":$"+ getPriceString(price) + " §b§l所有個数:"+getPriceString(amount) + " §e§l評価額:"+getPriceString(estimated) + " §c§l売"+sell +"個/§9§l買:"+buy+"個");
 //                p.sendMessage(idString + " §f§l"+key+ "(" +amount +") §e§lPrice:$" + getPriceString(price) + " §c§l売り注文数(Sell):"+sell +"/§9§l買い注文数(Sell):"+buy);
             }
+            rs.close();
             showMessage(p.getUniqueId().toString(),"§e§l 現在のアイテム資産評価額 $"+getPriceString(totalPrice));
         }
         catch (SQLException e)
@@ -1194,7 +1203,7 @@ public class MarketData {
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
             return false;
         }
-
+        mysql.close();
         return true;
     }
 

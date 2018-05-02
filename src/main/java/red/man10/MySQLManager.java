@@ -155,7 +155,7 @@ public class MySQLManager {
 
         }
 
-        this.MySQL.close(this.con);
+        this.close();
         return ret;
     }
 
@@ -183,8 +183,22 @@ public class MySQLManager {
             this.plugin.getLogger().info(query);
         }
 
+//        this.close();
+
         return rs;
     }
 
 
+    public void close(){
+
+        try {
+            this.st.close();
+            this.con.close();
+            this.MySQL.close(this.con);
+
+        } catch (SQLException var4) {
+        }
+
+        this.MySQL.close(this.con);
+    }
 }
