@@ -1,7 +1,7 @@
 name: Man10Market
 version: ${project.version}
 main: red.man10.MarketPlugin
-prefix: Man10Maket
+prefix: Man10Market
 authors: [takatronix]
 description: Minecraft Market System
 website: http://man10.red
