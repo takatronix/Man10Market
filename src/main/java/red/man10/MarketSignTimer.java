@@ -44,8 +44,11 @@ public class MarketSignTimer extends Thread {
                     }
                     Double bal = plugin.data.getItemPrice(itemname[0]).price * bairitu;
                     String line = ((Sign)loc.getBlock().getState()).getLine(2).replace("§a","").replace("§c","");
-                    if(line.equalsIgnoreCase(bal.toString())){
-                        signb.setLine(2,bal.toString());
+
+                    String balanceString = plugin.data.getPriceString(bal);
+                    //if(true){
+                    if(line.equalsIgnoreCase(balanceString)){
+                        signb.setLine(2,"§l$"+balanceString);
                         signb.update();
                         continue;
                     }else {
@@ -54,14 +57,14 @@ public class MarketSignTimer extends Thread {
                             oldbal = Double.parseDouble(line);
                         }catch (NumberFormatException e){
                             plugin.getLogger().warning(loc.getWorld().getName()+":"+loc.getX()+":"+loc.getY()+":"+loc.getZ()+"の2行目が数字ではありません");
-                            signb.setLine(2,bal.toString());
+                            signb.setLine(2,"§l$"+balanceString);
                             signb.update();
                             continue;
                         }
                         if(bal > oldbal) {
-                            signb.setLine(2, "§a"+bal.toString());
+                            signb.setLine(2, "§a§l$"+balanceString);
                         }else{
-                            signb.setLine(2, "§c"+bal.toString());
+                            signb.setLine(2, "§c§l$"+ balanceString);
                         }
                         signb.update();
                     }
