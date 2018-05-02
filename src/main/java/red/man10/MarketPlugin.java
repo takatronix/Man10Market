@@ -480,10 +480,18 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             sign.Signcreate(e.getPlayer(),e.getBlock().getLocation(),e.getLine(1));
             e.setLine(0,prefix);
             String line3 = e.getLine(3);
-            if (line3.equalsIgnoreCase("[成り行き購入]")) {
-                e.setLine(3,"§a§l[成り行き購入]");
-            }else if (line3.equalsIgnoreCase("[成り行き売却]")) {
-                e.setLine(3,"§2§l[成り行き売却]");
+            if (line3.equalsIgnoreCase("[購入]")) {
+                e.setLine(3,"§a§l[購入]");
+            }else if (line3.equalsIgnoreCase("[売却]")) {
+                e.setLine(3,"§6§l[売却]");
+            }else if (line3.equalsIgnoreCase("[現在値]")) {
+                e.setLine(3,"§e§l[現在値]");
+            }else if (line3.equalsIgnoreCase("[buy]")) {
+                e.setLine(3,"§a§l[buy]");
+            }else if (line3.equalsIgnoreCase("[sell]")) {
+                e.setLine(3,"§6§l[sell]");
+            }else if (line3.equalsIgnoreCase("[price]")) {
+                e.setLine(3,"§e§l[price]");
             }
         }
     }
@@ -496,15 +504,20 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 Sign signs = (Sign) e.getClickedBlock().getState();
                 if(((Sign)e.getClickedBlock().getState()).getLine(0).equalsIgnoreCase(prefix)) {
                     String line3 = ((Sign)e.getClickedBlock().getState()).getLine(3);
-                    if (line3.equalsIgnoreCase("§a§l[成り行き購入]")) {
+                    if (line3.equalsIgnoreCase("§a§l[購入]")||line3.equalsIgnoreCase("§a§l[buy]")) {
                         String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
                         if (line1[1] != null) {
                             p.chat("/mm buy " + line1[0] + " " + line1[1]);
                         }
-                    } else if (line3.equalsIgnoreCase("§2§l[成り行き売却]")) {
+                    } else if (line3.equalsIgnoreCase("§6§l[売却]")||line3.equalsIgnoreCase("§6§l[sell]")) {
                         String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
                         if (line1[1] != null) {
                             p.chat("/mm sell " + line1[0] + " " + line1[1]);
+                        }
+                    } else if (line3.equalsIgnoreCase("§e§l[現在値]")||line3.equalsIgnoreCase("§e§l[price]")) {
+                        String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
+                        if (line1[1] != null) {
+                            p.chat("/mm price " + line1[0]);
                         }
                     } else {
                         e.getPlayer().sendMessage(prefix + "§4この看板には右クリックアクションが実装されていません");
