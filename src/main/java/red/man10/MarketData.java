@@ -1152,6 +1152,7 @@ public class MarketData {
 
         String sql = "select * from item_index order by id;";
 
+        double totalPrice = 0;
         ResultSet rs = mysql.query(sql);
         if(rs == null){
             plugin.showError(p,"データ取得失敗");
@@ -1165,6 +1166,9 @@ public class MarketData {
                 String idString = String.format("ID:%3d",id);
                 String key = rs.getString("item_key");
                 double price = rs.getDouble("price");
+                double bid = rs.getDouble("bid");
+                double ask = rs.getDouble("ask");
+
                 int sell = rs.getInt("sell");
                 int buy = rs.getInt("buy");
 
@@ -1176,8 +1180,13 @@ public class MarketData {
                     amount = store.amount;
                 }
 
-                p.sendMessage(idString + " §f§l"+key+ "(" +amount +") §e§lPrice:$" + getPriceString(price) + " §c§l売り注文数(Sell):"+sell +"/§9§l買い注文数(Sell):"+buy);
+                double estimated = amount * price;
+                totalPrice += estimated;
+
+                showMessage(p.getUniqueId().toString(),"§f§l"+idString +" " +key+ ":$"+ getPriceString(amount) + " §b§l所有個数:"+getPriceString(amount) + " §e§l評価額:"+getPriceString(estimated) + " §c§l売り"+sell +"個/§9§l買:"+buy+"個");
+//                p.sendMessage(idString + " §f§l"+key+ "(" +amount +") §e§lPrice:$" + getPriceString(price) + " §c§l売り注文数(Sell):"+sell +"/§9§l買い注文数(Sell):"+buy);
             }
+            showMessage(p.getUniqueId().toString(),"§e§l 現在のアイテム資産評価額 $"+getPriceString(totalPrice));
         }
         catch (SQLException e)
         {
