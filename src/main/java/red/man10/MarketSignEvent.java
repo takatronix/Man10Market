@@ -144,31 +144,92 @@ public class MarketSignEvent {
                 }
                 Sign signb = (Sign)loc.getBlock().getState();
                 if(values[1]==null){
-                    String line = signb.getLine(2).replace("§a","").replace("§c","").replace("§l","").replace("$","");
-                    String balanceString = plugin.data.getPriceString(newprice);
-                    //if(true){
-                    if(line.equalsIgnoreCase(balanceString)){
-                        signb.setLine(2,"§l$"+balanceString);
-                        signb.update();
-                        continue;
-                    }else {
-                        Double oldbal = 0.0;
-                        try {
-                            oldbal = plugin.data.getPricedouble(balanceString);
-                        }catch (NumberFormatException e){
-                            plugin.getLogger().warning(loc.getWorld().getName()+":"+loc.getX()+":"+loc.getY()+":"+loc.getZ()+"の3行目が数字ではありません");
-                            signb.setLine(2,"§l$"+balanceString);
+                    String line3 = signb.getLine(3);
+                    if (line3.equalsIgnoreCase("§e§l[現在値]")||line3.equalsIgnoreCase("§e§l[price]")) {
+                        String line = signb.getLine(2).replace("§a", "").replace("§c", "").replace("§l", "").replace("$", "");
+                        String balanceString = plugin.data.getPriceString(newprice);
+                        //if(true){
+                        if (line.equalsIgnoreCase(balanceString)) {
+                            signb.setLine(2, "§l$" + balanceString);
                             signb.update();
                             continue;
+                        } else {
+                            Double oldbal = 0.0;
+                            try {
+                                oldbal = plugin.data.getPricedouble(line);
+                            } catch (NumberFormatException e) {
+                                plugin.getLogger().warning(loc.getWorld().getName() + ":" + loc.getX() + ":" + loc.getY() + ":" + loc.getZ() + "の3行目が数字ではありません");
+                                signb.setLine(2, "§l$" + balanceString);
+                                signb.update();
+                                continue;
+                            }
+                            if (newprice > oldbal) {
+                                signb.setLine(2, "§a§l$" + balanceString);
+                            }else if(newprice == oldbal){
+                                signb.setLine(2, "§l$" + balanceString);
+                            }else {
+                                signb.setLine(2, "§c§l$" + balanceString);
+                            }
+                            signb.update();
                         }
-                        if(newprice > oldbal) {
-                            signb.setLine(2, "§a§l$"+balanceString);
-                        }else{
-                            signb.setLine(2, "§c§l$"+ balanceString);
+                        continue;
+                    }else if (line3.equalsIgnoreCase("§a§l[購入]")||line3.equalsIgnoreCase("§a§l[buy]")) {
+                        String line = signb.getLine(2).replace("§a", "").replace("§c", "").replace("§l", "").replace("$", "");
+                        String balanceString = plugin.data.getPriceString(plugin.data.getItemPrice(values[0]).bid);
+                        //if(true){
+                        if (line.equalsIgnoreCase(balanceString)) {
+                            signb.setLine(2, "§l$" + balanceString);
+                            signb.update();
+                            continue;
+                        } else {
+                            Double oldbal = 0.0;
+                            try {
+                                oldbal = plugin.data.getPricedouble(line);
+                            } catch (NumberFormatException e) {
+                                plugin.getLogger().warning(loc.getWorld().getName() + ":" + loc.getX() + ":" + loc.getY() + ":" + loc.getZ() + "の3行目が数字ではありません");
+                                signb.setLine(2, "§l$" + balanceString);
+                                signb.update();
+                                continue;
+                            }
+                            if (plugin.data.getItemPrice(values[0]).bid > oldbal) {
+                                signb.setLine(2, "§a§l$" + balanceString);
+                            }else if(plugin.data.getItemPrice(values[0]).bid == oldbal){
+                                signb.setLine(2, "§l$" + balanceString);
+                            }else {
+                                signb.setLine(2, "§c§l$" + balanceString);
+                            }
+                            signb.update();
                         }
-                        signb.update();
+                        continue;
+                    } else if (line3.equalsIgnoreCase("§6§l[売却]")||line3.equalsIgnoreCase("§6§l[sell]")) {
+                        String line = signb.getLine(2).replace("§a", "").replace("§c", "").replace("§l", "").replace("$", "");
+                        String balanceString = plugin.data.getPriceString(plugin.data.getItemPrice(values[0]).ask);
+                        //if(true){
+                        if (line.equalsIgnoreCase(balanceString)) {
+                            signb.setLine(2, "§l$" + balanceString);
+                            signb.update();
+                            continue;
+                        } else {
+                            Double oldbal = 0.0;
+                            try {
+                                oldbal = plugin.data.getPricedouble(line);
+                            } catch (NumberFormatException e) {
+                                plugin.getLogger().warning(loc.getWorld().getName() + ":" + loc.getX() + ":" + loc.getY() + ":" + loc.getZ() + "の3行目が数字ではありません");
+                                signb.setLine(2, "§l$" + balanceString);
+                                signb.update();
+                                continue;
+                            }
+                            if (plugin.data.getItemPrice(values[0]).ask > oldbal) {
+                                signb.setLine(2, "§a§l$" + balanceString);
+                            }else if(plugin.data.getItemPrice(values[0]).ask == oldbal){
+                                signb.setLine(2, "§l$" + balanceString);
+                            }else {
+                                signb.setLine(2, "§c§l$" + balanceString);
+                            }
+                            signb.update();
+                        }
+                        continue;
                     }
-                    continue;
                 }
                 int bairitu = 0;
                 try {
@@ -180,30 +241,93 @@ public class MarketSignEvent {
                     continue;
                 }
                 Double bal = newprice * bairitu;
-                String line = signb.getLine(2).replace("§a","").replace("§c","").replace("§l","").replace("$","");
-
-                String balanceString = plugin.data.getPriceString(bal);
-                //if(true){
-                if(line.equalsIgnoreCase(balanceString)){
-                    signb.setLine(2,"§l$"+balanceString);
-                    signb.update();
-                    continue;
-                }else {
-                    Double oldbal = 0.0;
-                    try {
-                        oldbal = plugin.data.getPricedouble(balanceString);
-                    }catch (NumberFormatException e){
-                        plugin.getLogger().warning(loc.getWorld().getName()+":"+loc.getX()+":"+loc.getY()+":"+loc.getZ()+"の3行目が数字ではありません");
-                        signb.setLine(2,"§l$"+ balanceString);
+                Double bid = plugin.data.getItemPrice(values[0]).bid * bairitu;
+                Double ask = plugin.data.getItemPrice(values[0]).ask * bairitu;
+                String line3 = signb.getLine(3);
+                if (line3.equalsIgnoreCase("§e§l[現在値]")||line3.equalsIgnoreCase("§e§l[price]")) {
+                    String line = signb.getLine(2).replace("§a", "").replace("§c", "").replace("§l", "").replace("$", "");
+                    String balanceString = plugin.data.getPriceString(bal);
+                    //if(true){
+                    if (line.equalsIgnoreCase(balanceString)) {
+                        signb.setLine(2, "§l$" + balanceString);
                         signb.update();
                         continue;
+                    } else {
+                        Double oldbal = 0.0;
+                        try {
+                            oldbal = plugin.data.getPricedouble(line);
+                        } catch (NumberFormatException e) {
+                            plugin.getLogger().warning(loc.getWorld().getName() + ":" + loc.getX() + ":" + loc.getY() + ":" + loc.getZ() + "の3行目が数字ではありません");
+                            signb.setLine(2, "§l$" + balanceString);
+                            signb.update();
+                            continue;
+                        }
+                        if (bal > oldbal) {
+                            signb.setLine(2, "§a§l$" + balanceString);
+                        }else if(bal.equals(oldbal)){
+                            signb.setLine(2, "§l$" + balanceString);
+                        }else {
+                            signb.setLine(2, "§c§l$" + balanceString);
+                        }
+                        signb.update();
                     }
-                    if(bal > oldbal) {
-                        signb.setLine(2, "§a§l$"+ balanceString);
-                    }else{
-                        signb.setLine(2, "§c§l$"+ balanceString);
+                    continue;
+                }else if (line3.equalsIgnoreCase("§a§l[購入]")||line3.equalsIgnoreCase("§a§l[buy]")) {
+                    String line = signb.getLine(2).replace("§a", "").replace("§c", "").replace("§l", "").replace("$", "");
+                    String balanceString = plugin.data.getPriceString(bid);
+                    //if(true){
+                    if (line.equalsIgnoreCase(balanceString)) {
+                        signb.setLine(2, "§l$" + balanceString);
+                        signb.update();
+                        continue;
+                    } else {
+                        Double oldbal = 0.0;
+                        try {
+                            oldbal = plugin.data.getPricedouble(line);
+                        } catch (NumberFormatException e) {
+                            plugin.getLogger().warning(loc.getWorld().getName() + ":" + loc.getX() + ":" + loc.getY() + ":" + loc.getZ() + "の3行目が数字ではありません");
+                            signb.setLine(2, "§l$" + balanceString);
+                            signb.update();
+                            continue;
+                        }
+                        if (bid > oldbal) {
+                            signb.setLine(2, "§a§l$" + balanceString);
+                        }else if(bid.equals(oldbal)){
+                            signb.setLine(2, "§l$" + balanceString);
+                        }else {
+                            signb.setLine(2, "§c§l$" + balanceString);
+                        }
+                        signb.update();
                     }
-                    signb.update();
+                    continue;
+                } else if (line3.equalsIgnoreCase("§6§l[売却]")||line3.equalsIgnoreCase("§6§l[sell]")) {
+                    String line = signb.getLine(2).replace("§a", "").replace("§c", "").replace("§l", "").replace("$", "");
+                    String balanceString = plugin.data.getPriceString(ask);
+                    //if(true){
+                    if (line.equalsIgnoreCase(balanceString)) {
+                        signb.setLine(2, "§l$" + balanceString);
+                        signb.update();
+                        continue;
+                    } else {
+                        Double oldbal = 0.0;
+                        try {
+                            oldbal = plugin.data.getPricedouble(line);
+                        } catch (NumberFormatException e) {
+                            plugin.getLogger().warning(loc.getWorld().getName() + ":" + loc.getX() + ":" + loc.getY() + ":" + loc.getZ() + "の3行目が数字ではありません");
+                            signb.setLine(2, "§l$" + balanceString);
+                            signb.update();
+                            continue;
+                        }
+                        if (ask > oldbal) {
+                            signb.setLine(2, "§a§l$" + balanceString);
+                        }else if(ask.equals(oldbal)){
+                            signb.setLine(2, "§l$" + balanceString);
+                        }else {
+                            signb.setLine(2, "§c§l$" + balanceString);
+                        }
+                        signb.update();
+                    }
+                    continue;
                 }
             }
         }
