@@ -7,14 +7,14 @@ import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 public class MarketSignEvent {
-    private final MarketPlugin plugin;
-    private final MarketSignTimer timer;
+    MarketPlugin plugin;
+    HashMap<Location,String[]> signss;
     public MarketSignEvent(MarketPlugin plugin) {
         this.plugin = plugin;
-        this.timer = new MarketSignTimer(plugin);
-        this.timer.start();
+        signss = new HashMap<>();
         Signdataput();
     }
 
@@ -47,7 +47,7 @@ public class MarketSignEvent {
         Double z = loc.getZ();
         String sql = "INSERT INTO sign_location (world, x, y, z) VALUES ('"+world+"', "+x+", "+y+", "+z+");";
         plugin.data.mysql.execute(sql);
-        this.timer.signs.put(loc,line1);
+        signss.put(loc,line1);
         plugin.showMessage(p,"看板を登録しました。");
         return true;
     }
@@ -112,7 +112,7 @@ public class MarketSignEvent {
                     Double z = rs.getDouble("z");
                     Location loc = new Location(Bukkit.getWorld(world), x, y, z);
                     String[] line = ((Sign)loc.getBlock().getState()).getLine(1).split(":",2);
-                    timer.signs.put(loc, line);
+                    signss.put(loc, line);
                 }else {
                     break;
                 }
@@ -131,5 +131,83 @@ public class MarketSignEvent {
         }
         Location loc = new Location(Bukkit.getWorld(world),x,y,z);
         return loc;
+    }
+    public boolean updateSign(String idorkey,Double newprice){
+        for(Location loc : signss.keySet()){
+            String[] values = signss.get(loc);
+            String get = values[0];
+            if(get.equalsIgnoreCase(idorkey)){
+                if (!(loc.getBlock().getState() instanceof Sign)) {
+                    plugin.sign.Signdelete(loc);
+                    signss.remove(loc);
+                    continue;
+                }
+                Sign signb = (Sign)loc.getBlock().getState();
+                if(values[1]==null){
+                    String line = signb.getLine(2).replace("§a","").replace("§c","").replace("§l","").replace("$","");
+                    String balanceString = plugin.data.getPriceString(newprice);
+                    //if(true){
+                    if(line.equalsIgnoreCase(balanceString)){
+                        signb.setLine(2,"§l$"+balanceString);
+                        signb.update();
+                        continue;
+                    }else {
+                        Double oldbal = 0.0;
+                        try {
+                            oldbal = plugin.data.getPricedouble(balanceString);
+                        }catch (NumberFormatException e){
+                            plugin.getLogger().warning(loc.getWorld().getName()+":"+loc.getX()+":"+loc.getY()+":"+loc.getZ()+"の3行目が数字ではありません");
+                            signb.setLine(2,"§l$"+balanceString);
+                            signb.update();
+                            continue;
+                        }
+                        if(newprice > oldbal) {
+                            signb.setLine(2, "§a§l$"+balanceString);
+                        }else{
+                            signb.setLine(2, "§c§l$"+ balanceString);
+                        }
+                        signb.update();
+                    }
+                    continue;
+                }
+                int bairitu = 0;
+                try {
+                    bairitu = Integer.parseInt(values[1]);
+                }catch (NumberFormatException e){
+                    plugin.getLogger().warning(loc.getWorld().getName()+":"+loc.getX()+":"+loc.getY()+":"+loc.getZ()+"の2行目の個数が数字ではありません");
+                    signb.setLine(1,values[0]+":1");
+                    signb.update();
+                    continue;
+                }
+                Double bal = newprice * bairitu;
+                String line = signb.getLine(2).replace("§a","").replace("§c","").replace("§l","").replace("$","");
+
+                String balanceString = plugin.data.getPriceString(bal);
+                //if(true){
+                if(line.equalsIgnoreCase(balanceString)){
+                    signb.setLine(2,"§l$"+balanceString);
+                    signb.update();
+                    continue;
+                }else {
+                    Double oldbal = 0.0;
+                    try {
+                        oldbal = plugin.data.getPricedouble(balanceString);
+                    }catch (NumberFormatException e){
+                        plugin.getLogger().warning(loc.getWorld().getName()+":"+loc.getX()+":"+loc.getY()+":"+loc.getZ()+"の3行目が数字ではありません");
+                        signb.setLine(2,"§l$"+ balanceString);
+                        signb.update();
+                        continue;
+                    }
+                    if(bal > oldbal) {
+                        signb.setLine(2, "§a§l$"+ balanceString);
+                    }else{
+                        signb.setLine(2, "§c§l$"+ balanceString);
+                    }
+                    signb.update();
+                }
+            }
+        }
+
+        return true;
     }
 }

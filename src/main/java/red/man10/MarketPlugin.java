@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -498,24 +499,24 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
-        Player p = (Player) e.getPlayer();
+        Player p = e.getPlayer();
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (e.getClickedBlock().getState() instanceof Sign) {
                 Sign signs = (Sign) e.getClickedBlock().getState();
-                if(((Sign)e.getClickedBlock().getState()).getLine(0).equalsIgnoreCase(prefix)) {
-                    String line3 = ((Sign)e.getClickedBlock().getState()).getLine(3);
+                if(signs.getLine(0).equalsIgnoreCase(prefix)) {
+                    String line3 = signs.getLine(3);
                     if (line3.equalsIgnoreCase("§a§l[購入]")||line3.equalsIgnoreCase("§a§l[buy]")) {
-                        String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
+                        String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
                             p.chat("/mm buy " + line1[0] + " " + line1[1]);
                         }
                     } else if (line3.equalsIgnoreCase("§6§l[売却]")||line3.equalsIgnoreCase("§6§l[sell]")) {
-                        String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
+                        String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
                             p.chat("/mm sell " + line1[0] + " " + line1[1]);
                         }
                     } else if (line3.equalsIgnoreCase("§e§l[現在値]")||line3.equalsIgnoreCase("§e§l[price]")) {
-                        String[] line1 = ((Sign)e.getClickedBlock().getState()).getLine(1).split(":",2);
+                        String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
                             p.chat("/mm price " + line1[0]);
                         }
@@ -523,6 +524,23 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                         e.getPlayer().sendMessage(prefix + "§4この看板には右クリックアクションが実装されていません");
                     }
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBreak(BlockBreakEvent e) {
+        Player p = e.getPlayer();
+        if (e.getBlock().getState() instanceof Sign) {
+            Sign signs = (Sign) e.getBlock().getState();
+            if(signs.getLine(0).equalsIgnoreCase(prefix)) {
+                if(!p.hasPermission("red.man10.market.sign.break")){
+                    p.sendMessage(prefix + "§4あなたにマーケット看板を破壊する権限はありません");
+                    e.setCancelled(true);
+                    return;
+                }
+                sign.Signdelete(p,e.getBlock().getLocation());
+                sign.signss.remove(e.getBlock().getLocation());
             }
         }
     }

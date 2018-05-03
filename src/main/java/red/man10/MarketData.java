@@ -330,6 +330,9 @@ public class MarketData {
         if(min == 0){
             min = current.price;
         }
+        //Mr_IK 追加、Signにデータを通す
+        plugin.sign.updateSign(current.key,price);
+        plugin.sign.updateSign(String.valueOf(current.id),price);
         //   値上がり
         if(current.price < price){
             plugin.serverMessage( "§a§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値上がりしました");
@@ -1211,7 +1214,18 @@ public class MarketData {
     public String getPriceString(double price){
         return String.format("%,d",(int)(price));
     }
-
+    //1,301 などを1301.0に変換する
+    public Double getPricedouble(String price){
+        Double db = 0.0;
+        price = price.replace(",","");
+        price = price+".0";
+        try {
+            db = Double.parseDouble(price);
+        }catch (NumberFormatException e){
+            return null;
+        }
+        return db;
+    }
 
     // アイテム登録
     public boolean registerItem(Player player, ItemStack item,String key, double initialPrice, double tick){
