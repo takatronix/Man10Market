@@ -1,5 +1,6 @@
 package red.man10;
 
+import net.md_5.bungee.api.chat.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -8,6 +9,7 @@ import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.Array;
@@ -1307,5 +1309,33 @@ public class MarketData {
             throw new IllegalStateException("Unable to save item stacks.", e);
         }
     }
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //  マインクラフトチャットに、ホバーテキストや、クリックコマンドを設定する関数
+    // [例1] sendHoverText(player,"ここをクリック",null,"/say おはまん");
+    // [例2] sendHoverText(player,"カーソルをあわせて","ヘルプメッセージとか",null);
+    // [例3] sendHoverText(player,"カーソルをあわせてクリック","ヘルプメッセージとか","/say おはまん");
+    public static void sendHoverText(Player p,String text,String hoverText,String command){
+        //////////////////////////////////////////
+        //      ホバーテキストとイベントを作成する
+        HoverEvent hoverEvent = null;
+        if(hoverText != null){
+            BaseComponent[] hover = new ComponentBuilder(hoverText).create();
+            hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover);
+        }
+
+        //////////////////////////////////////////
+        //   クリックイベントを作成する
+        ClickEvent clickEvent = null;
+        if(command != null){
+            clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,command);
+        }
+
+        BaseComponent[] message = new ComponentBuilder(text).event(hoverEvent).event(clickEvent). create();
+        p.spigot().sendMessage(message);
+    }
+
 
 }

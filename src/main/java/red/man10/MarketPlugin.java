@@ -224,6 +224,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             showMessage(p,"注文がありません");
         }else{
             showMessage(p,""+count+"件の注文があります");
+            MarketData.sendHoverText(p,"§f§l§n<全ての注文をキャンセルするにはここをクリック>","クリックすると全ての注文がキャンセルされます","/mm cancelall");
+
         }
 
         return true;
