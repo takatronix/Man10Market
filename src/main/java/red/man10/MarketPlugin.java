@@ -162,7 +162,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     void showMainMenuLink(Player p){
-        MarketData.sendHoverText(p,prefix+"§b§l§n =>[メインメニュー]","クリックするとメインメニューへ戻ります","/mm menu");
+        MarketData.sendHoverText(p,"§b§l§n =>[メインメニュー]","クリックするとメインメニューへ戻ります","/mm menu");
     }
 
     //  注文表示
@@ -298,8 +298,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         ArrayList<MarketData.OrderInfo> sellList = data.getGroupedOrderList(uuid,item_id,false,-1);
         ArrayList<MarketData.OrderInfo> buyList = data.getGroupedOrderList(uuid,item_id,true,-1);
 
-        showMessage(p,"---------["+item.key+"]-----------");
-        showMessage(p," §b§l売数量    値段   買数量");
+        p.sendMessage("---------["+item.key+"]-----------");
+        p.sendMessage(" §b§l売数量    値段   買数量");
 
 
         for(int i = 0;i < sellList.size();i++){
@@ -308,10 +308,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             if(i ==  sellList.size() -1){
                 color  = "§a§l";
             }
-            showMessage(p,String.format("%s%7d  %7s",color,o.amount,data.getPriceString(o.price)));
+            p.sendMessage(String.format("%s%7d  %7s",color,o.amount,data.getPriceString(o.price)));
         }
         if(sellList.size() == 0){
-            showMessage(p,"§1売り注文がありません");
+            p.sendMessage("§1売り注文がありません");
         }
         for(int i = 0;i < buyList.size();i++){
             MarketData.OrderInfo o = buyList.get(i);
@@ -319,10 +319,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             if(i == 0){
                 color  = "§c§l";
             }
-            showMessage(p,String.format("%s         %7s  %7d",color,data.getPriceString(o.price),o.amount));
+            p.sendMessage(String.format("%s         %7s  %7d",color,data.getPriceString(o.price),o.amount));
         }
         if(buyList.size() == 0){
-            showMessage(p,"§1買い注文がありません");
+            p.sendMessage("§1買い注文がありません");
         }
 
         return true;
@@ -387,33 +387,26 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         //  現在所有個数　
 
-        MarketData.sendHoverText(p, prefix + "あなたは"+itemCount+"個の"+storage.item_key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
+        MarketData.sendHoverText(p,  "あなたは"+itemCount+"個の"+storage.item_key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
 
         if(item.sell >0){
-            MarketData.sendSuggestCommand(p,prefix + "§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §a§l§n=> [成り行き買い] " ,"指定した個数を金額が安い順に買います\n/mm marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mm marketbuy "+item.key + " ");
+            MarketData.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §a§l§n=> [成り行き買い] " ,"指定した個数を金額が安い順に買います\n/mm marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mm marketbuy "+item.key + " ");
         }
 
         if(itemCount > 0){
             if(item.buy > 0){
-                MarketData.sendSuggestCommand(p,prefix + "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§c§l§n=> [成り行き売り] " ,"指定した個数を金額が高い順に売ります\n/mm marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mm marketsell "+item.key + " ");
+                MarketData.sendSuggestCommand(p, "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§c§l§n=> [成り行き売り] " ,"指定した個数を金額が高い順に売ります\n/mm marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mm marketsell "+item.key + " ");
             }
         }
 
 
-        MarketData.sendSuggestCommand(p,prefix + "§a§l§n [指し値買い注文] " ,"指定した金額、個数の買い注文をします\n/mm orderbuy(ob) "+item.key +" [金額] [買いたい個数] \n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mm orderbuy "+item.key + " ");
+        MarketData.sendSuggestCommand(p, "§a§l§n [指し値買い注文] " ,"指定した金額、個数の買い注文をします\n/mm orderbuy(ob) "+item.key +" [金額] [買いたい個数] \n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mm orderbuy "+item.key + " ");
         if(itemCount > 0){
-            MarketData.sendSuggestCommand(p,prefix + "§c§l§n[指し値売り注文] " ,"指定した金額、個数の売り注文をします\n/mm ordersell(os) "+item.key +" [金額] [売りたい個数] \n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mm ordersell "+item.key + " ");
+            MarketData.sendSuggestCommand(p,  "§c§l§n[指し値売り注文] " ,"指定した金額、個数の売り注文をします\n/mm ordersell(os) "+item.key +" [金額] [売りたい個数] \n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mm ordersell "+item.key + " ");
         }
 
 
-        ArrayList<MarketData.OrderInfo> orders =  data.getOrderOfUser(p,p.getUniqueId().toString());
-        if(orders != null){
 
-            if(orders.size() > 0){
-                MarketData.sendHoverText(p,prefix+"§f§l§n [注文管理]","自分の注文を削除することができます","/mm order");
-            }
-
-        }
         showMainMenuLink(p);
 
         return true;

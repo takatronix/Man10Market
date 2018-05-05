@@ -1215,6 +1215,17 @@ public class MarketData {
             sendHoverText(p, text,hover,"/mm price "+item.key);
 
         }
+        p.sendMessage("-------");
+        sendHoverText(p, " §f§lあなたの所持金:"+getBalanceString(uuid) + " §6§lアイテム評価額:$"+getPriceString(totalEstimated),"",null);
+
+
+        //   注文管理
+        ArrayList<MarketData.OrderInfo> orders =  getOrderOfUser(p,uuid);
+        if(orders != null){
+            sendHoverText(p, "§f§l"+orders.size()+"個の注文があります " +"§d§l§n=> [注文管理]","注文をキャンセルするにはクリックします","/mm order");
+        }
+
+
         return true;
 
 
