@@ -160,7 +160,7 @@ public class MarketSignEvent {
 
                     //  値上がり
                     if(newprice > curPrice){
-                        signb.setLine(2, "§a§l$" + balanceString);
+                        signb.setLine(2, "§2§l$" + balanceString);
 
                     }
                     if(curPrice > newprice){

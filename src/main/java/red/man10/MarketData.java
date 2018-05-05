@@ -85,6 +85,8 @@ public class MarketData {
         price = price.replace("§4","");
         price = price.replace("§0","");
         price = price.replace("§1","");
+        price = price.replace("§a","");
+        price = price.replace("§c","");
 
 
         return Double.parseDouble(price);
