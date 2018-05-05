@@ -143,9 +143,9 @@ public class MarketSignEvent {
 
             Sign signb = (Sign)loc.getBlock().getState();
             String line3 = signb.getLine(3);
-            plugin.data.opLog("line3"+line3);
+           // plugin.data.opLog("line3"+line3);
             if (line3.equalsIgnoreCase("§1§l[メニュー]")||line3.equalsIgnoreCase("§1§l[menu]")) {
-                plugin.data.opLog("menu detected");
+              //  plugin.data.opLog("menu detected");
 
                 continue;
             }
