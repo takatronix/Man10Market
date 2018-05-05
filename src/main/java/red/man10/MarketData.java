@@ -41,7 +41,7 @@ public class MarketData {
         int sell;
         int buy;
         boolean result;
-
+        int disabled;
         String getString(){
             return "ItemIndex:"+id+" "+key+" price:"+price+" bid:"+bid+" ask:"+ask + " sell:"+sell + " buy:"+buy;
         }
@@ -1082,6 +1082,7 @@ public class MarketData {
                 item.maxPrice = rs.getDouble("max_price");
                 item.bid = rs.getDouble("bid");
                 item.ask = rs.getDouble("ask");
+                item.disabled = rs.getInt("disabled");
                 item.result = true;
                 ret.add(item);
             }
@@ -1099,7 +1100,7 @@ public class MarketData {
 
     ///  現在値を得る
     public ItemIndex  getItemPrice(int item_id){
-        ArrayList<ItemIndex>  list = getItemIndexList("select * from item_index where  id = "+item_id+";");
+        ArrayList<ItemIndex>  list = getItemIndexList("select * from item_index where  id = "+item_id+" and disabled = 0;");
         if(list == null){
             return null;
         }
@@ -1169,6 +1170,7 @@ public class MarketData {
                 ret.buy = rs.getInt("buy");
                 ret.minPrice = rs.getDouble("min_price");
                 ret.maxPrice = rs.getDouble("max_price");
+                ret.disabled = rs.getInt("disabled");
                 ret.result = true;
             }
             rs.close();
@@ -1186,7 +1188,37 @@ public class MarketData {
 
     public boolean showItemList(Player p){
 
-        String sql = "select * from item_index order by id;";
+        String uuid = p.getUniqueId().toString();
+
+        p.sendMessage("§b§l======================================================");
+        p.sendMessage("   §f§l[Man10 Central Exchange / man10中央取引所] MENU");
+        p.sendMessage("§b§l======================================================");
+
+
+        ArrayList<ItemIndex> items = getItemIndexList("select * from item_index  where disabled = 0 order by id;");
+
+        double totalEstimated = 0;
+        for(ItemIndex item : items){
+
+            //      ストレージある
+            ItemStorage store = getItemStorage(uuid,item.id);
+            long amount = 0;
+            if(store != null){
+                amount = store.amount;
+            }
+
+            double estimated = amount * item.price;
+            totalEstimated += estimated;
+
+            String text = "§f§lID:"+item.id +"/"+item.key + " §b§l"+getPriceString(store.amount) + "§f§lx§e§l$" + getPriceString(item.price) +" §6§l評価額:$"+getPriceString(estimated) + " §f§l§n[=>注文]";
+            String hover = "クリックすると現在の注文状況を表示";
+            sendHoverText(p, text,hover,"/mm price "+item.key);
+
+        }
+        return true;
+
+
+/*
 
         double totalPrice = 0;
         ResultSet rs = mysql.query(sql);
@@ -1232,7 +1264,8 @@ public class MarketData {
             return false;
         }
         mysql.close();
-        return true;
+        */
+       // return true;
     }
 
 
@@ -1281,7 +1314,7 @@ public class MarketData {
                 +initialPrice +","
                 +initialPrice
 
-                +");");
+                +",0);");
 
         logTransaction(uuid,"Register",key,initialPrice,0,0,"");
 

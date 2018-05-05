@@ -161,7 +161,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
 
-
+    void showMainMenuLink(Player p){
+        MarketData.sendHoverText(p,prefix+"§b§l§n =>[メインメニュー]","クリックするとメインメニューへ戻ります","/mm menu");
+    }
 
     //  注文表示
     public boolean showOrder(Player p,String target){
@@ -238,6 +240,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
             MarketData.sendHoverText(p, order,"クリックすると注文がキャンセルされます","/mm cancel "+o.id);
 
+
 /*
             //  クリックキャンセルイベント
             ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm cancel "+o.id);
@@ -258,7 +261,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         }
-
+        showMainMenuLink(p);
 /*
         //////////////////////////////////////////
         //      ホバーテキストとイベントを作成する
@@ -411,6 +414,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
 
         }
+        showMainMenuLink(p);
 
         return true;
     }
@@ -467,7 +471,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return true;
     }
     //  アイテムリスト表示
-    public void showList(Player p){
+    public void showMenu(Player p){
+
         data.showItemList(p);
     }
 
@@ -583,7 +588,13 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 e.setLine(3,"§6§l[sell]");
             }else if (line3.equalsIgnoreCase("[price]")) {
                 e.setLine(3,"§6§l[price]");
+            }else if (line3.equalsIgnoreCase("[menu]")) {
+            e.setLine(3,"§1§l[menu]");
+             }
+            else if (line3.equalsIgnoreCase("[メニュー]")) {
+                e.setLine(3,"§1§l[メニュー]");
             }
+
         }
     }
 
@@ -595,6 +606,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 Sign signs = (Sign) e.getClickedBlock().getState();
                 if(signs.getLine(0).equalsIgnoreCase(prefix)) {
                     String line3 = signs.getLine(3);
+
+
+
                     if (line3.equalsIgnoreCase("§a§l[購入]")||line3.equalsIgnoreCase("§a§l[buy]")) {
                         String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
@@ -611,7 +625,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                         //if (line1[1] != null) {
                         //    p.chat("/mm price " + line1[0]);
                        // }
-                    } else {
+
+                } else if (line3.equalsIgnoreCase("§1§l[メニュー]")||line3.equalsIgnoreCase("§1§l[menu]")) {
+                    p.chat("/mm menu");
+                }
+                    else {
                         e.getPlayer().sendMessage(prefix + "§4この看板には右クリックアクションが実装されていません");
                     }
                 }

@@ -30,6 +30,7 @@ public class MarketSignEvent {
             return false;
         }
         String[] line1 = line_one.split(":",2);
+        /*
         if(line1[0] == null){
             plugin.showError(p,"空のアイテムは登録できません");
             loc.getBlock().breakNaturally();
@@ -40,7 +41,8 @@ public class MarketSignEvent {
             plugin.showError(p,"このアイテムは売買できません");
             loc.getBlock().breakNaturally();
             return false;
-        }
+        }*/
+
         String world = loc.getWorld().getName();
         Double x = loc.getX();
         Double y = loc.getY();
@@ -137,17 +139,28 @@ public class MarketSignEvent {
             String[] values = signss.get(loc);
 
             String get = values[0];
-            if(get.equalsIgnoreCase(idorkey)){
+
+
+            Sign signb = (Sign)loc.getBlock().getState();
+            String line3 = signb.getLine(3);
+            plugin.data.opLog("line3"+line3);
+            if (line3.equalsIgnoreCase("§1§l[メニュー]")||line3.equalsIgnoreCase("§1§l[menu]")) {
+                plugin.data.opLog("menu detected");
+
+                continue;
+            }
+
+                if(get.equalsIgnoreCase(idorkey)){
                 if (!(loc.getBlock().getState() instanceof Sign)) {
+                    plugin.data.opLog("brekaing"+line3);
                     plugin.sign.Signdelete(loc);
                     signss.remove(loc);
                     continue;
                 }
 
 
-                Sign signb = (Sign)loc.getBlock().getState();
 
-                String line3 = signb.getLine(3);
+
                 //  現在値看板 更新
                 if (line3.equalsIgnoreCase("§6§l[現在値]")||line3.equalsIgnoreCase("§6§l[price]")) {
 

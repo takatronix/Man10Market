@@ -25,7 +25,7 @@ public class MarketCommand implements CommandExecutor {
 
 
         if(args.length == 0){
-            showHelp(p);
+            plugin.showMenu(p);
             return false;
         }
 
@@ -51,8 +51,8 @@ public class MarketCommand implements CommandExecutor {
 
         ////////////////
         //    リスト
-        if(command.equalsIgnoreCase("list")){
-            plugin.showList(p);
+        if(command.equalsIgnoreCase("menu")){
+            plugin.showMenu(p);
             return true;
         }
 
@@ -216,9 +216,13 @@ public class MarketCommand implements CommandExecutor {
             p.sendMessage("/mm update [id/key] 金額を調整する");
             return false;
         }
+        if(command.equalsIgnoreCase("help")) {
+            this.showHelp(p);
+            return true;
+        }
 
 
-        this.showHelp(p);
+
         return true;
 
     }
