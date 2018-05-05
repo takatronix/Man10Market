@@ -1,5 +1,9 @@
 package red.man10;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Sign;
@@ -34,8 +38,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     MarketVault vault = null;
     MarketSignEvent sign = null;
 
-    public double buyLimitRatio = 2;
-    public double sellLimitRatio = 2;
+    public double buyLimitRatio = 10;
+    public double sellLimitRatio = 10;
 
 
     ///////////////////////////////
@@ -132,10 +136,13 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
         }
 
+
         //
         if(data.cancelOrderByOrderId(orderNo)){
            data.updateCurrentPrice(order.item_id);
+
             p.sendMessage("注文ID:"+order.id +"をキャンセルしました");
+            
             return true;
         }
 
@@ -212,11 +219,19 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
            // String strDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(o.datetime);
             String price = "$"+data.getPriceString(o.price);
-            showMessage(p,String.format("%d:注文ID%d:%3s:%s:%s%7s /%7s個 %s:%s",count+1
+
+            //   注文テキストを作る
+            String order = String.format("§f§l注文ID%d:%3s:%s:%s:%s/%7s個 %s:%s"
                 ,o.id,buyOrSell,o.key,o.player,price,data.getPriceString(o.amount),o.date.toString(),o.time.toString()
+            );
 
+            //  クリックキャンセルイベント
+            ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm cancel "+o.id);
+            HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(order + "§f§lをキャンセルします").create());
 
-            ));
+            BaseComponent[] cancel = new ComponentBuilder("§f§l§n[CANCEL]").event(hoverEvent).event(clickEvent). create();
+            BaseComponent[] orderText = new ComponentBuilder( order).append(cancel).create();
+            p.spigot().sendMessage(orderText);
 
             count++;
         }
@@ -224,10 +239,31 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             showMessage(p,"注文がありません");
         }else{
             showMessage(p,""+count+"件の注文があります");
-            MarketData.sendHoverText(p,"§f§l§n<全ての注文をキャンセルするにはここをクリック>","クリックすると全ての注文がキャンセルされます","/mm cancelall");
+            MarketData.sendHoverText(p,prefix + "§f§l§n<全ての注文をキャンセル>","クリックすると全ての注文がキャンセルされます","/mm cancelall");
+
+
 
         }
 
+/*
+        //////////////////////////////////////////
+        //      ホバーテキストとイベントを作成する
+        HoverEvent hoverEvent = null;
+        if(hoverText != null){
+            BaseComponent[] hover = new ComponentBuilder(hoverText).create();
+            hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover);
+        }
+
+        //////////////////////////////////////////
+        //   クリックイベントを作成する
+        ClickEvent clickEvent = null;
+        if(command != null){
+            clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,command);
+        }
+
+        BaseComponent[] message = new ComponentBuilder(text).event(hoverEvent).event(clickEvent). create();
+        p.spigot().sendMessage(message);
+*/
         return true;
     }
     ///////////////////////////////
