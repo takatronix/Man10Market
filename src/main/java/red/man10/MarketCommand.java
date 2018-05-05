@@ -87,8 +87,8 @@ public class MarketCommand implements CommandExecutor {
 
         ////////////////////////////
         //   成り行き売り注文
-        if(command.equalsIgnoreCase("sell")) {
-            if(!p.hasPermission("red.man10.market.sell")){
+        if(command.equalsIgnoreCase("marketsell") || command.equalsIgnoreCase("ms")) {
+            if(!p.hasPermission("red.man10.market.marketsell")){
                 p.sendMessage("§4§lあなたには権限がない");
                 return false;
             }
@@ -118,8 +118,8 @@ public class MarketCommand implements CommandExecutor {
 
         ////////////////////////////
         //   成り行き買い注文
-        if(command.equalsIgnoreCase("buy")) {
-            if(!p.hasPermission("red.man10.market.buy")){
+        if(command.equalsIgnoreCase("marketbuy") || command.equalsIgnoreCase("mb")) {
+            if(!p.hasPermission("red.man10.marketbuy.buy")){
                 p.sendMessage("§4§lあなたには権限がない");
                 return false;
             }
@@ -201,6 +201,19 @@ public class MarketCommand implements CommandExecutor {
             }
 
             p.sendMessage("/mm cancelall すべての注文をキャンセルする");
+            return false;
+        }
+
+        //    注文キャンセル
+        if(command.equalsIgnoreCase("update")){
+            if(!p.hasPermission("red.man10.market.update")){
+                p.sendMessage("§4§lあなたには権限がない");
+                return false;
+            }
+            if(args.length == 2){
+                return plugin.updatePrice(p,args[1]);
+            }
+            p.sendMessage("/mm update [id/key] 金額を調整する");
             return false;
         }
 

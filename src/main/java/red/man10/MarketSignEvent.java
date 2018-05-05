@@ -135,6 +135,7 @@ public class MarketSignEvent {
     public boolean updateSign(String idorkey,Double newprice){
         for(Location loc : signss.keySet()){
             String[] values = signss.get(loc);
+
             String get = values[0];
             if(get.equalsIgnoreCase(idorkey)){
                 if (!(loc.getBlock().getState() instanceof Sign)) {
@@ -142,7 +143,42 @@ public class MarketSignEvent {
                     signss.remove(loc);
                     continue;
                 }
+
+
                 Sign signb = (Sign)loc.getBlock().getState();
+
+                String line3 = signb.getLine(3);
+                //  現在値看板 更新
+                if (line3.equalsIgnoreCase("§6§l[現在値]")||line3.equalsIgnoreCase("§6§l[price]")) {
+
+                    String curPriceString = signb.getLine(2);
+                    double curPrice = 0;
+                    if(curPriceString != null){
+                         curPrice = plugin.data.getPriceFromPriceString(curPriceString);
+                    }
+                    String balanceString = plugin.data.getPriceString(newprice);
+
+                    //  値上がり
+                    if(newprice > curPrice){
+                        signb.setLine(2, "§a§l$" + balanceString);
+
+                    }
+                    if(curPrice > newprice){
+
+                        signb.setLine(2, "§4§l$" + balanceString);
+                    }
+                    if(curPrice == newprice){
+                        signb.setLine(2, "§l$" + balanceString);
+                    }
+
+
+                    signb.update();
+                    continue;
+                }
+
+
+                ///  以下のコードは無効
+            /*
                 if(values[1]==null){
                     String line3 = signb.getLine(3);
                     if (line3.equalsIgnoreCase("§e§l[現在値]")||line3.equalsIgnoreCase("§e§l[price]")) {
@@ -328,7 +364,10 @@ public class MarketSignEvent {
                         signb.update();
                     }
                     continue;
+
                 }
+
+                */
             }
         }
 

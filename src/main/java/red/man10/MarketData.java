@@ -75,6 +75,27 @@ public class MarketData {
 
     }
 
+    // $100,000 -> 10000
+    double getPriceFromPriceString(String price) {
+
+        price = price.replace(",","");
+        price = price.replace("$","");
+        price = price.replace("§l","");
+        price = price.replace("§2","");
+        price = price.replace("§4","");
+        price = price.replace("§0","");
+        price = price.replace("§1","");
+
+
+        return Double.parseDouble(price);
+    }
+
+    public String getBalanceString(String uuid){
+
+        double price = this.plugin.vault.getBalance(UUID.fromString(uuid));
+        return "§e§l$"+getPriceString(price);
+    }
+
 
     public OrderInfo getOrderByOrderId(int order_id){
 
@@ -303,7 +324,7 @@ public class MarketData {
         ArrayList<OrderInfo> buyList = this.getGroupedOrderList(null,item_id,true,-1);
 
         if(sellList.size() == 0){
-            return false;
+//            return false;
         }
 
         int sell = 0;
@@ -336,12 +357,12 @@ public class MarketData {
         plugin.sign.updateSign(current.key,price);
         plugin.sign.updateSign(String.valueOf(current.id),price);
         //   値上がり
-        if(current.price < price){
+        if((int)current.price < (int)price){
             plugin.serverMessage( "§a§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値上がりしました");
 
 
             //      過去最高高値更新
-            if(current.maxPrice < price){
+            if((int)current.maxPrice < (int)price){
                 plugin.serverMessage( "§a§lマーケット速報!! "+current.key +": $"+getPriceString(price) + " 過去最高高値更新!!!");
                 max = price;
             }
@@ -349,10 +370,10 @@ public class MarketData {
             logHistory(item_id,price);
         }
         //  値下がり
-        if(current.price > price){
+        if((int)current.price > (int)price){
             plugin.serverMessage( "§c§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値下がりしました");
             //      過去最高高値更新
-            if(current.minPrice > price){
+            if((int)current.minPrice > (int)price){
                 plugin.serverMessage( "§c§lマーケット速報!! "+current.key +": $"+getPriceString(price) + " 過去最高安値更新!!!");
                 min = price;
             }
@@ -1337,5 +1358,26 @@ public class MarketData {
         p.spigot().sendMessage(message);
     }
 
+    //  マインクラフトチャットに、ホバーテキストや、クリックコマンドサジェストを設定する
+    public static void sendSuggestCommand(Player p,String text,String hoverText,String command){
+
+        //////////////////////////////////////////
+        //      ホバーテキストとイベントを作成する
+        HoverEvent hoverEvent = null;
+        if(hoverText != null){
+            BaseComponent[] hover = new ComponentBuilder(hoverText).create();
+            hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover);
+        }
+
+        //////////////////////////////////////////
+        //   クリックイベントを作成する
+        ClickEvent clickEvent = null;
+        if(command != null){
+            clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND ,command);
+        }
+
+        BaseComponent[] message = new ComponentBuilder(text). event(hoverEvent).event(clickEvent). create();
+        p.spigot().sendMessage(message);
+    }
 
 }

@@ -105,8 +105,19 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         showMessage(p,""+ret+"件の注文をキャンセルしました");
         return true;
     }
+    //  注文キャンセル
+    public boolean updatePrice(Player p,String idOrKey) {
+        MarketData.ItemIndex item = data.getItemPrice(idOrKey);
+        if(item == null){
+            showError(p,"そのアイテムはみつからない");
+            return false;
+        }
 
+        showMessage(p,item.key+"の現在値を調整中");
+        data.updateCurrentPrice(item.id);
 
+        return true;
+    }
     //  注文キャンセル
     public boolean cancelOrder(Player p,String target) {
 
@@ -240,8 +251,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         }
         if(count == 0){
             showMessage(p,"注文がありません");
+           // MarketData.sendHoverText(p, "§f§l§n てすとおおおおお ","クリックすると全ての注文がキャンセルされます","/test ");
         }else{
-            MarketData.sendHoverText(p,prefix + "§f§l§n [全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mm cancelall");
+            MarketData.sendHoverText(p, "§f§l§n [全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mm cancelall");
             showMessage(p,""+count+"件の注文があります");
 
 
@@ -285,6 +297,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         showMessage(p,"---------["+item.key+"]-----------");
         showMessage(p," §b§l売数量    値段   買数量");
+
+
         for(int i = 0;i < sellList.size();i++){
             MarketData.OrderInfo o = sellList.get(i);
             String color ="§e§l";
@@ -293,6 +307,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
             showMessage(p,String.format("%s%7d  %7s",color,o.amount,data.getPriceString(o.price)));
         }
+        if(sellList.size() == 0){
+            showMessage(p,"§1売り注文がありません");
+        }
         for(int i = 0;i < buyList.size();i++){
             MarketData.OrderInfo o = buyList.get(i);
             String color ="§e§l";
@@ -300,6 +317,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 color  = "§c§l";
             }
             showMessage(p,String.format("%s         %7s  %7d",color,data.getPriceString(o.price),o.amount));
+        }
+        if(buyList.size() == 0){
+            showMessage(p,"§1買い注文がありません");
         }
 
         return true;
@@ -324,43 +344,73 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //      アイテムの値段を表示
     public boolean showPrice(Player p,String idOrKey){
 
+        MarketData.ItemIndex item = null;
 
+        //  IDが指定されてないければ手持ちのアイテム
         if(idOrKey == null){
-            ItemStack item = p.getInventory().getItemInMainHand();
+            ItemStack itemstack = p.getInventory().getItemInMainHand();
 
-            MarketData.ItemIndex ret = data.getItemPrice(p,item);
-            if(ret == null){
+            item = data.getItemPrice(p,itemstack);
+            if(item == null){
                 showError(p,"取得失敗");
                 return false;
             }
-
-            if(ret.result == true){
-                double st = ret.price * 64;
-                showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
-                showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Buy):"+ret.buy);
-
-                //      板表示
-                showOrderBook(p,ret.id,-1);
-            }else{
-                showError(p,"データ取得失敗");
-            }
-
-            return ret.result;
-
         }
 
-        MarketData.ItemIndex ret = data.getItemPrice(idOrKey);
-        if(ret == null){
+        item = data.getItemPrice(idOrKey);
+        if(item == null){
             showError(p,"指定されたアイテムデータは取得できません");
             return false;
         }
 
-        double st = ret.price * 64;
-        showMessage(p,"現在価格:$" + data.getPriceString(ret.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
-        showMessage(p,"§c§l売り注文数(Sell):"+ret.sell +"/§9§l買い注文数(Buy):"+ret.buy);
+        double st = item.price * 64;
 
         //      板表示
-        showOrderBook(p,ret.id,-1);
+        showOrderBook(p,item.id,-1);
+       // showMessage(p,"-----------------");
+        //showMessage(p,"現在価格:$" + data.getPriceString(item.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
+        //showMessage(p,"§c§l売り注文数(Sell):"+item.sell +"/§9§l買い注文数(Buy):"+item.buy);
+
+
+
+
+        long itemCount = 0;
+        double itemPrice = 0;
+        MarketData.ItemStorage storage = data.getItemStorage(p.getUniqueId().toString(),item.id);
+        if(storage != null){
+            itemCount = storage.amount;
+            itemPrice = itemCount * item.price;
+        }
+
+        //  現在所有個数　
+
+        MarketData.sendHoverText(p, prefix + "あなたは"+itemCount+"個の"+storage.item_key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
+
+        if(item.sell >0){
+            MarketData.sendSuggestCommand(p,prefix + "§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §a§l§n=> [成り行き買い] " ,"指定した個数を金額が安い順に買います\n/mm marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mm marketbuy "+item.key + " ");
+        }
+
+        if(itemCount > 0){
+            if(item.buy > 0){
+                MarketData.sendSuggestCommand(p,prefix + "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§c§l§n=> [成り行き売り] " ,"指定した個数を金額が高い順に売ります\n/mm marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mm marketsell "+item.key + " ");
+            }
+        }
+
+
+        MarketData.sendSuggestCommand(p,prefix + "§a§l§n [指し値買い注文] " ,"指定した金額、個数の買い注文をします\n/mm orderbuy(ob) "+item.key +" [金額] [買いたい個数] \n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mm orderbuy "+item.key + " ");
+        if(itemCount > 0){
+            MarketData.sendSuggestCommand(p,prefix + "§c§l§n[指し値売り注文] " ,"指定した金額、個数の売り注文をします\n/mm ordersell(os) "+item.key +" [金額] [売りたい個数] \n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mm ordersell "+item.key + " ");
+        }
+
+
+        ArrayList<MarketData.OrderInfo> orders =  data.getOrderOfUser(p,p.getUniqueId().toString());
+        if(orders != null){
+
+            if(orders.size() > 0){
+                MarketData.sendHoverText(p,prefix+"§f§l§n [注文管理]","自分の注文を削除することができます","/mm order");
+            }
+
+        }
 
         return true;
     }
@@ -526,13 +576,13 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }else if (line3.equalsIgnoreCase("[売却]")) {
                 e.setLine(3,"§6§l[売却]");
             }else if (line3.equalsIgnoreCase("[現在値]")) {
-                e.setLine(3,"§e§l[現在値]");
+                e.setLine(3,"§6§l[現在値]");
             }else if (line3.equalsIgnoreCase("[buy]")) {
                 e.setLine(3,"§a§l[buy]");
             }else if (line3.equalsIgnoreCase("[sell]")) {
                 e.setLine(3,"§6§l[sell]");
             }else if (line3.equalsIgnoreCase("[price]")) {
-                e.setLine(3,"§e§l[price]");
+                e.setLine(3,"§6§l[price]");
             }
         }
     }
@@ -555,11 +605,12 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                         if (line1[1] != null) {
                             p.chat("/mm sell " + line1[0] + " " + line1[1]);
                         }
-                    } else if (line3.equalsIgnoreCase("§e§l[現在値]")||line3.equalsIgnoreCase("§e§l[price]")) {
-                        String[] line1 = signs.getLine(1).split(":",2);
-                        if (line1[1] != null) {
-                            p.chat("/mm price " + line1[0]);
-                        }
+                    } else if (line3.equalsIgnoreCase("§6§l[現在値]")||line3.equalsIgnoreCase("§6§l[price]")) {
+                        p.chat("/mm price "+ signs.getLine(1));
+                                //String[] line1 = signs.getLine(1).split(":",2);
+                        //if (line1[1] != null) {
+                        //    p.chat("/mm price " + line1[0]);
+                       // }
                     } else {
                         e.getPlayer().sendMessage(prefix + "§4この看板には右クリックアクションが実装されていません");
                     }
