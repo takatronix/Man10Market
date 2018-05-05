@@ -1222,7 +1222,9 @@ public class MarketData {
         //   注文管理
         ArrayList<MarketData.OrderInfo> orders =  getOrderOfUser(p,uuid);
         if(orders != null){
-            sendHoverText(p, "§f§l"+orders.size()+"個の注文があります " +"§d§l§n=> [注文管理]","注文をキャンセルするにはクリックします","/mm order");
+            if(orders.size() > 0){
+                sendHoverText(p, " §b§l"+orders.size()+"件§fの注文があります " +"§d§l§n=> [注文管理]","注文をキャンセルするにはクリックします","/mm order");
+            }
         }
 
 
