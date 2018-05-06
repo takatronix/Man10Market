@@ -387,7 +387,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         //  現在所有個数　
 
-        MarketData.sendHoverText(p,  "あなたは"+itemCount+"個の"+storage.item_key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
+        MarketData.sendHoverText(p,  "あなたは"+itemCount+"個の"+item.key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
 
         if(item.sell >0){
             MarketData.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §a§l§n=> [成り行き買い] " ,"指定した個数を金額が安い順に買います\n/mm marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mm marketbuy "+item.key + " ");
@@ -464,9 +464,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return true;
     }
     //  アイテムリスト表示
-    public void showMenu(Player p){
+    public void showMenu(Player p,int pageNo){
 
-        data.showItemList(p);
+        data.showItemList(p,pageNo);
     }
 
 

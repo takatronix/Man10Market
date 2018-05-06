@@ -25,7 +25,7 @@ public class MarketCommand implements CommandExecutor {
 
 
         if(args.length == 0){
-            plugin.showMenu(p);
+            plugin.showMenu(p,0);
             return false;
         }
 
@@ -52,7 +52,14 @@ public class MarketCommand implements CommandExecutor {
         ////////////////
         //    リスト
         if(command.equalsIgnoreCase("menu")){
-            plugin.showMenu(p);
+
+            if(args.length == 2){
+
+                plugin.showMenu(p,Integer.parseInt(args[1]));
+                return true;
+            }
+            plugin.showMenu(p,0);
+
             return true;
         }
 

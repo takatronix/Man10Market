@@ -1186,18 +1186,22 @@ public class MarketData {
     }
 
 
-    public boolean showItemList(Player p){
+    public boolean showItemList(Player p,int targetPageNo){
 
         String uuid = p.getUniqueId().toString();
 
-        p.sendMessage("§b§l======================================================");
-        p.sendMessage("   §f§l[Man10 Central Exchange / man10中央取引所] MENU");
-        p.sendMessage("§b§l======================================================");
+        p.sendMessage("§b§l============================================");
+        p.sendMessage(" §f§lMan10 Central Exchange / man10中央取引所");
+        p.sendMessage("§b§l============================================");
 
 
-        ArrayList<ItemIndex> items = getItemIndexList("select * from item_index  where disabled = 0 order by id;");
+        ArrayList<ItemIndex> items = getItemIndexList("select * from item_index where disabled = 0 order by id;");
+
+        int pageLimit = 10;
+        int maxpage = items.size() / pageLimit;
 
         double totalEstimated = 0;
+        int index = 0;
         for(ItemIndex item : items){
 
             //      ストレージある
@@ -1210,12 +1214,63 @@ public class MarketData {
             double estimated = amount * item.price;
             totalEstimated += estimated;
 
-            String text = "§f§lID:"+item.id +"/"+item.key + " §b§l"+getPriceString(store.amount) + "§f§lx§e§l$" + getPriceString(item.price) +" §6§l評価額:$"+getPriceString(estimated) + " §f§l§n[=>注文]";
-            String hover = "クリックすると現在の注文状況を表示";
-            sendHoverText(p, text,hover,"/mm price "+item.key);
+            int pageNo = index / pageLimit;
+
+
+            //      ターゲットページなら表示
+            if(pageNo == targetPageNo){
+                String text = "§1ID:"+item.id  + " §f§l"+item.key + " §b§l"+getPriceString(store.amount) + "§f§lx§e§l$" + getPriceString(item.price) +" §6§l評価額:$"+getPriceString(estimated) + " §f§l§n[=>注文]";
+                String hover = "クリックすると現在の注文状況を表示";
+                sendHoverText(p, text,hover,"/mm price "+item.key);
+            }
+
+
+            index ++;
 
         }
-        p.sendMessage("-------");
+
+        int curPage  = targetPageNo + 1;
+        int nextPage = targetPageNo + 1;
+        int prevPage = targetPageNo - 1;
+
+        //////////////////////////////////////////
+        //   クリックイベントを作成する
+
+        BaseComponent[] pageLink = null;
+        String pageText = "["+curPage + "/"+maxpage+"]";
+        BaseComponent[] nextLink = null;
+        BaseComponent[] prevLink = null;
+
+        String br = "§f§l---------";
+        //      前に戻るページ
+        if( targetPageNo > 0 ){
+            ClickEvent clickPrev = null;
+            clickPrev = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm menu "+prevPage);
+            prevLink = new ComponentBuilder("§b§l [<<] ").event(clickPrev).create();
+        }
+        //      次の進むページ
+        if( curPage < maxpage ){
+            ClickEvent clickNext = null;
+            clickNext = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm menu "+nextPage);
+            nextLink = new ComponentBuilder("§b§l [>>] ").event(clickNext).create();
+        }
+
+
+        if(prevLink == null && nextLink!= null){
+            pageLink = new ComponentBuilder(br + pageText).append(nextLink).append(br).create();
+        }
+
+        if(prevLink != null && nextLink!= null){
+            pageLink = new ComponentBuilder(br).append(prevLink).append(pageText). append(nextLink).append(br).create();
+
+        }
+        if(prevLink != null && nextLink==null){
+            pageLink = new ComponentBuilder(br).append(prevLink).append(pageText).append(br).create();
+
+        }
+        p.spigot().sendMessage(pageLink);
+
+
         sendHoverText(p, " §f§lあなたの所持金:"+getBalanceString(uuid) + " §6§lアイテム評価額:$"+getPriceString(totalEstimated),"",null);
 
 
