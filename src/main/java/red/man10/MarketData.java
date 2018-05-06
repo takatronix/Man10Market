@@ -15,8 +15,10 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -28,7 +30,14 @@ public class MarketData {
     public MarketData(MarketPlugin plugin) {
         this.plugin = plugin;
         this.mysql = new MySQLManager(plugin,"Market");
+
+
+        this.history.data = this;
+        this.history.plugin = plugin;
     }
+
+    MarketHistory history = new MarketHistory();
+
 
     class ItemIndex{
         int id;
@@ -535,6 +544,20 @@ public class MarketData {
                 ",datetime='"+currentTime()+"' where id="+item_id+";";
         boolean ret = this.mysql.execute(sql);
 
+
+
+
+        Calendar datetime = Calendar.getInstance();
+        datetime.setTime(new Date());
+        int year = datetime.get(Calendar.YEAR);
+        int month = datetime.get(Calendar.MONTH) + 1;
+        int day = datetime.get(Calendar.DAY_OF_MONTH);
+        int hour = datetime.get(Calendar.HOUR);
+        int minute = datetime.get(Calendar.MINUTE);
+
+        int volume = 0;
+
+        history.update(current.id,current.price,volume,year,month,day,hour,minute);
 
         //Mr_IK 追加、Signにデータを通す
         plugin.sign.updateSign(current.key,price);

@@ -34,7 +34,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     //Mr_IK push test
     // takatronix push test
-    String  prefix = "§f§l[§2§lm§e§lMarket§f§l]";
+    String  prefix = "§8§l[§4§lm§2§lMarket§8§l]";
 
     MarketData data = null;
     MarketVault vault = null;
