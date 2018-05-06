@@ -956,6 +956,13 @@ public class MarketData {
 
 
     public boolean canBuy(Player p,double price,int amount ,ItemIndex current) {
+
+        if(amount <= 0) {
+            showError(p.getUniqueId().toString(), "0個以下の注文はできない");
+            return false;
+        }
+
+
         double bal = plugin.vault.getBalance(p.getUniqueId());
         if(bal < price*amount){
             plugin.showError(p,"残額がたりません! 必要金額:$"+getPriceString(price*amount) +" 残額:$"+ getPriceString(bal));
@@ -970,8 +977,25 @@ public class MarketData {
     ///
     public int marketSell(String uuid,int item_id,int amount) {
 
+        if(amount <= 0) {
+            showError(uuid, "0個以下の注文はできない");
+            return 0;
+        }
+
+
         //  安い順の売り注文を列挙
         ArrayList<OrderInfo> sellOrders = this.getOrderByQuery("select * from order_tbl where item_id = " + item_id+" and buy = 1 order by price desc,id asc");
+
+
+        ItemStorage storage = getItemStorage(uuid,item_id);
+        if(storage == null){
+            showError(uuid,"アイテムを所有していない!!");
+            return 0;
+        }
+        if(storage.amount < amount){
+            showError(uuid,"あなたの"+storage.item_key + "の所有個数は"+storage.amount+"なのに"+amount+"個を売ることはできない");
+            return 0;
+        }
 
         int totalAmount = 0;
         for(OrderInfo o : sellOrders){
@@ -986,6 +1010,11 @@ public class MarketData {
                 int rest = o.amount - amount;
                 totalAmount += amount;
                 updateOrder(o.id,rest);
+
+                long newAmount = storage.amount - amount;
+                showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
+                updateItemStorage(uuid,item_id,newAmount);
+
                 return totalAmount;
             }
             // 　買い注文 < 売り注文
@@ -995,6 +1024,13 @@ public class MarketData {
                 deleteOrder(o.id);
                 totalAmount += o.amount;
                 amount -= o.amount;
+
+
+                long newAmount = storage.amount - o.amount;
+                showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
+                updateItemStorage(uuid,item_id,newAmount);
+
+
             }
             //     同量
             else if(o.amount == amount){
@@ -1002,6 +1038,11 @@ public class MarketData {
                 deleteOrder(o.id);
                 sendMoney(uuid,o.item_id,o.price,amount,o.uuid);
                 sendItemToStorage(o.uuid,o.item_id,o.amount);
+
+
+                long newAmount = storage.amount - o.amount;
+                showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
+                updateItemStorage(uuid,item_id,newAmount);
                 return totalAmount;
             }
         }
@@ -1012,6 +1053,11 @@ public class MarketData {
 
     ///
     public int marketSell(String uuid,String idOrKey,int amount){
+
+        if(amount == 0){
+            showError(uuid,"0個の注文はできない");
+            return 0;
+        }
 
         ItemIndex current = getItemPrice(idOrKey);
         if(current == null){
@@ -1031,7 +1077,12 @@ public class MarketData {
     ///
     public int marketBuy(String uuid,int item_id,int amount) {
 
-        //  安い順の売り注文を列挙
+        if(amount <= 0) {
+            showError(uuid, "0個以下の注文はできない");
+            return 0;
+        }
+
+            //  安い順の売り注文を列挙
         ArrayList<OrderInfo> sellOrders = this.getOrderByQuery("select * from order_tbl where item_id = " + item_id+" and buy = 0 order by price,id desc");
 
         int totalAmount = 0;
@@ -1090,6 +1141,11 @@ public class MarketData {
 
 
     public int marketBuy(String uuid,String idOrKey,int amount){
+
+        if(amount <= 0) {
+            showError(uuid, "0個以下の注文はできない");
+            return 0;
+        }
 
         ItemIndex current = getItemPrice(idOrKey);
         if(current == null){
@@ -1158,6 +1214,11 @@ public class MarketData {
     //
     //
     public boolean canSell(Player p,double price,int amount,ItemIndex item){
+
+        if(amount <= 0){
+            plugin.showError(p,"0個のアイテムは売れない");
+            return false;
+        }
 
         //      自分のストレージをチェック
         ItemStorage storage = getItemStorage(p.getUniqueId().toString(),item.id);
