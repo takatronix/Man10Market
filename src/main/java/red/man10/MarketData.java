@@ -1157,15 +1157,28 @@ public class MarketData {
 
     //
     //
-    public boolean canSell(Player p,double price,int amount,ItemIndex current){
+    public boolean canSell(Player p,double price,int amount,ItemIndex item){
+
+        //      自分のストレージをチェック
+        ItemStorage storage = getItemStorage(p.getUniqueId().toString(),item.id);
+        if(storage == null){
+            plugin.showError(p,"このアイテムを所有していません");
+            return false;
+        }
+
+        if(storage.amount < amount){
+            plugin.showError(p,"アイテムの個数がたりません");
+            return false;
+        }
+
 
         ///  値段の正当性チェック
-        if(price > current.price * plugin.sellLimitRatio){
+        if(price > item.price * plugin.sellLimitRatio){
             plugin.showError(p,"現在値の" + plugin.sellLimitRatio + "倍以上の金額で売ることはできません");
             return false;
         }
 
-        if(price < current.price / plugin.sellLimitRatio){
+        if(price < item.price / plugin.sellLimitRatio){
             plugin.showError(p,"現在値の1/" +plugin.sellLimitRatio +"以下の金額で売ることはできません");
             return false;
         }
@@ -1191,6 +1204,20 @@ public class MarketData {
         if(canSell(p,price,amount,current) == false){
             return false;
         }
+
+        // 自分のアイテム
+        ItemStorage storage = getItemStorage(p.getUniqueId().toString(),current.id);
+        //p.sendMessage("所有個数"+storage.amount + " 売り子数"+amount);
+        long left = storage.amount - amount;
+        //p.sendMessage("left:"+left);
+
+
+        if(updateItemStorage(p.getUniqueId().toString(),current.id,left) == false){
+            plugin.showError(p,"自分のアイテムをへらせませんでした");
+            return false;
+        }
+
+        p.sendMessage(current.key +"が"+left+"個になりました");
 
         String playerName = p.getName();
         String uuid = p.getUniqueId().toString();
