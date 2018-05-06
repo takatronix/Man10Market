@@ -110,7 +110,7 @@ public class MarketCommand implements CommandExecutor {
                 p.sendMessage("§2§l/mce ordersell [id/key] [一つあたりの金額] [個数] -  指定した金額で売り注文を出す");
                 return false;
             }
-            return plugin.orderSell(p,args[1],Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+            return plugin.orderSell(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
         }
 
         ////////////////////////////
@@ -140,7 +140,7 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
 
-            return plugin.orderBuy(p,args[1],Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+            return plugin.orderBuy(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
         }
 
 

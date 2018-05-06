@@ -957,6 +957,11 @@ public class MarketData {
 
     public boolean canBuy(Player p,double price,int amount ,ItemIndex current) {
 
+        if(price < 1){
+            showError(p.getUniqueId().toString(), "1円未満の注文はできない");
+            return false;
+        }
+
         if(amount <= 0) {
             showError(p.getUniqueId().toString(), "0個以下の注文はできない");
             return false;
@@ -1055,7 +1060,7 @@ public class MarketData {
     public int marketSell(String uuid,String idOrKey,int amount){
 
         if(amount == 0){
-            showError(uuid,"0以下の注文はできない");
+            showError(uuid,"0個以下の注文はできない");
             return 0;
         }
 
@@ -1143,7 +1148,7 @@ public class MarketData {
     public int marketBuy(String uuid,String idOrKey,int amount){
 
         if(amount <= 0) {
-            showError(uuid, "0以下の注文はできない");
+            showError(uuid, "0個以下の注文はできない");
             return 0;
         }
 
@@ -1214,9 +1219,13 @@ public class MarketData {
     //
     //
     public boolean canSell(Player p,double price,int amount,ItemIndex item){
+        if(price < 1){
+            showError(p.getUniqueId().toString(), "1円未満の注文はできない");
+            return false;
+        }
 
         if(amount <= 0){
-            plugin.showError(p,"0以下の注文はできない");
+            plugin.showError(p,"0個以下の注文はできない");
             return false;
         }
 

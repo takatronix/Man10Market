@@ -332,12 +332,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         if(data.orderBuy(p,idOrKey,price,amount)){
             showMessage(p,"買い注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
-
-
             return true;
         }
 
-
+        showError(p,"買い注文失敗");
         return false;
     }
 
