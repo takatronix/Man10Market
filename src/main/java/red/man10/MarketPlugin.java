@@ -484,8 +484,26 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public void showMenu(Player p,int pageNo){
 
         data.showItemList(p,pageNo);
+        showItemBank(p);
     }
+    public void showItemBank(Player p){
 
+
+        //////////////////////////////////////////
+        //   クリックイベントを作成する
+
+        ClickEvent clickStore = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mib store");
+        BaseComponent[] storeLink = new ComponentBuilder("§2§l[アイテムを預ける]").event(clickStore).create();
+
+
+        ClickEvent clickTake = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mib take");
+        BaseComponent[] takLink = new ComponentBuilder("§4§l[アイテムを引き出す]").event(clickTake).create();
+
+        String br = "    ";
+        BaseComponent[] pageLink = new ComponentBuilder(br).append(storeLink).append("   §f§l/   ").append(takLink).append("").create();
+        p.spigot().sendMessage(pageLink);
+
+    }
 
     // アイテム登録
     public void registerItem(Player p,String key,double price,double tick){
