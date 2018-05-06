@@ -147,17 +147,32 @@ public class MarketCommand implements CommandExecutor {
         ////////////////////////////
         //   成り行き買い注文
         if(command.equalsIgnoreCase("marketbuy") || command.equalsIgnoreCase("mb")) {
-            if(!p.hasPermission("red.man10.marketbuy.buy")){
+            if(!p.hasPermission("red.man10.market.marketbuy")){
                 p.sendMessage("§4§lあなたには権限がない");
                 return false;
             }
             if(args.length != 3){
-                p.sendMessage("§2§l/mce buy [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                p.sendMessage("§2§l/mce marketbuy [id/key] [個数] - 成り行き注文（市場価格で購入)");
                 return false;
             }
 
             return plugin.marketBuy(p,args[1],Integer.parseInt(args[2]));
         }
+
+        if(command.equalsIgnoreCase("buy") || command.equalsIgnoreCase("itembuy")) {
+            if(!p.hasPermission("red.man10.market.itembuy")){
+                p.sendMessage("§4§lあなたには権限がない");
+                return false;
+            }
+            if(args.length != 3){
+                p.sendMessage("§2§l/mce buy [id/key] [個数] - アイテム注文（市場価格で購入)");
+                return false;
+            }
+
+            return plugin.itemBuy(p,args[1],Integer.parseInt(args[2]));
+        }
+
+
 
         //    アイテム保存
         if(command.equalsIgnoreCase("store")){

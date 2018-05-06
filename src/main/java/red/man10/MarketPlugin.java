@@ -41,7 +41,57 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public double buyLimitRatio = 10;
     public double sellLimitRatio = 10;
 
+    ///////////////////////////////
+    //      成り行きアイテム購入
+    public boolean itemBuy(Player p, String target, int amount){
 
+        if(amount > 64){
+            showError(p,"64個以上のアイテムを購入することはできません");
+            return false;
+        }
+
+        int ret = data.marketBuy(p.getUniqueId().toString(),target,amount);
+        if(ret == -1){
+            showError(p,"エラーが発生しました");
+            return false;
+        }
+
+        if(ret == 0){
+            showMessage(p,"購入できませんでした");
+            return true;
+        }
+
+        showMessage(p,"購入成功:"+ret+"個購入できました");
+
+
+        MarketData.ItemIndex item = data.getItemPrice(target);
+
+        if(item == null){
+            showMessage(p,"アイテムが取得できない");
+            return false;
+        }
+
+        //      アイテム個数をへらす
+        String uuid = p.getUniqueId().toString();
+        MarketData.ItemStorage storage = data.getItemStorage(uuid,item.id);
+
+
+        long newAmount = storage.amount - ret;
+        data.updateItemStorage(uuid,item.id,newAmount);
+
+
+        ItemStack itemStack = MarketData.itemFromBase64(item.base64);
+        if(itemStack == null){
+            showError(p,"アイテム生成に失敗");
+            return false;
+        }
+
+        itemStack.setAmount((int)ret);
+
+        p.getInventory().addItem(itemStack);
+
+        return true;
+    }
     ///////////////////////////////
     //      成り行き購入
     public boolean marketBuy(Player p, String target, int amount){

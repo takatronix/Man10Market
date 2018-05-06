@@ -42,6 +42,7 @@ public class MarketData {
         int buy;
         boolean result;
         int disabled;
+        String base64;
         String getString(){
             return "ItemIndex:"+id+" "+key+" price:"+price+" bid:"+bid+" ask:"+ask + " sell:"+sell + " buy:"+buy;
         }
@@ -1342,6 +1343,7 @@ public class MarketData {
                 item.bid = rs.getDouble("bid");
                 item.ask = rs.getDouble("ask");
                 item.disabled = rs.getInt("disabled");
+                item.base64 = rs.getString("base64");
                 item.result = true;
                 ret.add(item);
             }
@@ -1429,6 +1431,7 @@ public class MarketData {
                 ret.buy = rs.getInt("buy");
                 ret.minPrice = rs.getDouble("min_price");
                 ret.maxPrice = rs.getDouble("max_price");
+                ret.base64 = rs.getString("base64");
                 ret.disabled = rs.getInt("disabled");
                 ret.result = true;
             }
