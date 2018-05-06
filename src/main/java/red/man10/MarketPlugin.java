@@ -6,6 +6,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -15,8 +16,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.server.MapInitializeEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.map.MapRenderer;
+import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -42,6 +48,26 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     public double buyLimitRatio = 10;
     public double sellLimitRatio = 10;
+
+    int mapno = 0;
+
+    @EventHandler
+    public void onMapInitialize(MapInitializeEvent e){
+/*
+
+        MapView m = e.getMap();
+        for(MapRenderer r:e.getMap().getRenderers()){
+
+
+            e.getMap().removeRenderer(r);
+        }
+        ChartMapRenderer mr = new ChartMapRenderer();
+
+        mr.no = mapno;
+        mapno ++;
+        e.getMap().addRenderer(mr);
+        */
+    }
 
     ///////////////////////////////
     //      成り行きアイテム購入
@@ -600,7 +626,28 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return true;
     }
+    public boolean giveChart(Player p,String target){
 
+        ItemStack itemStack = new ItemStack(Material.MAP, 1);
+        MapView view = Bukkit.createMap(p.getWorld());
+        for(MapRenderer renderer : view.getRenderers())
+            view.removeRenderer(renderer);
+
+
+      //  view.getRenderers().clear();
+        ChartMapRenderer chartRenderer = new ChartMapRenderer();
+        chartRenderer.target = target;
+        view.addRenderer(chartRenderer);
+        itemStack.setDurability(view.getId());
+
+
+        ItemMeta meta = itemStack.getItemMeta();
+        meta.setDisplayName(target);
+        itemStack.setItemMeta(meta);
+        p.getInventory().addItem(itemStack);
+
+        return true;
+    }
 
     public boolean showLog(Player p,String target,int offset) {
 

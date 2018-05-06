@@ -72,6 +72,22 @@ public class MarketCommand implements CommandExecutor {
             plugin.showLog(p,null,0);
             return true;
         }
+
+        if(command.equalsIgnoreCase("chart")){
+            if(!p.hasPermission("red.man10.market.chart")){
+                p.sendMessage("§4§lあなたには権限がない");
+                return false;
+            }
+
+            if(args.length == 2){
+                plugin.giveChart(p,args[1]);
+                return true;
+            }
+
+            plugin.giveChart(p,null);
+            return true;
+        }
+
         if(command.equalsIgnoreCase("userlog")){
             if(args.length == 3){
                 plugin.showLog(p,args[1],Integer.parseInt(args[2]));
