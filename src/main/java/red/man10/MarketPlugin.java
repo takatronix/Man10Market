@@ -257,7 +257,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
            // MarketData.sendHoverText(p, "§f§l§n てすとおおおおお ","クリックすると全ての注文がキャンセルされます","/test ");
         }else{
             p.sendMessage("§b§l"+count+"§f件の注文があります");
-            MarketData.sendHoverText(p, "         §c§n [全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mce cancelall");
+            MarketData.sendHoverText(p, "         §c§n[全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mce cancelall");
         }
         showMainMenuLink(p);
 /*
@@ -296,7 +296,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         ArrayList<MarketData.OrderInfo> sellList = data.getGroupedOrderList(uuid,item_id,false,-1);
         ArrayList<MarketData.OrderInfo> buyList = data.getGroupedOrderList(uuid,item_id,true,-1);
 
-        p.sendMessage("---------["+item.key+"]-----------");
+        p.sendMessage("");
+        p.sendMessage("§a§l==============[ 注文状況: "+ item.key+" ]================");
         p.sendMessage(" §b§l売数量    値段   買数量");
 
 
@@ -388,19 +389,19 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         MarketData.sendHoverText(p,  "あなたは"+itemCount+"個の"+item.key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
 
         if(item.sell >0){
-            MarketData.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §a§l§n=> [成り行き買い] " ,"指定した個数を金額が安い順に買います\n/mce marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mce marketbuy "+item.key + " ");
+            MarketData.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §f=> §a§l§n[成り行き買い]" ,"指定した個数を金額が安い順に買います\n/mce marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mce marketbuy "+item.key + " ");
         }
 
         if(itemCount > 0){
             if(item.buy > 0){
-                MarketData.sendSuggestCommand(p, "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§c§l§n=> [成り行き売り] " ,"指定した個数を金額が高い順に売ります\n/mce marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mce marketsell "+item.key + " ");
+                MarketData.sendSuggestCommand(p, "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§f=> §c§l§n[成り行き売り]" ,"指定した個数を金額が高い順に売ります\n/mce marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mce marketsell "+item.key + " ");
             }
         }
 
 
-        MarketData.sendSuggestCommand(p, "§a§l§n [指し値買い注文] " ,"指定した金額、個数の買い注文をします\n/mce orderbuy(ob) "+item.key +" [金額] [買いたい個数] \n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mce orderbuy "+item.key + " ");
+        MarketData.sendSuggestCommand(p, "金額を指定して買い注文 [1:金額][2:個数] => §a§l§n[指し値買い注文]" ,"指定した金額、個数の買い注文をします\n§a§l/mce orderbuy(ob) "+item.key +" [金額] [買い個数] §e\n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mce orderbuy "+item.key + " ");
         if(itemCount > 0){
-            MarketData.sendSuggestCommand(p,  "§c§l§n[指し値売り注文] " ,"指定した金額、個数の売り注文をします\n/mce ordersell(os) "+item.key +" [金額] [売りたい個数] \n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mce ordersell "+item.key + " ");
+            MarketData.sendSuggestCommand(p,  "金額を指定して売り注文 [1:金額][2:個数] => §c§l§n[指し値売り注文]" ,"指定した金額、個数の売り注文をします\n§c§l/mce ordersell(os) "+item.key +" [金額] [売り個数] §e\n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mce ordersell "+item.key + " ");
         }
 
 
@@ -493,11 +494,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         //   クリックイベントを作成する
 
         ClickEvent clickStore = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mib store");
-        BaseComponent[] storeLink = new ComponentBuilder("§2§l[アイテムを預ける]").event(clickStore).create();
+        BaseComponent[] storeLink = new ComponentBuilder("§2§l§n[アイテムを預ける]").event(clickStore).create();
 
 
         ClickEvent clickTake = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mib take");
-        BaseComponent[] takLink = new ComponentBuilder("§4§l[アイテムを引き出す]").event(clickTake).create();
+        BaseComponent[] takLink = new ComponentBuilder("§4§l§n[アイテムを引き出す]").event(clickTake).create();
 
         String br = "    ";
         BaseComponent[] pageLink = new ComponentBuilder(br).append(storeLink).append("   §f§l/   ").append(takLink).append("").create();

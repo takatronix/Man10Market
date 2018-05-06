@@ -250,10 +250,14 @@ public class MarketData {
         showTransactionLog(p,logs,offset);
 
 
-        int n = offset+ 1;
-        int next = offset + logs.size();
-        String linkText = String.format("------%d/%d----- => §d[更に読み込む]",n,total );
-        sendHoverText(p,linkText,"クリックするとさかのぼります","/mce log "+next);
+
+        if(total >= 10){
+            int n = offset+ 1;
+            int next = offset + logs.size();
+            String linkText = String.format("------No%d- : (Total:%d)----- => §d[更に読み込む]",n,total );
+            sendHoverText(p,linkText,"クリックするとさかのぼります","/mce log "+next);
+        }
+
 
         return true;
     }
@@ -272,8 +276,8 @@ public class MarketData {
 
         int n = offset+ 1;
         int next = offset + logs.size();
-        String linkText = String.format("------%d/%d----- => §d[更に読み込む]",n,total );
-        sendHoverText(p,linkText,"クリックするとさかのぼります","/mce log "+next);
+        String linkText = String.format("------No%d-:Total:%d----- => §d[更に読み込む]",n,total );
+        sendHoverText(p,linkText,"クリックするとさかのぼります","/mce userlog "+ player+" "+next);
         return true;
     }
 
@@ -1414,7 +1418,7 @@ public class MarketData {
         p.spigot().sendMessage(pageLink);
 
 
-        sendHoverText(p, " §f§lあなたの所持金:"+getBalanceString(uuid) + " §6§lアイテム評価額:$"+getPriceString(totalEstimated),"",null);
+        p.sendMessage(" §f§lあなたの所持金:"+getBalanceString(uuid) + " §6§lアイテム評価額:$"+getPriceString(totalEstimated));
 
 
         //   注文管理
