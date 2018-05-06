@@ -51,6 +51,19 @@ public class MarketData {
         String item_key;
         long amount;
     }
+    class TransactionLog{
+        int id;
+        String item;
+        int order_id;
+        String uuid;
+        String player;
+        String action;
+        double price;
+        int amount;
+        Date date;
+        Date time;
+    }
+
     class OrderInfo{
         int id;
         int item_id;
@@ -225,6 +238,134 @@ public class MarketData {
         return getOrderByQuery("select * from order_tbl where item_id = "+item_id+ " and buy="+buy+" and price="+price+";");
     }
 
+    public boolean showTransaction(Player p, String uuid,int offset){
+
+        int total = getTransactionCount(uuid);
+        if(total < 0){
+            showError(p.getUniqueId().toString(),"トランザクション取得失敗");
+            return false;
+        }
+        String sql = "select * from transaction_log where uuid = '" + uuid +"' order by id desc limit 10 offset "+offset+";";
+        ArrayList<TransactionLog> logs = getTransactionList(sql,p.getUniqueId().toString());
+        showTransactionLog(p,logs,offset);
+
+
+        int n = offset+ 1;
+        int next = offset + logs.size();
+        String linkText = String.format("------%d/%d----- => §d[更に読み込む]",n,total );
+        sendHoverText(p,linkText,"クリックするとさかのぼります","/mm log "+next);
+
+        return true;
+    }
+    public boolean showPlayerTransaction(Player p, String player,int offset){
+
+        int total = getPlayerTransactionCount(player);
+        if(total < 0){
+            showError(p.getUniqueId().toString(),"トランザクション取得失敗");
+            return false;
+        }
+        String sql = "select * from transaction_log where player = '" + player +"' order by id desc limit 10 offset "+offset+";";
+
+
+        ArrayList<TransactionLog> logs = getTransactionList(sql,p.getUniqueId().toString());
+        showTransactionLog(p,logs,offset);
+
+        int n = offset+ 1;
+        int next = offset + logs.size();
+        String linkText = String.format("------%d/%d----- => §d[更に読み込む]",n,total );
+        sendHoverText(p,linkText,"クリックするとさかのぼります","/mm log "+next);
+        return true;
+    }
+
+    void showTransactionLog(Player p, ArrayList<TransactionLog> logs, int offset){
+
+        for(TransactionLog log : logs){
+            p.sendMessage(String.format("%s %s %s %s amount:%d $%s",log.date.toString(),log.time.toString(),log.item,log.action,log.amount,getPriceString(log.price)));
+        }
+    }
+
+    ///     トランザクションの個数
+    public int getTransactionCount(String uuid){
+        String sql = "select count(*) from transaction_log where uuid = '" + uuid+"';";
+        int count = 0;
+        ResultSet rs = mysql.query(sql);
+        if(rs == null){
+            showError(uuid,"データ取得失敗");
+            mysql.close();
+            return -1;
+        }
+        try {
+            while (rs.next()) {
+                count = rs.getInt("count(*)");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            mysql.close();
+            showError(uuid,"データ取得失敗");
+            return -1;
+        }
+        mysql.close();
+        return count;
+    }
+    public int getPlayerTransactionCount(String player){
+        String sql = "select count(*) from transaction_log where player = '" + player+"';";
+        int count = 0;
+        ResultSet rs = mysql.query(sql);
+        if(rs == null){
+            mysql.close();
+            return -1;
+        }
+        try {
+            while (rs.next()) {
+                count = rs.getInt("count(*)");
+            }
+        }
+
+        catch (SQLException e)
+        {
+            mysql.close();
+            return -1;
+        }
+        mysql.close();
+        return count;
+    }
+    public ArrayList<TransactionLog> getTransactionList(String sql,String uuid){
+
+        ArrayList<TransactionLog> ret = new ArrayList<TransactionLog>();
+
+        ResultSet rs = mysql.query(sql);
+        if(rs == null){
+            showError(uuid,"データ取得失敗");
+            return ret;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                TransactionLog log = new TransactionLog();
+                log.id = rs.getInt("id");
+                log.item = rs.getString("item");
+                log.uuid = rs.getString("uuid");
+                log.action = rs.getString("action");
+                log.amount = rs.getInt("amount");
+                log.time = rs.getTime("datetime");
+                log.date = rs.getDate("datetime");
+                ret.add(log);
+            }
+            rs.close();
+        }
+        catch (SQLException e)
+        {
+            mysql.close();
+            showError(uuid,"データ取得失敗");
+            return ret;
+        }
+        mysql.close();
+        return ret;
+    }
+
     //////////////////////////////////////////////////////////////////////
     ///             グループ化した価格帯を取得
     public ArrayList<OrderInfo> getGroupedOrderList(String uuid,int item_id,boolean isBuy,int limit){
@@ -259,6 +400,7 @@ public class MarketData {
         catch (SQLException e)
         {
             showError(uuid,"データ取得失敗");
+            mysql.close();
             return ret;
         }
         mysql.close();
@@ -1219,7 +1361,7 @@ public class MarketData {
 
             //      ターゲットページなら表示
             if(pageNo == targetPageNo){
-                String text = "§1ID:"+item.id  + " §f§l"+item.key + " §b§l"+getPriceString(store.amount) + "§f§lx§e§l$" + getPriceString(item.price) +" §6§l評価額:$"+getPriceString(estimated) + " §a§l§n[=>注文]";
+                String text = "§1ID:"+item.id  + " §f"+item.key + " §b"+getPriceString(store.amount) + "個§fx§e$" + getPriceString(item.price) +" §6評価額:$"+getPriceString(estimated) + " §a§n[注文]";
                 String hover = "クリックすると現在の注文状況を表示";
                 sendHoverText(p, text,hover,"/mm price "+item.key);
             }
@@ -1278,11 +1420,11 @@ public class MarketData {
         ArrayList<MarketData.OrderInfo> orders =  getOrderOfUser(p,uuid);
         if(orders != null){
             if(orders.size() > 0){
-                sendHoverText(p, " §b§l"+orders.size()+"件§fの注文があります " +"§d§l§n=> [注文管理]","注文をキャンセルするにはクリックします","/mm order");
+                sendHoverText(p, " §b§l"+orders.size()+"件§fの注文があります " +"=> §d§l§n[注文管理]","注文をキャンセルするにはクリックします /mm order","/mm order");
             }
         }
 
-
+        sendHoverText(p, " 過去の注文を参照する => §1§n[注文履歴]","注文の履歴を表示します /mm log","/mm log");
         return true;
 
 

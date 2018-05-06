@@ -63,6 +63,27 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
 
+        if(command.equalsIgnoreCase("log")){
+            if(args.length == 2){
+                plugin.showLog(p,null,Integer.parseInt(args[1]));
+                return true;
+            }
+
+            plugin.showLog(p,null,0);
+            return true;
+        }
+        if(command.equalsIgnoreCase("userlog")){
+            if(args.length == 3){
+                plugin.showLog(p,args[1],Integer.parseInt(args[2]));
+                return true;
+            }
+            if(args.length == 2){
+                plugin.showLog(p,args[1],0);
+            }
+            return true;
+        }
+
+
         //////////////////////////
         //      売り注文
         if(command.equalsIgnoreCase("price")){
@@ -271,6 +292,7 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§c-----------Admin Commands---------------------");
         p.sendMessage("§c§l/mm order (user/id/key) 注文を表示する");
         p.sendMessage("/mm cancellall  全ての注文をキャンセルする");
+        p.sendMessage("§c§l/mm userlog (user) ユーザーの注文履歴");
 
         p.sendMessage("§c§l/mm register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
         p.sendMessage("§c/mm unregister - 手にもったアイテムをマーケットから削除する");

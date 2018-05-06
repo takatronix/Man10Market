@@ -162,7 +162,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     void showMainMenuLink(Player p){
-        MarketData.sendHoverText(p,"§b§l§n =>[メインメニュー]","クリックするとメインメニューへ戻ります","/mm menu");
+        MarketData.sendHoverText(p," §f§lメインメニューへ戻る => §b§l§n[メインメニュー]","クリックするとメインメニューへ戻ります","/mm menu");
     }
 
     //  注文表示
@@ -462,6 +462,22 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         return true;
+    }
+
+
+    public boolean showLog(Player p,String target,int offset) {
+        String uuidTarget = p.getUniqueId().toString();
+        if (target != null) {
+            boolean ret = data.showPlayerTransaction(p, target, offset);
+            showMainMenuLink(p);
+            return ret;
+        }
+
+        boolean ret = data.showTransaction(p, uuidTarget, offset);
+
+        showMainMenuLink(p);
+        return ret;
+
     }
     //  アイテムリスト表示
     public void showMenu(Player p,int pageNo){
