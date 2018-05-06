@@ -596,7 +596,7 @@ public class MarketData {
                 +");");
 
         //  opへ通知
-        plugin.opLog(" "+playerName + ":"+action+" $"+getPriceString(price) + ":"+amount);
+       // plugin.opLog(" "+playerName + ":"+action+" $"+getPriceString(price) + ":"+amount);
         return ret;
     }
 
@@ -743,8 +743,8 @@ public class MarketData {
 
         if(player.isOnline()){
             Player online = (Player)player;
-            plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個ストレージに追加されました");
-            plugin.showMessage(online,"現在トータル:" +total+"個");
+            plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個ストレージに追加されました => "+total+"個");
+//            plugin.showMessage(online,"現在トータル:" +total+"個");
         }
 
 

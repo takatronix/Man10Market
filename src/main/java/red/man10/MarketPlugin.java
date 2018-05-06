@@ -5,6 +5,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -117,6 +118,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //     アイテム成り行き売り
     public boolean itemSell(Player p, String target, int amount){
 
+        if(p.getGameMode() != GameMode.SURVIVAL){
+            showError(p,"サバイバルモード以外でのアイテム売りは禁止されています");
+            return false;
+        }
 
         MarketData.ItemIndex itemIndex = data.getItemPrice(target);
         if(itemIndex == null){
@@ -738,16 +743,16 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             sign.Signcreate(e.getPlayer(),e.getBlock().getLocation(),e.getLine(1));
             e.setLine(0,prefix);
             String line3 = e.getLine(3);
-            if (line3.equalsIgnoreCase("[購入]")) {
-                e.setLine(3,"§a§l[購入]");
-            }else if (line3.equalsIgnoreCase("[売却]")) {
-                e.setLine(3,"§6§l[売却]");
+            if (line3.equalsIgnoreCase("[買う]")) {
+                e.setLine(3,"§2§l[買う]");
+            }else if (line3.equalsIgnoreCase("[売る]")) {
+                e.setLine(3,"§4§l[売る]");
             }else if (line3.equalsIgnoreCase("[現在値]")) {
                 e.setLine(3,"§6§l[現在値]");
             }else if (line3.equalsIgnoreCase("[buy]")) {
-                e.setLine(3,"§a§l[buy]");
+                e.setLine(3,"§2§l[buy]");
             }else if (line3.equalsIgnoreCase("[sell]")) {
-                e.setLine(3,"§6§l[sell]");
+                e.setLine(3,"§4§l[sell]");
             }else if (line3.equalsIgnoreCase("[price]")) {
                 e.setLine(3,"§6§l[price]");
             }else if (line3.equalsIgnoreCase("[menu]")) {
@@ -771,12 +776,12 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
 
-                    if (line3.equalsIgnoreCase("§a§l[購入]")||line3.equalsIgnoreCase("§a§l[buy]")) {
+                    if (line3.equalsIgnoreCase("§2§l[買う]")||line3.equalsIgnoreCase("§2§l[buy]")) {
                         String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
                             p.chat("/mce buy " + line1[0] + " " + line1[1]);
                         }
-                    } else if (line3.equalsIgnoreCase("§6§l[売却]")||line3.equalsIgnoreCase("§6§l[sell]")) {
+                    } else if (line3.equalsIgnoreCase("§4§l[売る]")||line3.equalsIgnoreCase("§4§l[sell]")) {
                         String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
                             p.chat("/mce sell " + line1[0] + " " + line1[1]);

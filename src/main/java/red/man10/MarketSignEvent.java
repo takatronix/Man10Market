@@ -160,14 +160,17 @@ public class MarketSignEvent {
 
 
 
-
-                //  現在値看板 更新
+                //////////////////////////////////////
+                //      現在値看板 更新
                 if (line3.equalsIgnoreCase("§6§l[現在値]")||line3.equalsIgnoreCase("§6§l[price]")) {
 
                     String curPriceString = signb.getLine(2);
                     double curPrice = 0;
                     if(curPriceString != null){
-                         curPrice = plugin.data.getPriceFromPriceString(curPriceString);
+                        if(curPriceString.equals("") == false){
+
+                            curPrice = plugin.data.getPriceFromPriceString(curPriceString);
+                        }
                     }
                     String balanceString = plugin.data.getPriceString(newprice);
 
@@ -189,8 +192,77 @@ public class MarketSignEvent {
                     continue;
                 }
 
+                    if (line3.equalsIgnoreCase("§2§l[buy]")||line3.equalsIgnoreCase("§2§l[買う]")) {
 
-                ///  以下のコードは無効
+                        String curPriceString = signb.getLine(2);
+                        double curPrice = 0;
+                        if(curPriceString != null){
+                            if(curPriceString.equals("") == false){
+
+                                curPrice = plugin.data.getPriceFromPriceString(curPriceString);
+                            }
+                        }
+
+                        String keyAndCount = signb.getLine(1);
+                        String key = keyAndCount;
+                        String keys[] = keyAndCount.split(":");
+                        if(keys.length == 2){
+                            key = keys[0];
+                        }
+
+                        MarketData.ItemIndex itemIndex = plugin.data.getItemPrice(key);
+                        if(itemIndex == null){
+                            signb.setLine(2,"§2§lError");
+                            signb.update();
+                            continue;
+                        }
+                        if(itemIndex.bid == 0){
+                            signb.setLine(2,"§2§lNo data");
+                            signb.update();
+                            continue;
+                        }
+                        String balanceString = plugin.data.getPriceString(itemIndex.bid);
+                        signb.setLine(2,"§l$"+balanceString);
+                        signb.update();
+                        continue;
+                    }
+                    if (line3.equalsIgnoreCase("§4§l[sell]")||line3.equalsIgnoreCase("§4§l[売る]")) {
+
+                        String curPriceString = signb.getLine(2);
+                        double curPrice = 0;
+                        if(curPriceString != null){
+                            if(curPriceString.equals("") == false){
+
+                                curPrice = plugin.data.getPriceFromPriceString(curPriceString);
+                            }
+                        }
+
+                        String keyAndCount = signb.getLine(1);
+                        String key = keyAndCount;
+                        String keys[] = keyAndCount.split(":");
+                        if(keys.length == 2){
+                            key = keys[0];
+                        }
+
+                        MarketData.ItemIndex itemIndex = plugin.data.getItemPrice(key);
+                        if(itemIndex == null){
+                            signb.setLine(2,"§2§lError");
+                            signb.update();
+                            continue;
+                        }
+                        if(itemIndex.ask == 0){
+                            signb.setLine(2,"§2§lNo data");
+                            signb.update();
+                            continue;
+                        }
+                        String balanceString = plugin.data.getPriceString(itemIndex.ask);
+                        signb.setLine(2,"§l$"+balanceString);
+                        signb.update();
+                        continue;
+                    }
+
+
+                    ///  以下のコードは無効
             /*
                 if(values[1]==null){
                     String line3 = signb.getLine(3);
