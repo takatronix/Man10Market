@@ -631,11 +631,18 @@ public class MarketData {
         double money =  price*amount;
 
 
+       // opLog("payMoney: "+ uuid + " player:"+playerName);
+
+
+
         if(plugin.vault.withdraw(player.getUniqueId(),money) == false){
             Player online = (Player)player;
             plugin.showError(online,"$"+getPriceString(money)+"の引き出しに失敗しました");
             return false;
         }
+
+//        plugin.vault.deposit()
+
 
         logTransaction(uuid,"WithdrawMoney",info.key,price,amount,0,"");
 
@@ -1032,7 +1039,10 @@ public class MarketData {
             //opLog("成買い"+o.getString());
             // 　　売り注文 > 買い注文
             if(o.amount > amount ){
+               // opLog("marketBuy>:"+o.player +":amount:"+o.amount +" price:"+o.price);
                 if(this.payMoney(uuid,o.item_id,o.price,amount)){
+                    //      お金送信
+                    sendMoney(o.uuid,o.item_id,o.price,amount,uuid);
                     sendItemToStorage(uuid,o.item_id,amount);
                     totalAmount += amount;
                     int rest = o.amount - amount;
@@ -1045,7 +1055,10 @@ public class MarketData {
             }
             //   売り注文　＜　買い注文　
             else if(o.amount < amount){
+                //opLog("marketBuy<:"+o.player +":amount:"+o.amount +" price:"+o.price);
                 if(this.payMoney(uuid,o.item_id,o.price,o.amount)){
+                    sendMoney(o.uuid,o.item_id,o.price,o.amount,uuid);
+
                     sendItemToStorage(uuid,o.item_id,o.amount);
                     totalAmount += o.amount;
                     amount -= o.amount;
@@ -1057,8 +1070,10 @@ public class MarketData {
             }
             //   同量
             else if(o.amount == amount){
-
+               // opLog("marketBuy=:"+o.player +":amount:"+o.amount +" price:"+o.price);
                 if(this.payMoney(uuid,o.item_id,o.price,amount)){
+                    sendMoney(o.uuid,o.item_id,o.price,amount,uuid);
+
                     sendItemToStorage(uuid,o.item_id,amount);
                     totalAmount += amount;
                     deleteOrder(o.id);
