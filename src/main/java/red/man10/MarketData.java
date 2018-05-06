@@ -1055,7 +1055,7 @@ public class MarketData {
     public int marketSell(String uuid,String idOrKey,int amount){
 
         if(amount == 0){
-            showError(uuid,"0個の注文はできない");
+            showError(uuid,"0以下の注文はできない");
             return 0;
         }
 
@@ -1143,7 +1143,7 @@ public class MarketData {
     public int marketBuy(String uuid,String idOrKey,int amount){
 
         if(amount <= 0) {
-            showError(uuid, "0個以下の注文はできない");
+            showError(uuid, "0以下の注文はできない");
             return 0;
         }
 
@@ -1216,7 +1216,7 @@ public class MarketData {
     public boolean canSell(Player p,double price,int amount,ItemIndex item){
 
         if(amount <= 0){
-            plugin.showError(p,"0個のアイテムは売れない");
+            plugin.showError(p,"0以下の注文はできない");
             return false;
         }
 
