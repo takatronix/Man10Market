@@ -280,7 +280,7 @@ public class MarketData {
     void showTransactionLog(Player p, ArrayList<TransactionLog> logs, int offset){
 
         for(TransactionLog log : logs){
-            p.sendMessage(String.format("%s %s %s %s amount:%d $%s",log.date.toString(),log.time.toString(),log.item,log.action,log.amount,getPriceString(log.price)));
+            p.sendMessage(String.format("%s %s %s §c%s §b%d個 §e$%s",log.date.toString(),log.time.toString(),log.item,log.action,log.amount,getPriceString(log.price)));
         }
     }
 
@@ -352,6 +352,7 @@ public class MarketData {
                 log.amount = rs.getInt("amount");
                 log.time = rs.getTime("datetime");
                 log.date = rs.getDate("datetime");
+                log.price = rs.getDouble("price");
                 ret.add(log);
             }
             rs.close();
