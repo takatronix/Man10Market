@@ -121,11 +121,25 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length != 3){
-                p.sendMessage("§2§l/mce sell [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                p.sendMessage("§2§l/mce marketsell [id/key] [個数] - 成り行き注文（市場価格で購入)");
                 return false;
             }
 
             return plugin.marketSell(p,args[1],Integer.parseInt(args[2]));
+        }
+
+
+        if(command.equalsIgnoreCase("itemsell") || command.equalsIgnoreCase("sell")) {
+            if(!p.hasPermission("red.man10.market.itemsell")){
+                p.sendMessage("§4§lあなたには権限がない");
+                return false;
+            }
+            if(args.length != 3){
+                p.sendMessage("§2§l/mce sell [id/key] [個数] - アイテム成り行き売り（市場価格で購入)");
+                return false;
+            }
+
+            return plugin.itemSell(p,args[1],Integer.parseInt(args[2]));
         }
 
         //////////////////////////

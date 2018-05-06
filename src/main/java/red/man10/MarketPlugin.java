@@ -15,6 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -92,6 +93,90 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return true;
     }
+
+
+
+
+    public static int getAmount(Player player, ItemStack itemCheck)
+    {
+        PlayerInventory inventory = player.getInventory();
+        ItemStack[] items = inventory.getContents();
+        int has = 0;
+        for (ItemStack item : items)
+        {
+            if ((item != null) && item.getType() == itemCheck.getType() && (item.getAmount() > 0))
+            {
+                has += item.getAmount();
+            }
+        }
+        return has;
+    }
+
+
+    ///////////////////////////////
+    //     アイテム成り行き売り
+    public boolean itemSell(Player p, String target, int amount){
+
+
+        MarketData.ItemIndex itemIndex = data.getItemPrice(target);
+        if(itemIndex == null){
+            showError(p,"対象アイテムが見つからない");
+            return  false;
+        }
+
+        //  買い注文チェック
+        if(itemIndex.buy < amount){
+            showError(p,"アイテムの買い注文個数は"+itemIndex.buy+"なので"+amount+"個の売りはできません");
+            return false;
+        }
+
+        if(amount > 64){
+            showError(p,"64個以上のアイテムを売ることはできません");
+            return false;
+        }
+
+        ItemStack item = MarketData.itemFromBase64(itemIndex.base64);
+
+        int has = getAmount(p,item);
+        if(has <= 0){
+            showError(p,"アイテムをもっていない");
+            return false;
+        }
+        showMessage(p,"インベントリに"+has+"個の"+itemIndex.key+"を持っています");
+        if(has < amount){
+            showError(p,"インベントリのアイテムが足らない");
+            return false;
+        }
+        //      アイテムをへらす
+        item.setAmount(amount);
+        p.getInventory().removeItem(item);
+
+
+        //MarketData.ItemStorage store = data.getItemStorage(uuid,result.id);
+        //      アイテムをストレージに入れる
+        String uuid = p.getUniqueId().toString();
+        this.data.sendItemToStorage(uuid,itemIndex.id,amount);
+
+
+        int ret = data.marketSell(p.getUniqueId().toString(),target,amount);
+        if(ret == -1){
+            showError(p,"エラーが発生しました");
+            return false;
+        }
+
+
+        if(ret == 0){
+            showMessage(p,"売却できませんでした");
+            return true;
+        }
+
+        showMessage(p,"売却成功:"+ret+"個売却できました");
+
+        return true;
+    }
+
+
+
     ///////////////////////////////
     //      成り行き購入
     public boolean marketBuy(Player p, String target, int amount){
