@@ -503,9 +503,7 @@ public class MarketData {
         if(min == 0){
             min = current.price;
         }
-        //Mr_IK 追加、Signにデータを通す
-        plugin.sign.updateSign(current.key,price);
-        plugin.sign.updateSign(String.valueOf(current.id),price);
+
         //   値上がり
         if((int)current.price < (int)price){
             plugin.serverMessage( "§a§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値上がりしました");
@@ -536,6 +534,11 @@ public class MarketData {
                 ",ask="+ask+
                 ",datetime='"+currentTime()+"' where id="+item_id+";";
         boolean ret = this.mysql.execute(sql);
+
+
+        //Mr_IK 追加、Signにデータを通す
+        plugin.sign.updateSign(current.key,price);
+        plugin.sign.updateSign(String.valueOf(current.id),price);
 
         return ret;
     }
