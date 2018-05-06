@@ -626,6 +626,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return true;
     }
+
+    ArrayList<ChartMapRenderer> mapList = new ArrayList<ChartMapRenderer>();
+
+
     public boolean giveChart(Player p,String target){
 
         ItemStack itemStack = new ItemStack(Material.MAP, 1);
@@ -633,8 +637,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         for(MapRenderer renderer : view.getRenderers())
             view.removeRenderer(renderer);
 
-
-      //  view.getRenderers().clear();
         ChartMapRenderer chartRenderer = new ChartMapRenderer();
         chartRenderer.target = target;
         view.addRenderer(chartRenderer);
@@ -646,8 +648,20 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         itemStack.setItemMeta(meta);
         p.getInventory().addItem(itemStack);
 
+
+        mapList.add(chartRenderer);
         return true;
     }
+    public int updateMapList(int item_id,String name,String price){
+
+        for(ChartMapRenderer rd : mapList){
+
+            rd.updateBuffer(name,price);
+
+        }
+        return 0;
+    }
+
 
     public boolean showLog(Player p,String target,int offset) {
 

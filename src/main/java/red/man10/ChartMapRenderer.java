@@ -36,6 +36,17 @@ public class ChartMapRenderer extends MapRenderer {
     public String name = "";
 
 
+    public void updateBuffer(String name,String price){
+        Graphics2D gr = bufferedImage.createGraphics();
+        gr.setColor(Color.red);
+        gr.setFont(new Font( "SansSerif", Font.PLAIN, 14 ));
+
+        gr.drawString(name,10,16);
+        gr.drawString(price,50,50);
+
+
+    }
+
 
 
     @Override

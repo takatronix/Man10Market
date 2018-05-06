@@ -563,6 +563,8 @@ public class MarketData {
         plugin.sign.updateSign(current.key,price);
         plugin.sign.updateSign(String.valueOf(current.id),price);
 
+        plugin.updateMapList(current.id,current.key,"$"+getPriceString(current.price));
+
         return ret;
     }
 
