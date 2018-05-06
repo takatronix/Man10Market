@@ -195,13 +195,7 @@ public class MarketSignEvent {
                     if (line3.equalsIgnoreCase("§2§l[buy]")||line3.equalsIgnoreCase("§2§l[買う]")) {
 
                         String curPriceString = signb.getLine(2);
-                        double curPrice = 0;
-                        if(curPriceString != null){
-                            if(curPriceString.equals("") == false){
 
-                                curPrice = plugin.data.getPriceFromPriceString(curPriceString);
-                            }
-                        }
 
                         String keyAndCount = signb.getLine(1);
                         String key = keyAndCount;
@@ -221,6 +215,12 @@ public class MarketSignEvent {
                             signb.update();
                             continue;
                         }
+                        if(itemIndex.sell == 0){
+                            signb.setLine(2,"§4§l在庫なし");
+                            signb.update();
+                            continue;
+                        }
+
                         String balanceString = plugin.data.getPriceString(itemIndex.bid);
                         signb.setLine(2,"§l$"+balanceString);
                         signb.update();
@@ -229,13 +229,6 @@ public class MarketSignEvent {
                     if (line3.equalsIgnoreCase("§4§l[sell]")||line3.equalsIgnoreCase("§4§l[売る]")) {
 
                         String curPriceString = signb.getLine(2);
-                        double curPrice = 0;
-                        if(curPriceString != null){
-                            if(curPriceString.equals("") == false){
-
-                                curPrice = plugin.data.getPriceFromPriceString(curPriceString);
-                            }
-                        }
 
                         String keyAndCount = signb.getLine(1);
                         String key = keyAndCount;
@@ -252,6 +245,11 @@ public class MarketSignEvent {
                         }
                         if(itemIndex.ask == 0){
                             signb.setLine(2,"§2§lNo data");
+                            signb.update();
+                            continue;
+                        }
+                        if(itemIndex.buy == 0){
+                            signb.setLine(2,"§4§l注文なし");
                             signb.update();
                             continue;
                         }
