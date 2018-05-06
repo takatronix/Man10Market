@@ -222,7 +222,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         sendClickableMessage(p,"xxx","http://man10.red");
-        showMessage(p,"§f§l---------[注文リスト]-----------");
+        p.sendMessage("§d§l---------[注文リスト]-----------");
         int count = 0;
         for(MarketData.OrderInfo o : orders){
 
@@ -253,13 +253,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             count++;
         }
         if(count == 0){
-            showMessage(p,"注文がありません");
+            p.sendMessage("注文がありません");
            // MarketData.sendHoverText(p, "§f§l§n てすとおおおおお ","クリックすると全ての注文がキャンセルされます","/test ");
         }else{
-            MarketData.sendHoverText(p, "§f§l§n [全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mm cancelall");
-            showMessage(p,""+count+"件の注文があります");
-
-
+            p.sendMessage("§b§l"+count+"§f件の注文があります");
+            MarketData.sendHoverText(p, "         §c§n [全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mm cancelall");
         }
         showMainMenuLink(p);
 /*
@@ -466,6 +464,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     public boolean showLog(Player p,String target,int offset) {
+
+        p.sendMessage("§1§l-----------[注文履歴]-------------");
+
         String uuidTarget = p.getUniqueId().toString();
         if (target != null) {
             boolean ret = data.showPlayerTransaction(p, target, offset);
