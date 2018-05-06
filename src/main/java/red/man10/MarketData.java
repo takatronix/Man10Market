@@ -1219,7 +1219,7 @@ public class MarketData {
 
             //      ターゲットページなら表示
             if(pageNo == targetPageNo){
-                String text = "§1ID:"+item.id  + " §f§l"+item.key + " §b§l"+getPriceString(store.amount) + "§f§lx§e§l$" + getPriceString(item.price) +" §6§l評価額:$"+getPriceString(estimated) + " §f§l§n[=>注文]";
+                String text = "§1ID:"+item.id  + " §f§l"+item.key + " §b§l"+getPriceString(store.amount) + "§f§lx§e§l$" + getPriceString(item.price) +" §6§l評価額:$"+getPriceString(estimated) + " §a§l§n[=>注文]";
                 String hover = "クリックすると現在の注文状況を表示";
                 sendHoverText(p, text,hover,"/mm price "+item.key);
             }
@@ -1237,7 +1237,7 @@ public class MarketData {
         //   クリックイベントを作成する
 
         BaseComponent[] pageLink = null;
-        String pageText = "["+curPage + "/"+maxpage+"]";
+        String pageText = "§f§l "+curPage + "/"+maxpage+" ";
         BaseComponent[] nextLink = null;
         BaseComponent[] prevLink = null;
 
@@ -1246,13 +1246,13 @@ public class MarketData {
         if( targetPageNo > 0 ){
             ClickEvent clickPrev = null;
             clickPrev = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm menu "+prevPage);
-            prevLink = new ComponentBuilder("§b§l [<<] ").event(clickPrev).create();
+            prevLink = new ComponentBuilder("§b§l §n[<<]").event(clickPrev).create();
         }
         //      次の進むページ
         if( curPage < maxpage ){
             ClickEvent clickNext = null;
             clickNext = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm menu "+nextPage);
-            nextLink = new ComponentBuilder("§b§l [>>] ").event(clickNext).create();
+            nextLink = new ComponentBuilder("§b§l §n[>>]").event(clickNext).create();
         }
 
 
