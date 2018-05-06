@@ -153,7 +153,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
            data.updateCurrentPrice(order.item_id);
 
             p.sendMessage("注文ID:"+order.id +"をキャンセルしました");
-            p.chat("/mm order");
+            p.chat("/mce order");
             return true;
         }
 
@@ -162,7 +162,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     void showMainMenuLink(Player p){
-        MarketData.sendHoverText(p," §f§lメインメニューへ戻る => §b§l§n[メインメニュー]","クリックするとメインメニューへ戻ります","/mm menu");
+        MarketData.sendHoverText(p," §f§lメインメニューへ戻る => §b§l§n[メインメニュー]","クリックするとメインメニューへ戻ります /mce","/mce menu");
     }
 
     //  注文表示
@@ -230,7 +230,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             if(o.isBuy){
                 buyOrSell = "§9買";
             }
-           // String strDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(o.datetime);
+           // String sttrDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(o.datetime);
             String price = "$"+data.getPriceString(o.price);
 
             //   注文テキストを作る
@@ -238,12 +238,12 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 ,o.id,buyOrSell,o.key,o.player,price,data.getPriceString(o.amount),o.date.toString(),o.time.toString()
             );
 
-            MarketData.sendHoverText(p, order,"クリックすると注文がキャンセルされます","/mm cancel "+o.id);
+            MarketData.sendHoverText(p, order,"クリックすると注文がキャンセルされます","/mce cancel "+o.id);
 
 
 /*
             //  クリックキャンセルイベント
-            ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm cancel "+o.id);
+            ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mce cancel "+o.id);
             HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(order + "§f§lをキャンセルします").create());
 
             BaseComponent[] cancel = new ComponentBuilder("§f§l§n[CANCEL]").event(hoverEvent).event(clickEvent). create();
@@ -257,7 +257,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
            // MarketData.sendHoverText(p, "§f§l§n てすとおおおおお ","クリックすると全ての注文がキャンセルされます","/test ");
         }else{
             p.sendMessage("§b§l"+count+"§f件の注文があります");
-            MarketData.sendHoverText(p, "         §c§n [全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mm cancelall");
+            MarketData.sendHoverText(p, "         §c§n [全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mce cancelall");
         }
         showMainMenuLink(p);
 /*
@@ -388,19 +388,19 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         MarketData.sendHoverText(p,  "あなたは"+itemCount+"個の"+item.key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
 
         if(item.sell >0){
-            MarketData.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §a§l§n=> [成り行き買い] " ,"指定した個数を金額が安い順に買います\n/mm marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mm marketbuy "+item.key + " ");
+            MarketData.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §a§l§n=> [成り行き買い] " ,"指定した個数を金額が安い順に買います\n/mce marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mce marketbuy "+item.key + " ");
         }
 
         if(itemCount > 0){
             if(item.buy > 0){
-                MarketData.sendSuggestCommand(p, "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§c§l§n=> [成り行き売り] " ,"指定した個数を金額が高い順に売ります\n/mm marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mm marketsell "+item.key + " ");
+                MarketData.sendSuggestCommand(p, "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§c§l§n=> [成り行き売り] " ,"指定した個数を金額が高い順に売ります\n/mce marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mce marketsell "+item.key + " ");
             }
         }
 
 
-        MarketData.sendSuggestCommand(p, "§a§l§n [指し値買い注文] " ,"指定した金額、個数の買い注文をします\n/mm orderbuy(ob) "+item.key +" [金額] [買いたい個数] \n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mm orderbuy "+item.key + " ");
+        MarketData.sendSuggestCommand(p, "§a§l§n [指し値買い注文] " ,"指定した金額、個数の買い注文をします\n/mce orderbuy(ob) "+item.key +" [金額] [買いたい個数] \n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mce orderbuy "+item.key + " ");
         if(itemCount > 0){
-            MarketData.sendSuggestCommand(p,  "§c§l§n[指し値売り注文] " ,"指定した金額、個数の売り注文をします\n/mm ordersell(os) "+item.key +" [金額] [売りたい個数] \n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mm ordersell "+item.key + " ");
+            MarketData.sendSuggestCommand(p,  "§c§l§n[指し値売り注文] " ,"指定した金額、個数の売り注文をします\n/mce ordersell(os) "+item.key +" [金額] [売りたい個数] \n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mce ordersell "+item.key + " ");
         }
 
 
@@ -557,7 +557,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents (this,this);
-        getCommand("mm").setExecutor(new MarketCommand(this));
+        getCommand("mce").setExecutor(new MarketCommand(this));
 
 
         vault = new MarketVault(this);
@@ -622,22 +622,22 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                     if (line3.equalsIgnoreCase("§a§l[購入]")||line3.equalsIgnoreCase("§a§l[buy]")) {
                         String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
-                            p.chat("/mm buy " + line1[0] + " " + line1[1]);
+                            p.chat("/mce buy " + line1[0] + " " + line1[1]);
                         }
                     } else if (line3.equalsIgnoreCase("§6§l[売却]")||line3.equalsIgnoreCase("§6§l[sell]")) {
                         String[] line1 = signs.getLine(1).split(":",2);
                         if (line1[1] != null) {
-                            p.chat("/mm sell " + line1[0] + " " + line1[1]);
+                            p.chat("/mce sell " + line1[0] + " " + line1[1]);
                         }
                     } else if (line3.equalsIgnoreCase("§6§l[現在値]")||line3.equalsIgnoreCase("§6§l[price]")) {
-                        p.chat("/mm price "+ signs.getLine(1));
+                        p.chat("/mce price "+ signs.getLine(1));
                                 //String[] line1 = signs.getLine(1).split(":",2);
                         //if (line1[1] != null) {
-                        //    p.chat("/mm price " + line1[0]);
+                        //    p.chat("/mce price " + line1[0]);
                        // }
 
                 } else if (line3.equalsIgnoreCase("§1§l[メニュー]")||line3.equalsIgnoreCase("§1§l[menu]")) {
-                    p.chat("/mm menu");
+                    p.chat("/mce menu");
                 }
                     else {
                         e.getPlayer().sendMessage(prefix + "§4この看板には右クリックアクションが実装されていません");

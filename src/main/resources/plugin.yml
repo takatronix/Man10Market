@@ -7,7 +7,7 @@ description: Minecraft Market System
 website: http://man10.red
 
 commands:
-   mm:
+   mce:
       description: Man10 Minecraft Market System
       permission: red.man10.market
       permission-message: You don't have <permission>

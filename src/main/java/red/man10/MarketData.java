@@ -253,7 +253,7 @@ public class MarketData {
         int n = offset+ 1;
         int next = offset + logs.size();
         String linkText = String.format("------%d/%d----- => §d[更に読み込む]",n,total );
-        sendHoverText(p,linkText,"クリックするとさかのぼります","/mm log "+next);
+        sendHoverText(p,linkText,"クリックするとさかのぼります","/mce log "+next);
 
         return true;
     }
@@ -273,7 +273,7 @@ public class MarketData {
         int n = offset+ 1;
         int next = offset + logs.size();
         String linkText = String.format("------%d/%d----- => §d[更に読み込む]",n,total );
-        sendHoverText(p,linkText,"クリックするとさかのぼります","/mm log "+next);
+        sendHoverText(p,linkText,"クリックするとさかのぼります","/mce log "+next);
         return true;
     }
 
@@ -1333,9 +1333,9 @@ public class MarketData {
 
         String uuid = p.getUniqueId().toString();
 
-        p.sendMessage("§b§l============================================");
-        p.sendMessage(" §f§lMan10 Central Exchange / man10中央取引所");
-        p.sendMessage("§b§l============================================");
+        p.sendMessage("§b§l==================================================");
+        p.sendMessage(" §d§lM§7§lan10 §f§lC§7§lentral §a§lE§7§lxchange / man10中央取引所 §b§l/MCE");
+        p.sendMessage("§b§l==================================================");
 
 
         ArrayList<ItemIndex> items = getItemIndexList("select * from item_index where disabled = 0 order by id;");
@@ -1364,7 +1364,7 @@ public class MarketData {
             if(pageNo == targetPageNo){
                 String text = "§1ID:"+item.id  + " §f"+item.key + " §b"+getPriceString(store.amount) + "個§fx§e$" + getPriceString(item.price) +" §6評価額:$"+getPriceString(estimated) + " §a§n[注文]";
                 String hover = "クリックすると現在の注文状況を表示";
-                sendHoverText(p, text,hover,"/mm price "+item.key);
+                sendHoverText(p, text,hover,"/mce price "+item.key);
             }
 
 
@@ -1388,13 +1388,13 @@ public class MarketData {
         //      前に戻るページ
         if( targetPageNo > 0 ){
             ClickEvent clickPrev = null;
-            clickPrev = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm menu "+prevPage);
+            clickPrev = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mce menu "+prevPage);
             prevLink = new ComponentBuilder("§b§l §n[<<]").event(clickPrev).create();
         }
         //      次の進むページ
         if( curPage < maxpage ){
             ClickEvent clickNext = null;
-            clickNext = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mm menu "+nextPage);
+            clickNext = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mce menu "+nextPage);
             nextLink = new ComponentBuilder("§b§l §n[>>]").event(clickNext).create();
         }
 
@@ -1421,11 +1421,11 @@ public class MarketData {
         ArrayList<MarketData.OrderInfo> orders =  getOrderOfUser(p,uuid);
         if(orders != null){
             if(orders.size() > 0){
-                sendHoverText(p, " §b§l"+orders.size()+"件§fの注文があります " +"=> §d§n[注文管理]","注文をキャンセルするにはクリックします /mm order","/mm order");
+                sendHoverText(p, " §b§l"+orders.size()+"件§fの注文があります " +"=> §d§n[注文管理]","注文をキャンセルするにはクリックします /mce order","/mce order");
             }
         }
 
-        sendHoverText(p, " 過去の注文を参照する => §1§n[注文履歴]","注文の履歴を表示します /mm log","/mm log");
+        sendHoverText(p, " 過去の注文を参照する => §1§n[注文履歴]","注文の履歴を表示します /mce log","/mce log");
         return true;
 
 

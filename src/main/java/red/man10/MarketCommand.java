@@ -42,7 +42,7 @@ public class MarketCommand implements CommandExecutor {
             }
 
             if(args.length != 4){
-                p.sendMessage("§c§l/mm register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
+                p.sendMessage("§c§l/mce register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
                 return false;
             }
             plugin.registerItem(p,args[1], Double.parseDouble(args[2]),Double.parseDouble(args[3]));
@@ -107,7 +107,7 @@ public class MarketCommand implements CommandExecutor {
             }
 
             if(args.length != 4){
-                p.sendMessage("§2§l/mm ordersell [id/key] [一つあたりの金額] [個数] -  指定した金額で売り注文を出す");
+                p.sendMessage("§2§l/mce ordersell [id/key] [一つあたりの金額] [個数] -  指定した金額で売り注文を出す");
                 return false;
             }
             return plugin.orderSell(p,args[1],Double.parseDouble(args[2]),Integer.parseInt(args[3]));
@@ -121,7 +121,7 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length != 3){
-                p.sendMessage("§2§l/mm sell [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                p.sendMessage("§2§l/mce sell [id/key] [個数] - 成り行き注文（市場価格で購入)");
                 return false;
             }
 
@@ -136,7 +136,7 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length != 4){
-                p.sendMessage("§2§l/mm orderbuy [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
+                p.sendMessage("§2§l/mce orderbuy [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
                 return false;
             }
 
@@ -152,7 +152,7 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length != 3){
-                p.sendMessage("§2§l/mm buy [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                p.sendMessage("§2§l/mce buy [id/key] [個数] - 成り行き注文（市場価格で購入)");
                 return false;
             }
 
@@ -172,7 +172,7 @@ public class MarketCommand implements CommandExecutor {
             if(args.length == 2){
                 return plugin.storeItem(p,Integer.parseInt(args[1]));
             }
-            p.sendMessage("§2§l/mm store (個数)- 手に持ったアイテムを倉庫にいれる");
+            p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
             return false;
         }
 
@@ -205,7 +205,7 @@ public class MarketCommand implements CommandExecutor {
             if(args.length == 2){
                 return plugin.cancelOrder(p,args[1]);
             }
-            p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
+            p.sendMessage("/mce cancel [order_id] 注文をキャンセルする");
             return false;
         }
 
@@ -228,7 +228,7 @@ public class MarketCommand implements CommandExecutor {
                 }
             }
 
-            p.sendMessage("/mm cancelall すべての注文をキャンセルする");
+            p.sendMessage("/mce cancelall すべての注文をキャンセルする");
             return false;
         }
 
@@ -241,7 +241,7 @@ public class MarketCommand implements CommandExecutor {
             if(args.length == 2){
                 return plugin.updatePrice(p,args[1]);
             }
-            p.sendMessage("/mm update [id/key] 金額を調整する");
+            p.sendMessage("/mce update [id/key] 金額を調整する");
             return false;
         }
         if(command.equalsIgnoreCase("help")) {
@@ -258,25 +258,25 @@ public class MarketCommand implements CommandExecutor {
     void showHelp(CommandSender p){
         p.sendMessage("§e============== §d●§f●§a●§e Man10 Market §d●§f●§a● §e===============");
         p.sendMessage("§c-------アイテム登録--------------");
-        p.sendMessage("§2§l/mm store (個数)- 手に持ったアイテムを倉庫にいれる");
-        p.sendMessage("§2§l/mm restore [id/key] [個数] 倉庫からアイテムを引き出す");
+        p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
+        p.sendMessage("§2§l/mce restore [id/key] [個数] 倉庫からアイテムを引き出す");
         p.sendMessage("§c--------------------------------");
-        p.sendMessage("§2§l/mm list - 登録アイテムリストと価格を表示する");
-        p.sendMessage("§2§l/mm price (id/key) - (id/Key/手に持ったアイテム)の金額を表示する");
+        p.sendMessage("§2§l/mce list - 登録アイテムリストと価格を表示する");
+        p.sendMessage("§2§l/mce price (id/key) - (id/Key/手に持ったアイテム)の金額を表示する");
 
         p.sendMessage("§c--成り行き注文（現在値で買う)-------------");
-        p.sendMessage("/mm buy [個数] - 成り行き注文（市場価格で購入)");
-        p.sendMessage("/mm sell [個数] - 成り行き注文（市場価格で売り)");
+        p.sendMessage("/mce buy [個数] - 成り行き注文（市場価格で購入)");
+        p.sendMessage("/mce sell [個数] - 成り行き注文（市場価格で売り)");
 
         p.sendMessage("§c--指値注文(金額を指定して注文を入れる)---------");
-        p.sendMessage("§2§l/mm ordersell/os [id/key] [一つあたりの金額] [個数] - 指定した金額で売り注文を出す");
-        p.sendMessage("§2§l/mm orderbuy/ob  [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
+        p.sendMessage("§2§l/mce ordersell/os [id/key] [一つあたりの金額] [個数] - 指定した金額で売り注文を出す");
+        p.sendMessage("§2§l/mce orderbuy/ob  [id/key] [一つあたりの金額] [個数] - 指定した金額で買い注文を出す");
 
         p.sendMessage("§c-------注文管理------------------");
-        p.sendMessage("/mm order  注文を表示する");
-        p.sendMessage("/mm cancel [order_id] 注文をキャンセルする");
-        p.sendMessage("/mm cancelall  全ての注文をキャンセルする");
-        p.sendMessage("/mm canceltem [id/key]");
+        p.sendMessage("/mce order  注文を表示する");
+        p.sendMessage("/mce cancel [order_id] 注文をキャンセルする");
+        p.sendMessage("/mce cancelall  全ての注文をキャンセルする");
+        p.sendMessage("/mce canceltem [id/key]");
 
 
         p.sendMessage("§c--------------------------------");
@@ -290,12 +290,12 @@ public class MarketCommand implements CommandExecutor {
     }
     void showAdminHelp(CommandSender p){
         p.sendMessage("§c-----------Admin Commands---------------------");
-        p.sendMessage("§c§l/mm order (user/id/key) 注文を表示する");
-        p.sendMessage("/mm cancellall  全ての注文をキャンセルする");
-        p.sendMessage("§c§l/mm userlog (user) ユーザーの注文履歴");
+        p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
+        p.sendMessage("/mce cancellall  全ての注文をキャンセルする");
+        p.sendMessage("§c§l/mce userlog (user) ユーザーの注文履歴");
 
-        p.sendMessage("§c§l/mm register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
-        p.sendMessage("§c/mm unregister - 手にもったアイテムをマーケットから削除する");
+        p.sendMessage("§c§l/mce register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
+        p.sendMessage("§c/mce unregister - 手にもったアイテムをマーケットから削除する");
 
     }
 }
