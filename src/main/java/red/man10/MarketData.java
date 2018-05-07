@@ -482,10 +482,6 @@ public class MarketData {
         ArrayList<OrderInfo> sellList = this.getGroupedOrderList(null,item_id,false,-1);
         ArrayList<OrderInfo> buyList = this.getGroupedOrderList(null,item_id,true,-1);
 
-        if(sellList.size() == 0){
-//            return false;
-        }
-
         int sell = 0;
         double bid = current.price;
         for(OrderInfo o : sellList){
@@ -685,7 +681,7 @@ public class MarketData {
 
 
 
-    //      アイテムストレージから取得
+    //      アイテムアイテムバンクから取得
     public ItemStorage getItemStorage(String uuid,int item_id){
         String sql = "select * from item_storage where item_id = "+item_id +" and uuid= '"+uuid+"';";
 
@@ -771,7 +767,7 @@ public class MarketData {
 
         if(player.isOnline()){
             Player online = (Player)player;
-            plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個ストレージに追加されました => "+total+"個");
+            plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクに追加されました => "+total+"個");
 //            plugin.showMessage(online,"現在トータル:" +total+"個");
         }
 
@@ -781,7 +777,7 @@ public class MarketData {
     }
 
     ////////////////////////////////////////////
-    ///         ストレージからアイテムを引き出す
+    ///         アイテムバンクからアイテムを引き出す
     public boolean removeItemFromStorage(String uuid,int item_id,int amount){
 
 
@@ -805,7 +801,7 @@ public class MarketData {
             this.updateItemStorage(uuid,item_id,total);
             if(player.isOnline()){
                 Player online = (Player)player;
-                plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個ストレージからひきだされました ");
+                plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクからひきだされました ");
                 plugin.showMessage(online,"現在トータル:" +getPriceString(total)+"個");
             }
             logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
@@ -1007,9 +1003,11 @@ public class MarketData {
             return false;
         }
 
-        if(item.bid < price){
-            plugin.showError(p,"売りの最低価格:$" +getPriceString(item.bid)+"を超えた金額で買い注文をだせません。$"+getPriceString(item.bid)+"で再注文してください");
-            return false;
+        if(item.sell > 0){
+            if(item.bid < price){
+                plugin.showError(p,"売りの最低価格:$" +getPriceString(item.bid)+"を超えた金額で買い注文をだせません。$"+getPriceString(item.bid)+"で再注文してください");
+                return false;
+            }
         }
 
 
@@ -1274,7 +1272,7 @@ public class MarketData {
             return false;
         }
 
-        //      自分のストレージをチェック
+        //      自分のアイテムバンクをチェック
         ItemStorage storage = getItemStorage(p.getUniqueId().toString(),item.id);
         if(storage == null){
             plugin.showError(p,"このアイテムを所有していません");
@@ -1297,9 +1295,12 @@ public class MarketData {
             plugin.showError(p,"現在値の1/" +plugin.sellLimitRatio +"以下の金額で売ることはできません");
             return false;
         }
-        if(item.ask > price){
-            plugin.showError(p,"売りの最低価格:$" +getPriceString(item.ask)+"以下で売り注文をだせません。$"+getPriceString(item.ask)+"で再注文してください");
-            return false;
+
+        if(item.buy > 0){
+            if(item.ask > price){
+                plugin.showError(p,"売りの最低価格:$" +getPriceString(item.ask)+"以下で売り注文をだせません。$"+getPriceString(item.ask)+"で再注文してください");
+                return false;
+            }
         }
 
 
@@ -1516,7 +1517,7 @@ public class MarketData {
         int index = 0;
         for(ItemIndex item : items){
 
-            //      ストレージある
+            //      アイテムバンクある
             ItemStorage store = getItemStorage(uuid,item.id);
             long amount = 0;
             if(store != null){
@@ -1621,7 +1622,7 @@ public class MarketData {
                 int buy = rs.getInt("buy");
 
 
-                //      ストレージに合う個数
+                //      アイテムバンクに合う個数
                 ItemStorage store = getItemStorage(p.getUniqueId().toString(),id);
                 long amount = 0;
                 if(store != null){
