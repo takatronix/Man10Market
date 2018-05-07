@@ -46,97 +46,50 @@ public class DynamicMapRenderer extends MapRenderer {
     }
 
 
-
     String key = null;
 
-    //          オフスクリーンバッファを作成する
+    //   オフスクリーンバッファを作成する
+    //   高速化のためこのバッファに描画し、マップへ転送する
     BufferedImage bufferedImage = new BufferedImage(128,128,BufferedImage.TYPE_INT_RGB);
-    Color backgroundColor = new Color(50,20,30);
 
-//    public JavaPlugin plugin = null;
+    //      画面リフレッシュサイクル:tick = 1/20秒
+    public int refreshInterval = 0;
 
     //      一度だけ更新する
     public boolean refreshOnce = false;
     //      マップへ転送する
     public boolean updateMapFlag = false;
-
-
+    //      描画時間
     public long drawingTime = 0;
+    //      描画した回数
     public int updateCount = 0;
     public int renderCount = 0;
     public boolean debugMode = true;
 
-    public void updateBuffer(String name,String price){
 
-
-
-
-/*
-        Graphics2D gr = bufferedImage.createGraphics();
-
-       gr.setBackground(backgroundColor);
-        gr.setColor(backgroundColor);
-        gr.fillRect(0,0,bufferedImage.getWidth(),bufferedImage.getHeight());
-
-        gr.setColor(Color.red);
-        gr.setFont(new Font( "SansSerif", Font.PLAIN, 14 ));
-
-        gr.drawString(name,10,16);
-        gr.drawString(price,50,50);
-*/
-    }
-
-    public void drawClock(){
-
-
-        Bukkit.getLogger().info("drawClock");
-        Graphics2D gr = bufferedImage.createGraphics();
-        gr.setColor(backgroundColor);
-        gr.fillRect(0,0,bufferedImage.getWidth(),bufferedImage.getHeight());
-
-        LocalDateTime now = LocalDateTime.now();
-        String date = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(now);
-        String time = DateTimeFormatter.ofPattern("HH:mm:ss").format(now);
-
-        gr.setColor(Color.YELLOW);
-        gr.setFont(new Font( "SansSerif", Font.BOLD ,18 ));
-        gr.drawString(date,10,30);
-        gr.drawString(time,10,60);
-
-
-    }
-
-
-
+    //////////////////////////////////////
+    //      描画関数&速度測定
+    //////////////////////////////////////
     void draw(){
         //      関数をキーで取り出し実行
         DrawFunction func = drawFunctions.get(key);
         if(func != null){
             long startTime = System.nanoTime();
-
             //      描画関数をコール
             if(func.draw(key, bufferedImage.createGraphics())){
                 updateMapFlag = true;
             }
             this.drawingTime =  System.nanoTime() - startTime;
-
+           // Bukkit.getLogger().info("drawtime:"+key + ":"+drawingTime);
         }
     }
 
-    public void drawMap(String key,String param){
 
-        updateBuffer(key,param);
-
-        //
-        this.updateMapFlag = true;
-
-    }
-
-
-    int tickTotal = 0;
-    public int refreshInterval = 0;
     int tickRefresh = 0;
+
+    /////////////////////////////////
     //      Tickイベント
+    //      描画更新があれば反映
     public void onTick(){
 
         if (refreshOnce){
@@ -144,20 +97,16 @@ public class DynamicMapRenderer extends MapRenderer {
             draw();
         }
 
-
         this.refreshInterval =  drawRefreshTimeMap.getOrDefault(key,0);
-        //      インターバル期間をこえていたら画面更新
-        if(refreshInterval != 0){
-            if(tickRefresh > refreshInterval){
-                draw();
-                tickRefresh = 0;
-            }else{
-                tickRefresh++;
-            }
+        if(refreshInterval == 0){
+            return ;
         }
-
-
-        tickTotal ++;
+        tickRefresh ++;
+        //      インターバル期間をこえていたら画面更新
+        if(tickRefresh >= refreshInterval) {
+            draw();
+            tickRefresh = 0;
+        }
 
     }
 
@@ -175,9 +124,9 @@ public class DynamicMapRenderer extends MapRenderer {
             updateMapFlag  = false;
             if(debugMode){
                 //      描画回数を表示(debug)
-                canvas.drawText(8, 10, MinecraftFont.Font, "update:"+updateCount);
-                canvas.drawText( 8,20, MinecraftFont.Font, key);
-                canvas.drawText( 8,40, MinecraftFont.Font, "render:"+drawingTime+"ns");
+                canvas.drawText( 4,4, MinecraftFont.Font, key);
+                canvas.drawText(4, 14, MinecraftFont.Font, "update:"+updateCount);
+                canvas.drawText( 4,24, MinecraftFont.Font, "render:"+drawingTime+"ns");
             }
             updateCount++;
         }
@@ -307,7 +256,7 @@ public class DynamicMapRenderer extends MapRenderer {
         for(DynamicMapRenderer renderer:renderers){
             if(renderer.key.equals(key)){
 
-                renderer.drawMap(key,param);
+                renderer.refreshOnce = true;
                 ret++;
             }
         }
@@ -324,7 +273,7 @@ public class DynamicMapRenderer extends MapRenderer {
 
         Bukkit.getLogger().info("UpdateAll");
         for(DynamicMapRenderer renderer:renderers){
-            renderer.updateMapFlag = true;
+            renderer.refreshOnce = true;
         }
 
         return ;
