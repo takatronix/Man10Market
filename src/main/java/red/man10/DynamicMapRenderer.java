@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
+
+
 ///    プラグインのonEnable()で　DynamicMapRenderer.setupMaps(this)
 //     で初期化して設定をロードすること
 
