@@ -34,6 +34,9 @@ public class MarketData {
 
         this.history.data = this;
         this.history.plugin = plugin;
+
+        MarketChart.data = this;
+
     }
 
     MarketHistory history = new MarketHistory();

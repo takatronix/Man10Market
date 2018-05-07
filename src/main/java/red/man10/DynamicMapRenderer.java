@@ -1,5 +1,6 @@
 package red.man10;
 
+import jdk.nashorn.internal.ir.GetSplitState;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
@@ -15,12 +16,33 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 
-///   Chart描画用レンダラ
-public class ChartMapRenderer extends MapRenderer {
+public class DynamicMapRenderer extends MapRenderer {
+
+    ///////////////////////////////////////////////
+    //      描画関数インタフェース
+    @FunctionalInterface
+    public interface DrawFunction{
+        boolean draw(String key,Graphics2D g);
+    }
+
+    ///////////////////////////////////////////////
+    //      "key" ->　関数　をハッシュマップに保存
+    static HashMap<String,DrawFunction> drawFunctions = new HashMap<String,DrawFunction>();
+
+    //      描画関数をキーを登録
+    public static void register(String key,DrawFunction func){
+        drawFunctions.put(key,func);
+    }
+
+
 
     String key = null;
 
@@ -37,6 +59,10 @@ public class ChartMapRenderer extends MapRenderer {
 
     public void updateBuffer(String name,String price){
 
+
+
+
+/*
         Graphics2D gr = bufferedImage.createGraphics();
 
        gr.setBackground(backgroundColor);
@@ -48,8 +74,30 @@ public class ChartMapRenderer extends MapRenderer {
 
         gr.drawString(name,10,16);
         gr.drawString(price,50,50);
+*/
+    }
+
+    public void drawClock(){
+
+
+        Bukkit.getLogger().info("drawClock");
+        Graphics2D gr = bufferedImage.createGraphics();
+        gr.setColor(backgroundColor);
+        gr.fillRect(0,0,bufferedImage.getWidth(),bufferedImage.getHeight());
+
+        LocalDateTime now = LocalDateTime.now();
+        String date = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(now);
+        String time = DateTimeFormatter.ofPattern("HH:mm:ss").format(now);
+
+        gr.setColor(Color.YELLOW);
+        gr.setFont(new Font( "SansSerif", Font.BOLD ,18 ));
+        gr.drawString(date,10,30);
+        gr.drawString(time,10,60);
+
 
     }
+
+
 
     public void drawMap(String key,String param){
 
@@ -61,6 +109,38 @@ public class ChartMapRenderer extends MapRenderer {
     }
 
 
+    int tickTotal = 0;
+    public int refreshInterval = 20;
+    int tickRefresh = 0;
+    //      Tickイベント
+    public void onTick(){
+
+        //      インターバル期間をこえていたら画面更新
+        if(tickRefresh > refreshInterval){
+            Bukkit.getLogger().info("key:"+key+"start draw");
+
+            //      関数をキーで取り出し実行
+            DrawFunction func = drawFunctions.get(key);
+            if(func != null){
+                Bukkit.getLogger().info("Drawing:"+key);
+
+                //      描画関数をコール
+                if(func.draw(key, bufferedImage.createGraphics())){
+                    updateMapFlag = true;
+                }
+            }
+
+
+            tickRefresh = 0;
+        }else{
+            tickRefresh++;
+        }
+
+
+        tickTotal ++;
+
+    }
+
     //////////////////////////////////////////////////////////////////////
     //    このイベントは本人がマップを持った場合1tick
     //    他者がみる場合は1secの周期でよばれるため高速描写する必要がある
@@ -70,12 +150,12 @@ public class ChartMapRenderer extends MapRenderer {
 
         //     オフスクリーンバッファからコピー
         if(updateMapFlag){
+            Bukkit.getLogger().info("UpdateingMap:"+this.key);
             canvas.drawImage(0,0,bufferedImage);
             updateMapFlag  = false;
-            Bukkit.getLogger().info("update:"+key);
             if(debugMode){
                 //      描画回数を表示(debug)
-                canvas.drawText(20, 20, MinecraftFont.Font, "Draw:"+drawCount);
+                canvas.drawText(20, 20, MinecraftFont.Font, "update:"+updateCount);
                 canvas.drawText( 20,40, MinecraftFont.Font, key);
             }
             updateCount++;
@@ -87,7 +167,7 @@ public class ChartMapRenderer extends MapRenderer {
     //////////////////////////////////////////////////////////////////////
     ///    サーバーシャットダウンでレンダラはは初期化されてしまうので
     ///    再起動後にマップを作成する必要がある　
-    ///    プラグインのonEnable()で　ChartMapRenderer.setupMaps(this)
+    ///    プラグインのonEnable()で　DynamicMapRenderer.setupMaps(this)
     //     で初期化して設定をロードすること
     static public void setupMaps(JavaPlugin plugin) {
 
@@ -102,9 +182,12 @@ public class ChartMapRenderer extends MapRenderer {
         for (String ids : mlist) {
 
             //      mapId,keyのデータを取得
-            String[] split = ids.split(", ");
+            String[] split = ids.split(",");
             int id = Integer.parseInt(split[0]);
-            String key = split[1];
+            String  key = ids;
+            if(split.length == 2){
+                 key = split[1];
+            }
 
             //     mapIDから新規にマップを作成する
             MapView map = Bukkit.getMap((short) id);
@@ -115,7 +198,7 @@ public class ChartMapRenderer extends MapRenderer {
                 map.removeRenderer(mr);
             }
 
-            ChartMapRenderer renderer = new ChartMapRenderer();
+            DynamicMapRenderer renderer = new DynamicMapRenderer();
             renderer.key = key;
             renderer.initialize(map);
 
@@ -125,12 +208,24 @@ public class ChartMapRenderer extends MapRenderer {
             //     描画用に保存
             renderers.add(renderer);
 
-            nmlist.add(key);// STOPSHIP: 2018/05/07
+            Bukkit.getLogger().info("setupMap: key:"+key + "id:"+id);
+            nmlist.add(ids);
         }
 
         //      マップを保存し直す
         config.set("Maps", nmlist);
         plugin.saveConfig();
+
+
+        ////////////////////////////////
+        //      タイマーを作成する
+        Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
+            @Override
+            public void run() {
+                DynamicMapRenderer.onTimerTick();;
+            }
+        }, 0, 1);
+
     }
 
     //////////////////////////////////////////
@@ -145,9 +240,11 @@ public class ChartMapRenderer extends MapRenderer {
         ItemStack m = new ItemStack(Material.MAP);
         MapView map = Bukkit.createMap(Bukkit.getWorlds().get(0));
 
-        //      mapID,keyのフォーマットで必要データを保存
-        mlist.add((int) map.getId() + ", " + key);
+        //      mapID,keyのフォーマットで必要データを保存;
+       int mapId = (int) map.getId();
+        mlist.add(mapId + "," + key);
 
+       Bukkit.getLogger().info("mapp getMapItem: key:"+mapId + "ikey:"+key);
         //      設定データ保存
         config.set("Maps", mlist);
         plugin.saveConfig();
@@ -156,7 +253,7 @@ public class ChartMapRenderer extends MapRenderer {
             map.removeRenderer(mr);
         }
 
-       ChartMapRenderer renderer = new ChartMapRenderer();
+       DynamicMapRenderer renderer = new DynamicMapRenderer();
        renderer.key = key;
        map.addRenderer(renderer);
 
@@ -177,7 +274,7 @@ public class ChartMapRenderer extends MapRenderer {
     static int draw(String key,String param){
 
         int ret = 0;
-        for(ChartMapRenderer renderer:renderers){
+        for(DynamicMapRenderer renderer:renderers){
             if(renderer.key.equals(key)){
 
                 renderer.drawMap(key,param);
@@ -187,9 +284,16 @@ public class ChartMapRenderer extends MapRenderer {
 
         return ret;
     }
+
+    static  void onTimerTick() {
+        for(DynamicMapRenderer renderer:renderers){
+            renderer.onTick();
+        }
+    }
     static public void updateAll() {
 
-        for(ChartMapRenderer renderer:renderers){
+        Bukkit.getLogger().info("UpdateAll");
+        for(DynamicMapRenderer renderer:renderers){
             renderer.updateMapFlag = true;
         }
 
@@ -197,5 +301,5 @@ public class ChartMapRenderer extends MapRenderer {
     }
 
     //        描画検索用
-    static ArrayList<ChartMapRenderer> renderers = new ArrayList<ChartMapRenderer>();
+    static ArrayList<DynamicMapRenderer> renderers = new ArrayList<DynamicMapRenderer>();
 }

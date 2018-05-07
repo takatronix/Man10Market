@@ -73,18 +73,18 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
 
-        if(command.equalsIgnoreCase("chart")){
-            if(!p.hasPermission("red.man10.market.chart")){
+        if(command.equalsIgnoreCase("map")){
+            if(!p.hasPermission("red.man10.market.map")){
                 p.sendMessage("§4§lあなたには権限がない");
                 return false;
             }
 
             if(args.length == 2){
-                plugin.giveChart(p,args[1]);
+                plugin.giveMap(p,args[1]);
                 return true;
             }
 
-            plugin.giveChart(p,null);
+            plugin.giveMap(p,null);
             return true;
         }
 

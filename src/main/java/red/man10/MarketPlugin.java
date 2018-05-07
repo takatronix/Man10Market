@@ -25,6 +25,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -631,19 +633,19 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //ArrayList<ChartMapRenderer> mapList = new ArrayList<ChartMapRenderer>();
 
 
-    public boolean giveChart(Player p,String target){
+    public boolean giveMap(Player p,String target){
 
         //      アイテム作成
-        ItemStack map = ChartMapRenderer.getMapItem(this,target);
+        ItemStack map = DynamicMapRenderer.getMapItem(this,target);
         p.getInventory().addItem(map);
 
-        ChartMapRenderer.updateAll();
+        DynamicMapRenderer.updateAll();
 
         return true;
     }
     public int updateMapList(int item_id,String name,String price){
 
-        ChartMapRenderer.draw(name,price);
+        DynamicMapRenderer.draw(name,price);
 
 
         return 0;
@@ -770,12 +772,28 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         this.saveDefaultConfig();
         this.loadConfig();
 
-        sign = new MarketSignEvent(this);
 
+
+        ////////////////////////////////
         //      マップ初期化
-        ChartMapRenderer.setupMaps(this);
+        DynamicMapRenderer.setupMaps(this);
+        //      マップ関用関数登録
+        MarketChart.registerFuncs();
+        MarketChart.plugin = this;
+
 
         Bukkit.getServer().broadcastMessage(prefix+"Started");
+
+
+        Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
+            @Override
+            public void run() {
+            //  serverMessage("timer");
+            }
+        }, 0, 20);
+
+
+        sign = new MarketSignEvent(this);
     }
 
     @Override
