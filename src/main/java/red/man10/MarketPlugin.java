@@ -10,12 +10,15 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.ItemFlag;
@@ -27,6 +30,7 @@ import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.util.BlockIterator;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -53,6 +57,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public double sellLimitRatio = 10;
 
     int mapno = 0;
+
 
     @EventHandler
     public void onMapInitialize(MapInitializeEvent e){
@@ -835,9 +840,36 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onItemInteract(PlayerInteractEntityEvent event){
+
+        Player player = event.getPlayer();
+
+        Entity e = event.getRightClicked();
+
+        if(e instanceof ItemFrame){
+
+
+          //  opLog("You right clicked an item frame!");
+            event.setCancelled(true);
+            return;
+        }
+
+    }
+    @EventHandler
     public void onInteract(PlayerInteractEvent e) {
+
+
+
+
         Player p = e.getPlayer();
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+
+
+            if (e.getClickedBlock().getState() instanceof ItemFrame) {
+                opLog("ItemFrame");
+                e.setCancelled(true);
+                return;
+            }
             if (e.getClickedBlock().getState() instanceof Sign) {
                 Sign signs = (Sign) e.getClickedBlock().getState();
                 if(signs.getLine(0).equalsIgnoreCase(prefix)) {
