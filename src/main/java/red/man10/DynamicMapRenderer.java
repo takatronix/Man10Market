@@ -36,9 +36,12 @@ public class DynamicMapRenderer extends MapRenderer {
     ///////////////////////////////////////////////
     //      "key" ->　関数　をハッシュマップに保存
     static HashMap<String,DrawFunction> drawFunctions = new HashMap<String,DrawFunction>();
+    static HashMap<String,Integer> drawRefreshTimeMap = new HashMap<String,Integer>();
 
     //      描画関数をキーを登録
-    public static void register(String key,DrawFunction func){
+    //      key: キー func: 描画関数 refreshIntervalTick:自動更新周期(1tick=1/20秒) 0で自動更新しない
+    public static void register(String key,int refreshIntervalTick,DrawFunction func){
+        drawRefreshTimeMap.put(key,refreshIntervalTick);
         drawFunctions.put(key,func);
     }
 
@@ -52,8 +55,12 @@ public class DynamicMapRenderer extends MapRenderer {
 
 //    public JavaPlugin plugin = null;
 
+    //      一度だけ更新する
+    public boolean refreshOnce = false;
+    //      マップへ転送する
     public boolean updateMapFlag = false;
-    int updateCount = 0;
+
+    public int updateCount = 0;
     public int drawCount = 0;
     public boolean debugMode = false;
 
@@ -110,19 +117,18 @@ public class DynamicMapRenderer extends MapRenderer {
 
 
     int tickTotal = 0;
-    public int refreshInterval = 20;
+    public int refreshInterval = 0;
     int tickRefresh = 0;
     //      Tickイベント
     public void onTick(){
 
-        //      インターバル期間をこえていたら画面更新
-        if(tickRefresh > refreshInterval){
-            Bukkit.getLogger().info("key:"+key+"start draw");
+        if (refreshOnce){
+            refreshOnce = false;
 
             //      関数をキーで取り出し実行
             DrawFunction func = drawFunctions.get(key);
             if(func != null){
-                Bukkit.getLogger().info("Drawing:"+key);
+                Bukkit.getLogger().info("RefreshOnce:"+key+":"+refreshInterval);
 
                 //      描画関数をコール
                 if(func.draw(key, bufferedImage.createGraphics())){
@@ -130,10 +136,29 @@ public class DynamicMapRenderer extends MapRenderer {
                 }
             }
 
+        }
 
-            tickRefresh = 0;
-        }else{
-            tickRefresh++;
+
+        this.refreshInterval =  drawRefreshTimeMap.getOrDefault(key,0);
+        //      インターバル期間をこえていたら画面更新
+        if(refreshInterval != 0){
+            if(tickRefresh > refreshInterval){
+                Bukkit.getLogger().info("key:"+key+"start draw");
+
+                //      関数をキーで取り出し実行
+                DrawFunction func = drawFunctions.get(key);
+                if(func != null){
+                    //Bukkit.getLogger().info("Drawing:"+key+":"+refreshInterval);
+
+                    //      描画関数をコール
+                    if(func.draw(key, bufferedImage.createGraphics())){
+                        updateMapFlag = true;
+                    }
+                }
+                tickRefresh = 0;
+            }else{
+                tickRefresh++;
+            }
         }
 
 
@@ -150,7 +175,7 @@ public class DynamicMapRenderer extends MapRenderer {
 
         //     オフスクリーンバッファからコピー
         if(updateMapFlag){
-            Bukkit.getLogger().info("UpdateingMap:"+this.key);
+           // Bukkit.getLogger().info("rendering:"+this.key);
             canvas.drawImage(0,0,bufferedImage);
             updateMapFlag  = false;
             if(debugMode){
@@ -199,6 +224,9 @@ public class DynamicMapRenderer extends MapRenderer {
             }
 
             DynamicMapRenderer renderer = new DynamicMapRenderer();
+
+            renderer.refreshOnce = true;
+            renderer.refreshInterval = drawRefreshTimeMap.getOrDefault(key,0);
             renderer.key = key;
             renderer.initialize(map);
 
@@ -255,6 +283,11 @@ public class DynamicMapRenderer extends MapRenderer {
 
        DynamicMapRenderer renderer = new DynamicMapRenderer();
        renderer.key = key;
+
+
+
+       renderer.refreshOnce = true;
+
        map.addRenderer(renderer);
 
        ItemMeta im = m.getItemMeta();
@@ -264,7 +297,7 @@ public class DynamicMapRenderer extends MapRenderer {
        m.setItemMeta(im);
        m.setDurability(map.getId());
 
-       renderer.updateMapFlag = true;
+
        renderers.add(renderer);
 
        return m;

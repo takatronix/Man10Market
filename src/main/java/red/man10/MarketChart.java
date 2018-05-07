@@ -1,11 +1,13 @@
 package red.man10;
 
 
+import org.bukkit.Bukkit;
 import red.man10.MarketData;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class MarketChart {
@@ -18,11 +20,10 @@ public class MarketChart {
     public static void registerFuncs(){
 
         //      "clock" -> 時計関数
-        DynamicMapRenderer.register( "clock",clock);
-
+        DynamicMapRenderer.register( "clock",20,clock);
 
         //      "time" -> 時計
-        DynamicMapRenderer.register( "time", (String key,Graphics2D g) -> {
+        DynamicMapRenderer.register( "time", 20, (String key, Graphics2D g) -> {
 
             //      背景を黒に
             g.setColor(Color.BLACK);
@@ -39,17 +40,107 @@ public class MarketChart {
             return true;
         });
 
+        DynamicMapRenderer.register( "noise", 1, (String key, Graphics2D g) -> {
+
+            for (int y = 0;y < 128;y++){
+                for(int x = 0;x < 128 ;x ++){
+                    //   getLogger().info("log:"+x + y);
+
+                    Random rnd = new Random();
+
+                    int rr = rnd.nextInt(255);
+                    int gg = rnd.nextInt(255);
+                    int bb = rnd.nextInt(255);
+
+                    Color color = new Color(rr,gg,bb);
+                    g.setColor(color);
+                    g.drawLine(x,y,x,y);
+                }
+
+            }
+
+
+            //      画面更新をする
+            return true;
+        });
+
+        DynamicMapRenderer.register( "circle", 1, (String key, Graphics2D g) -> {
+
+
+            for(int i =0;i< 1;i++){
+                Random rnd = new Random();
+
+                int rr = rnd.nextInt(255);
+                int gg = rnd.nextInt(255);
+                int bb = rnd.nextInt(255);
+                int x = rnd.nextInt(128) - 64;
+                int y = rnd.nextInt(128)- 64;
+                int w = rnd.nextInt(128);
+                int h = rnd.nextInt(128);
+
+                Color color = new Color(rr,gg,bb);
+                g.setColor(color);
+                g.fillArc(x,y,w,w,0,360);
+
+            }
+
+
+            //      画面更新をする
+            return true;
+        });
+
+        DynamicMapRenderer.register( "rect", 1, (String key, Graphics2D g) -> {
+            for(int i =0;i< 1;i++){
+                Random rnd = new Random();
+
+                int rr = rnd.nextInt(255);
+                int gg = rnd.nextInt(255);
+                int bb = rnd.nextInt(255);
+                int x = rnd.nextInt(128) - 64;
+                int y = rnd.nextInt(128)- 64;
+                int w = rnd.nextInt(128);
+                int h = rnd.nextInt(128);
+
+                Color color = new Color(rr,gg,bb);
+                g.setColor(color);
+                g.fillRect(x,y,w,h);
+
+            }
+            //      画面更新をする
+            return true;
+        });
+        DynamicMapRenderer.register( "line", 1, (String key, Graphics2D g) -> {
+            for(int i =0;i< 1;i++){
+                Random rnd = new Random();
+
+                int rr = rnd.nextInt(255);
+                int gg = rnd.nextInt(255);
+                int bb = rnd.nextInt(255);
+                int x = rnd.nextInt(128);
+                int y = rnd.nextInt(128);
+                int w = rnd.nextInt(128);
+                int h = rnd.nextInt(128);
+
+                Color color = new Color(rr,gg,bb);
+                g.setColor(color);
+                g.drawLine(x,y,w,h);
+
+            }
+            //      画面更新をする
+            return true;
+        });
+
 
         int     itemmax = 40;
         //
         for (int i = 1;i <= itemmax;i++){
-            DynamicMapRenderer.register( "price:"+i, (String key,Graphics2D g) -> {
+            DynamicMapRenderer.register( "price:"+i,0,(String key,Graphics2D g) -> {
                 return drawPrice(g,getId(key));
             });
 
         }
         for (int i = 1;i <= itemmax;i++){
-            DynamicMapRenderer.register( "chart:"+i, (String key,Graphics2D g) -> {
+            DynamicMapRenderer.register( "chart:"+i, 0,(String key,Graphics2D g) -> {
                 return drawChart(g,getId(key));
             });
 
