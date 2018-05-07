@@ -984,7 +984,7 @@ public class MarketData {
     }
 
 
-    public boolean canBuy(Player p,double price,int amount ,ItemIndex current) {
+    public boolean canBuy(Player p,double price,int amount ,ItemIndex item) {
 
         if(price < 1){
             showError(p.getUniqueId().toString(), "1円未満の注文はできない");
@@ -993,6 +993,22 @@ public class MarketData {
 
         if(amount <= 0) {
             showError(p.getUniqueId().toString(), "0個以下の注文はできない");
+            return false;
+        }
+
+        ///  値段の正当性チェック
+        if(price > item.price * plugin.buyLimitRatio){
+            plugin.showError(p,"現在値の" + plugin.sellLimitRatio + "倍以上の金額で買い注文を出すことはできません");
+            return false;
+        }
+
+        if(price < item.price / plugin.buyLimitRatio){
+            plugin.showError(p,"現在値の1/" +plugin.sellLimitRatio +"以下の金額で買い注文を出すことはできません");
+            return false;
+        }
+
+        if(item.bid < price){
+            plugin.showError(p,"売りの最低価格:$" +getPriceString(item.bid)+"を超えた金額で買い注文をだせません。$"+getPriceString(item.bid)+"で再注文してください");
             return false;
         }
 
@@ -1281,6 +1297,12 @@ public class MarketData {
             plugin.showError(p,"現在値の1/" +plugin.sellLimitRatio +"以下の金額で売ることはできません");
             return false;
         }
+        if(item.ask > price){
+            plugin.showError(p,"売りの最低価格:$" +getPriceString(item.ask)+"以下で売り注文をだせません。$"+getPriceString(item.ask)+"で再注文してください");
+            return false;
+        }
+
+
         return true;
     }
 

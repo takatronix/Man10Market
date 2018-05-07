@@ -1,5 +1,6 @@
 package red.man10;
 
+import javafx.scene.chart.Chart;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -627,38 +628,23 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return true;
     }
 
-    ArrayList<ChartMapRenderer> mapList = new ArrayList<ChartMapRenderer>();
+    //ArrayList<ChartMapRenderer> mapList = new ArrayList<ChartMapRenderer>();
 
 
     public boolean giveChart(Player p,String target){
 
-        ItemStack itemStack = new ItemStack(Material.MAP, 1);
-        MapView view = Bukkit.createMap(p.getWorld());
-        for(MapRenderer renderer : view.getRenderers())
-            view.removeRenderer(renderer);
-
-        ChartMapRenderer chartRenderer = new ChartMapRenderer();
-        chartRenderer.target = target;
-        view.addRenderer(chartRenderer);
-        itemStack.setDurability(view.getId());
+        //      アイテム作成
+        ItemStack map = ChartMapRenderer.getMapItem(this,target);
+        p.getInventory().addItem(map);
 
 
-        ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(target);
-        itemStack.setItemMeta(meta);
-        p.getInventory().addItem(itemStack);
-
-
-        mapList.add(chartRenderer);
         return true;
     }
     public int updateMapList(int item_id,String name,String price){
 
-        for(ChartMapRenderer rd : mapList){
+        ChartMapRenderer.draw(name,price);
 
-            rd.updateBuffer(name,price);
 
-        }
         return 0;
     }
 
@@ -784,6 +770,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         this.loadConfig();
 
         sign = new MarketSignEvent(this);
+
+        //      マップ初期化
+        ChartMapRenderer.setupMaps(this);
 
         Bukkit.getServer().broadcastMessage(prefix+"Started");
     }

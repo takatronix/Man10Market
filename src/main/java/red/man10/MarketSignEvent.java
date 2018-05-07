@@ -139,10 +139,15 @@ public class MarketSignEvent {
             String[] values = signss.get(loc);
 
             String get = values[0];
-
+            if(get == null){
+                continue;
+            }
 
             Sign signb = (Sign)loc.getBlock().getState();
             String line3 = signb.getLine(3);
+            if(line3 == null){
+                continue;
+            }
            // plugin.data.opLog("line3"+line3);
             if (line3.equalsIgnoreCase("§1§l[メニュー]")||line3.equalsIgnoreCase("§1§l[menu]")) {
               //  plugin.data.opLog("menu detected");
