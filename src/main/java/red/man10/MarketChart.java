@@ -64,7 +64,7 @@ public class MarketChart {
             return true;
         });
 
-        DynamicMapRenderer.register( "circle", 1, (String key, Graphics2D g) -> {
+        DynamicMapRenderer.register( "circle", 20, (String key, Graphics2D g) -> {
 
 
             for(int i =0;i< 1;i++){

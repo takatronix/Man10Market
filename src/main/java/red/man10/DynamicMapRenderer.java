@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
+///    プラグインのonEnable()で　DynamicMapRenderer.setupMaps(this)
+//     で初期化して設定をロードすること
+
 
 public class DynamicMapRenderer extends MapRenderer {
 
@@ -38,6 +41,8 @@ public class DynamicMapRenderer extends MapRenderer {
     static HashMap<String,DrawFunction> drawFunctions = new HashMap<String,DrawFunction>();
     static HashMap<String,Integer> drawRefreshTimeMap = new HashMap<String,Integer>();
 
+    //        描画検索用
+    static ArrayList<DynamicMapRenderer> renderers = new ArrayList<DynamicMapRenderer>();
     //      描画関数をキーを登録
     //      key: キー func: 描画関数 refreshIntervalTick:自動更新周期(1tick=1/20秒) 0で自動更新しない
     public static void register(String key,int refreshIntervalTick,DrawFunction func){
@@ -46,6 +51,7 @@ public class DynamicMapRenderer extends MapRenderer {
     }
 
 
+    //     キー
     String key = null;
 
     //   オフスクリーンバッファを作成する
@@ -63,7 +69,9 @@ public class DynamicMapRenderer extends MapRenderer {
     public long drawingTime = 0;
     //      描画した回数
     public int updateCount = 0;
+    //      bukkitからrenderコールされた回数
     public int renderCount = 0;
+    //      デバッグ表示フラグ
     public boolean debugMode = true;
 
 
@@ -255,7 +263,6 @@ public class DynamicMapRenderer extends MapRenderer {
         int ret = 0;
         for(DynamicMapRenderer renderer:renderers){
             if(renderer.key.equals(key)){
-
                 renderer.refreshOnce = true;
                 ret++;
             }
@@ -279,6 +286,5 @@ public class DynamicMapRenderer extends MapRenderer {
         return ;
     }
 
-    //        描画検索用
-    static ArrayList<DynamicMapRenderer> renderers = new ArrayList<DynamicMapRenderer>();
+
 }
