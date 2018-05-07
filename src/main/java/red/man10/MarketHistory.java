@@ -26,6 +26,8 @@ public class MarketHistory {
         int min;
     }
 
+
+
     public boolean update(int item_id ,double price,int volume,int year,int month,int day,int hour,int minute){
 
         updateDay(item_id,price,volume,year,month,day);
@@ -138,7 +140,10 @@ public class MarketHistory {
         }
         return null;
     }
-
+    ArrayList<Candle> getHourCandles(int item_id){
+        String sql = "select * from history_hour where item_id =" + item_id +" order by id desc limit 128;";
+        return getCandleList(sql);
+    }
     //         キャンドルリストを得る
     ArrayList<Candle> getCandleList(String sql){
         ResultSet rs = data.mysql.query(sql);
