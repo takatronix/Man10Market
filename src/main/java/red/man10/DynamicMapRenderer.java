@@ -60,9 +60,11 @@ public class DynamicMapRenderer extends MapRenderer {
     //      マップへ転送する
     public boolean updateMapFlag = false;
 
+
+    public long drawingTime = 0;
     public int updateCount = 0;
-    public int drawCount = 0;
-    public boolean debugMode = false;
+    public int renderCount = 0;
+    public boolean debugMode = true;
 
     public void updateBuffer(String name,String price){
 
@@ -106,6 +108,21 @@ public class DynamicMapRenderer extends MapRenderer {
 
 
 
+    void draw(){
+        //      関数をキーで取り出し実行
+        DrawFunction func = drawFunctions.get(key);
+        if(func != null){
+            long startTime = System.nanoTime();
+
+            //      描画関数をコール
+            if(func.draw(key, bufferedImage.createGraphics())){
+                updateMapFlag = true;
+            }
+            this.drawingTime =  System.nanoTime() - startTime;
+
+        }
+    }
+
     public void drawMap(String key,String param){
 
         updateBuffer(key,param);
@@ -124,18 +141,7 @@ public class DynamicMapRenderer extends MapRenderer {
 
         if (refreshOnce){
             refreshOnce = false;
-
-            //      関数をキーで取り出し実行
-            DrawFunction func = drawFunctions.get(key);
-            if(func != null){
-                Bukkit.getLogger().info("RefreshOnce:"+key+":"+refreshInterval);
-
-                //      描画関数をコール
-                if(func.draw(key, bufferedImage.createGraphics())){
-                    updateMapFlag = true;
-                }
-            }
-
+            draw();
         }
 
 
@@ -143,18 +149,7 @@ public class DynamicMapRenderer extends MapRenderer {
         //      インターバル期間をこえていたら画面更新
         if(refreshInterval != 0){
             if(tickRefresh > refreshInterval){
-                Bukkit.getLogger().info("key:"+key+"start draw");
-
-                //      関数をキーで取り出し実行
-                DrawFunction func = drawFunctions.get(key);
-                if(func != null){
-                    //Bukkit.getLogger().info("Drawing:"+key+":"+refreshInterval);
-
-                    //      描画関数をコール
-                    if(func.draw(key, bufferedImage.createGraphics())){
-                        updateMapFlag = true;
-                    }
-                }
+                draw();
                 tickRefresh = 0;
             }else{
                 tickRefresh++;
@@ -180,13 +175,14 @@ public class DynamicMapRenderer extends MapRenderer {
             updateMapFlag  = false;
             if(debugMode){
                 //      描画回数を表示(debug)
-                canvas.drawText(20, 20, MinecraftFont.Font, "update:"+updateCount);
-                canvas.drawText( 20,40, MinecraftFont.Font, key);
+                canvas.drawText(8, 10, MinecraftFont.Font, "update:"+updateCount);
+                canvas.drawText( 8,20, MinecraftFont.Font, key);
+                canvas.drawText( 8,40, MinecraftFont.Font, "render:"+drawingTime+"ns");
             }
             updateCount++;
         }
 
-        drawCount++;
+        renderCount++;
     }
 
     //////////////////////////////////////////////////////////////////////

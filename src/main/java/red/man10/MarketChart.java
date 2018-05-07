@@ -109,6 +109,24 @@ public class MarketChart {
             //      画面更新をする
             return true;
         });
+
+        DynamicMapRenderer.register( "color", 1, (String key, Graphics2D g) -> {
+            for(int i =0;i< 1;i++){
+                Random rnd = new Random();
+
+                int rr = rnd.nextInt(255);
+                int gg = rnd.nextInt(255);
+                int bb = rnd.nextInt(255);
+
+                Color color = new Color(rr,gg,bb);
+                g.setColor(color);
+                g.fillRect(0,0,128,128);
+
+            }
+            //      画面更新をする
+            return true;
+        });
+
         DynamicMapRenderer.register( "line", 1, (String key, Graphics2D g) -> {
             for(int i =0;i< 1;i++){
                 Random rnd = new Random();
@@ -130,7 +148,26 @@ public class MarketChart {
             return true;
         });
 
+        DynamicMapRenderer.register( "dot", 1, (String key, Graphics2D g) -> {
+            for(int i =0;i< 1;i++){
+                Random rnd = new Random();
 
+                int rr = rnd.nextInt(255);
+                int gg = rnd.nextInt(255);
+                int bb = rnd.nextInt(255);
+                int x = rnd.nextInt(128);
+                int y = rnd.nextInt(128);
+                int w = rnd.nextInt(128);
+                int h = rnd.nextInt(128);
+
+                Color color = new Color(rr,gg,bb);
+                g.setColor(color);
+                g.drawLine(x,y,x,y);
+
+            }
+            //      画面更新をする
+            return true;
+        });
         int     itemmax = 40;
         //
         for (int i = 1;i <= itemmax;i++){
