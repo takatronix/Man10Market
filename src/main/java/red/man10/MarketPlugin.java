@@ -637,6 +637,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         ItemStack map = ChartMapRenderer.getMapItem(this,target);
         p.getInventory().addItem(map);
 
+        ChartMapRenderer.updateAll();
 
         return true;
     }

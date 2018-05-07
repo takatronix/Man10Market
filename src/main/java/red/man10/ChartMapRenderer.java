@@ -30,6 +30,8 @@ public class ChartMapRenderer extends MapRenderer {
 
 //    public JavaPlugin plugin = null;
 
+    public boolean updateMapFlag = false;
+    int updateCount = 0;
     public int drawCount = 0;
     public boolean debugMode = true;
 
@@ -53,6 +55,9 @@ public class ChartMapRenderer extends MapRenderer {
 
         updateBuffer(key,param);
 
+        //
+        this.updateMapFlag = true;
+
     }
 
 
@@ -64,14 +69,18 @@ public class ChartMapRenderer extends MapRenderer {
     public void render(MapView map, MapCanvas canvas, Player player) {
 
         //     オフスクリーンバッファからコピー
-        canvas.drawImage(0,0,bufferedImage);
-
-        if(debugMode){
-            //      描画回数を表示(debug)
-            canvas.drawText(20, 20, MinecraftFont.Font, "Draw:"+drawCount);
-            canvas.drawText( 20,40, MinecraftFont.Font, key);
-
+        if(updateMapFlag){
+            canvas.drawImage(0,0,bufferedImage);
+            updateMapFlag  = false;
+            Bukkit.getLogger().info("update:"+key);
+            if(debugMode){
+                //      描画回数を表示(debug)
+                canvas.drawText(20, 20, MinecraftFont.Font, "Draw:"+drawCount);
+                canvas.drawText( 20,40, MinecraftFont.Font, key);
+            }
+            updateCount++;
         }
+
         drawCount++;
     }
 
@@ -116,7 +125,7 @@ public class ChartMapRenderer extends MapRenderer {
             //     描画用に保存
             renderers.add(renderer);
 
-            nmlist.add(key);// STOPSHIP: 2018/05/07  
+            nmlist.add(key);// STOPSHIP: 2018/05/07
         }
 
         //      マップを保存し直す
@@ -157,6 +166,7 @@ public class ChartMapRenderer extends MapRenderer {
        m.setItemMeta(im);
        m.setDurability(map.getId());
 
+       renderer.updateMapFlag = true;
        renderers.add(renderer);
 
        return m;
@@ -177,6 +187,15 @@ public class ChartMapRenderer extends MapRenderer {
 
         return ret;
     }
+    static public void updateAll() {
+
+        for(ChartMapRenderer renderer:renderers){
+            renderer.updateMapFlag = true;
+        }
+
+        return ;
+    }
+
     //        描画検索用
     static ArrayList<ChartMapRenderer> renderers = new ArrayList<ChartMapRenderer>();
 }
