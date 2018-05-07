@@ -14,6 +14,7 @@ import java.util.UUID;
  * Created by takatronix on 2017/03/04.
  */
 public class VaultManager {
+    public boolean showMessage = false;
     private final JavaPlugin plugin;
     public VaultManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -65,7 +66,9 @@ public class VaultManager {
         EconomyResponse resp = economy.withdrawPlayer(p,money);
         if(resp.transactionSuccess()){
             if(p.isOnline()) {
-                p.getPlayer().sendMessage(ChatColor.YELLOW + "$" + (int) money + "支払いました");
+                if(showMessage) {
+                    p.getPlayer().sendMessage(ChatColor.YELLOW + "$" + (int) money + "支払いました");
+                }
             }
             return true;
         }
@@ -84,7 +87,10 @@ public class VaultManager {
         EconomyResponse resp = economy.depositPlayer(p,money);
         if(resp.transactionSuccess()){
             if(p.isOnline()){
-                p.getPlayer().sendMessage(ChatColor.YELLOW + "$"+(int)money+"受取りました");
+                if(showMessage){
+                    p.getPlayer().sendMessage(ChatColor.YELLOW + "$"+(int)money+"受取りました");
+
+                }
             }
             return true;
         }
