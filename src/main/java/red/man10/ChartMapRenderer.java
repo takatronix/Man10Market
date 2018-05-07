@@ -116,7 +116,9 @@ public class ChartMapRenderer extends MapRenderer {
             //     描画用に保存
             renderers.add(renderer);
 
+            nmlist.add(key);// STOPSHIP: 2018/05/07  
         }
+
         //      マップを保存し直す
         config.set("Maps", nmlist);
         plugin.saveConfig();
