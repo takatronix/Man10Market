@@ -55,7 +55,7 @@ public class DynamicMapRenderer extends MapRenderer {
     public boolean updateMapFlag = false;
     int updateCount = 0;
     public int drawCount = 0;
-    public boolean debugMode = true;
+    public boolean debugMode = false;
 
     public void updateBuffer(String name,String price){
 
@@ -258,7 +258,8 @@ public class DynamicMapRenderer extends MapRenderer {
        map.addRenderer(renderer);
 
        ItemMeta im = m.getItemMeta();
-       im.setDisplayName("§2§o" + key);
+
+
        im.addEnchant(Enchantment.DURABILITY, 1, true);
        m.setItemMeta(im);
        m.setDurability(map.getId());
