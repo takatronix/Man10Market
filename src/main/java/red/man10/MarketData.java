@@ -46,6 +46,7 @@ public class MarketData {
         int id;
         String key;
         double price;
+        double last_price;
         double maxPrice;
         double minPrice;
         double bid;
@@ -482,6 +483,7 @@ public class MarketData {
             return false;
         }
 
+        double last_price = current.price;
         ArrayList<OrderInfo> sellList = this.getGroupedOrderList(null,item_id,false,-1);
         ArrayList<OrderInfo> buyList = this.getGroupedOrderList(null,item_id,true,-1);
 
@@ -537,7 +539,7 @@ public class MarketData {
             logHistory(item_id,price);
         }
 
-        String sql = "update item_index set price="+price+", sell="+sell+",buy="+buy+",max_price="+max+",min_price="+min+"" +
+        String sql = "update item_index set price="+price+", last_price="+last_price+", sell="+sell+",buy="+buy+",max_price="+max+",min_price="+min+"" +
                 ",bid="+bid+
                 ",ask="+ask+
                 ",datetime='"+currentTime()+"' where id="+item_id+";";
@@ -1481,6 +1483,7 @@ public class MarketData {
                 ret.id = rs.getInt("id");
                 ret.key = rs.getString("item_key");
                 ret.price = rs.getDouble("price");
+                ret.last_price = rs.getDouble("last_price");
                 ret.sell = rs.getInt("sell");
                 ret.buy = rs.getInt("buy");
                 ret.minPrice = rs.getDouble("min_price");
@@ -1691,6 +1694,7 @@ public class MarketData {
                 +"" +item.getDurability() +","
 
                 +initialPrice +","
+                +initialPrice+","
                 +initialPrice+","
                 +tick+","
                 +"'"+ currentTime() +"',0,0,"

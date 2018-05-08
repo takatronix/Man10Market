@@ -238,21 +238,16 @@ public class DynamicMapRenderer extends MapRenderer {
 
        DynamicMapRenderer renderer = new DynamicMapRenderer();
        renderer.key = key;
-
-
-
        renderer.refreshOnce = true;
 
        map.addRenderer(renderer);
 
        ItemMeta im = m.getItemMeta();
-
-
        im.addEnchant(Enchantment.DURABILITY, 1, true);
        m.setItemMeta(im);
        m.setDurability(map.getId());
 
-
+       //       識別用に保存
        renderers.add(renderer);
 
        return m;
