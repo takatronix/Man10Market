@@ -257,6 +257,9 @@ public class DynamicMapRenderer extends MapRenderer {
     //      一致したキーの数を返す
     static int refresh(String key){
 
+        if(key == null){
+            return 0;
+        }
         int ret = 0;
         for(DynamicMapRenderer renderer:renderers){
             if(renderer.key.equals(key)){
