@@ -46,8 +46,7 @@ import java.util.Date;
 
 public final class MarketPlugin extends JavaPlugin implements Listener {
 
-    //Mr_IK push test
-    // takatronix push test
+
     String  prefix = "§8§l[§4§lm§2§lMarket§8§l]";
 
     MarketData data = null;
@@ -829,13 +828,13 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onItemInteract(PlayerInteractEntityEvent event){
         //           回転抑制用
-        DynamicMapRenderer.onPlayerInteractEntityEvent(event);
+     //   DynamicMapRenderer.onPlayerInteractEntityEvent(event);
     }
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
 
         //      イベントを通知してやる（ボタン検出用)
-        DynamicMapRenderer.onPlayerInteractEvent(e);
+       // DynamicMapRenderer.onPlayerInteractEvent(e);
 
         Player p = e.getPlayer();
 

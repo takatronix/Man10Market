@@ -1,16 +1,15 @@
 package red.man10;
 
-import jdk.nashorn.internal.ir.GetSplitState;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -21,38 +20,81 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.map.MinecraftFont;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Consumer;
+
+import static org.bukkit.Bukkit.getServer;
 
 
-///    (1)
-///    プラグインのonEnable()で　DynamicMapRenderer.setup(this)
-//     で初期化して設定をロードする
-//      pluginsfolder/images/
-//      の下に画像をおくと、自動読み込みさあれます
+//////////////////////////////////////////////////////////
+//     DynamicMapRenderer
+//                             created by takatronix.com
+//      MIT Licence
+//////////////////////////////////////////////////////////
 
-//      (2) onEnable()で描画関数登録
 
-//     (3) 　ボタンをおされたことを検出する場合
-//     public void onInteract(PlayerInteractEvent e) {
+//////////////////////////////////////////////////////////
+//    (1)      Setup
+//    プラグインのonEnable()で　DynamicMapRenderer.setup(this)
 //
-//        //      イベントを通知してやる（ボタン検出用)
-//        DynamicMapRenderer.onPlayerInteractEvent(e);
-//         //       マップの回転を抑制
-//        DynamicMapRenderer.onPlayerInteractEntityEvent(event);
+//      pluginsfolder/images/
+//      の下に画像をおくと、自動読み込みされます
+//      0000.png => key: "0000"
+//
+//      (2) onEnable()などで描画関数登録
 
-public class DynamicMapRenderer extends MapRenderer {
+/*
 
+        /////////////////////////////////////////////////
+        //      マップの近くのボタンが押された時の処理
+        DynamicMapRenderer.registerButtonEvent("game", (String key, int mapId) -> {
+
+            //    true -> 描画更新
+            return true;
+        });
+
+        /////////////////////////////////////////////////
+        //      描画関数登録
+        DynamicMapRenderer.register( "game", 0, (String key,int mapId, Graphics2D g) -> {
+
+            //      背景を黒に
+            g.setColor(Color.BLACK);
+            g.fillRect(0,0,128,128);
+
+            //      イメージキーを指定する
+            //      pluginFolder/image/item0.png
+            String imageKey = "item0";
+
+            //      画像を描画
+            DynamicMapRenderer.drawImage(g,imageKey,15,25,80,80);
+            //      trueならMapへ転送する
+            return true;
+        });
+
+ */
+
+
+
+public class DynamicMapRenderer extends MapRenderer implements Listener {
+
+
+    //////////////////////////////////////////////
+    //      Singleton
+    private static DynamicMapRenderer sharedInstance = new DynamicMapRenderer();
+    private DynamicMapRenderer() {
+        Bukkit.getLogger().info("DynamicMapRenderer created..");
+    }
+    public static DynamicMapRenderer getInstance() {
+        return sharedInstance;
+    }
 
     ///////////////////////////////////////////////
     //      描画関数インタフェース
@@ -66,7 +108,17 @@ public class DynamicMapRenderer extends MapRenderer {
     public interface ButtonClickFunction{
         boolean onButtonClicked(String key,int mapId);
     }
+    @EventHandler
+    public void onItemInteract(PlayerInteractEntityEvent event){
+        //           回転抑制用
+        DynamicMapRenderer.onPlayerInteractEntityEvent(event);
+    }
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e) {
 
+        //      イベントを通知してやる（ボタン検出用)
+        DynamicMapRenderer.onPlayerInteractEvent(e);
+    }
     ///////////////////////////////////////////////
     //      "key" ->　関数　をハッシュマップに保存
     static HashMap<String,DrawFunction> drawFunctions = new HashMap<String,DrawFunction>();
@@ -198,12 +250,70 @@ public class DynamicMapRenderer extends MapRenderer {
                 return false;
             }
 
+            //      たたいたブロック面
+            BlockFace face = frame.getAttachedFace();
+            Bukkit.getLogger().info(face.getModX()+":"+face.getModY()+":"+face.getModZ());
+
+            //      叩いたブロック
+            Block block = ent.getLocation().getBlock().getRelative(frame.getAttachedFace());
+            Bukkit.getLogger().info(block.toString());
+
+            World world = e.getPlayer().getWorld();
+
+            Vector vec = block.getLocation().toVector();
+
+            Vector pos1 = vec.add( new Vector(1,1,0));
+            world.playEffect(pos1.toLocation(world), Effect.COLOURED_DUST,0);
+
+            Vector pos2 = vec.add( new Vector(0,-1,1));
+            world.playEffect(pos2.toLocation(world), Effect.COLOURED_DUST,0);
+
+            Player player = e.getPlayer();
+
+            RayTrace rayTrace = new RayTrace(player.getEyeLocation().toVector(),player.getEyeLocation().getDirection());
+
+
+
+
+//        min = new Vector(bb.a,bb.b,bb.c);
+//        max = new Vector(bb.d,bb.e,bb.f);
+
+            //Vector hit = rayTrace.positionOfIntersection(pos1,pos2,10,0.01);
+            //Bukkit.getLogger().info(hit.toString());
+
+//            world.playEffect(hit.toLocation(world), Effect.COLOURED_DUST,0);
+
+            /*
+            RayTrace rayTrace = new RayTrace(player.getEyeLocation().toVector(),player.getEyeLocation().getDirection());
+            ArrayList<Vector> positions = rayTrace.traverse(10,0.01);
+
+            //
+            rayTrace.highlight(player.getWorld(),10,0.01);;
+            for(int i = 0; i < positions.size();i++){
+                Location position = positions.get(i).toLocation(player.getWorld());
+                Block block = player.getWorld().getBlockAt(position);
+
+                if(block != null && block.getType() != Material.AIR ){
+                  //  if (rayTrace.intersects(new BoundingBox(block), 10, 0.01)) {
+                   //     player.sendMessage(block.getType().toString());
+                   //     break;
+                   // }
+                }
+
+            }*/
+
+
            // Bukkit.getLogger().info("DynamicMapRendererMapなので回転を禁止する");
             e.setCancelled(true);
            return true;
         }
         return false;
     }
+
+
+
+
+
 
     //      ボタンイベントを検出する
     static public int onPlayerInteractEvent(PlayerInteractEvent e){
@@ -284,6 +394,9 @@ public class DynamicMapRenderer extends MapRenderer {
 
 
     static public void setup(JavaPlugin plugin){
+
+        DynamicMapRenderer instance = DynamicMapRenderer.getInstance();
+        getServer().getPluginManager().registerEvents (instance,plugin);
 
         loadImages(plugin);
         setupMaps(plugin);
