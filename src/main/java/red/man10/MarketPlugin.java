@@ -5,10 +5,8 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
@@ -31,6 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.BlockIterator;
+import org.bukkit.util.Vector;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -60,24 +59,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     int mapno = 0;
 
-
-    @EventHandler
-    public void onMapInitialize(MapInitializeEvent e){
-/*
-
-        MapView m = e.getMap();
-        for(MapRenderer r:e.getMap().getRenderers()){
-
-
-            e.getMap().removeRenderer(r);
-        }
-        ChartMapRenderer mr = new ChartMapRenderer();
-
-        mr.no = mapno;
-        mapno ++;
-        e.getMap().addRenderer(mr);
-        */
-    }
 
     ///////////////////////////////
     //      成り行きアイテム購入
@@ -652,7 +633,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
     public int updateMapList(int item_id,String name,String price){
 
-        DynamicMapRenderer.draw(name,price);
+
+
+        DynamicMapRenderer.refresh("price:"+item_id);
+        DynamicMapRenderer.refresh("chart:"+item_id);
 
 
         return 0;
@@ -852,7 +836,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
           //  opLog("You right clicked an item frame!");
-            event.setCancelled(true);
+        //    event.setCancelled(true);
             return;
         }
 
@@ -861,9 +845,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public void onInteract(PlayerInteractEvent e) {
 
 
-
-
         Player p = e.getPlayer();
+
+
+
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 
 

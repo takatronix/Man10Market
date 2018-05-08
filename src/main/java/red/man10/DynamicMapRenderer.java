@@ -227,7 +227,7 @@ public class DynamicMapRenderer extends MapRenderer {
        int mapId = (int) map.getId();
         mlist.add(mapId + "," + key);
 
-       Bukkit.getLogger().info("mapp getMapItem: key:"+mapId + "ikey:"+key);
+      // Bukkit.getLogger().info("mapp getMapItem: key:"+mapId + "ikey:"+key);
         //      設定データ保存
         config.set("Maps", mlist);
         plugin.saveConfig();
@@ -260,7 +260,7 @@ public class DynamicMapRenderer extends MapRenderer {
 
     //      描画する
     //      一致したキーの数を返す
-    static int draw(String key,String param){
+    static int refresh(String key){
 
         int ret = 0;
         for(DynamicMapRenderer renderer:renderers){
