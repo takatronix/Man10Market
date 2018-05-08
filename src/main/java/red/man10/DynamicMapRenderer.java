@@ -135,7 +135,7 @@ public class DynamicMapRenderer extends MapRenderer {
             if(debugMode){
                 //      描画回数を表示(debug)
                 canvas.drawText( 4,4, MinecraftFont.Font, key);
-                canvas.drawText(4, 14, MinecraftFont.Font, "update:"+updateCount);
+                canvas.drawText(4, 14, MinecraftFont.Font, "update:"+updateCount +"/"+this.refreshInterval+"tick");
                 canvas.drawText( 4,24, MinecraftFont.Font, "render:"+drawingTime+"ns");
             }
             updateCount++;
