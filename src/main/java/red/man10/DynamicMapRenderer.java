@@ -250,6 +250,7 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
                 return false;
             }
 
+            /*
             //      たたいたブロック面
             BlockFace face = frame.getAttachedFace();
             Bukkit.getLogger().info(face.getModX()+":"+face.getModY()+":"+face.getModZ());
@@ -273,10 +274,7 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
             RayTrace rayTrace = new RayTrace(player.getEyeLocation().toVector(),player.getEyeLocation().getDirection());
 
 
-
-
-//        min = new Vector(bb.a,bb.b,bb.c);
-//        max = new Vector(bb.d,bb.e,bb.f);
+*/
 
             //Vector hit = rayTrace.positionOfIntersection(pos1,pos2,10,0.01);
             //Bukkit.getLogger().info(hit.toString());
@@ -309,12 +307,7 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
         }
         return false;
     }
-
-
-
-
-
-
+    ///////////////////////////////////////
     //      ボタンイベントを検出する
     static public int onPlayerInteractEvent(PlayerInteractEvent e){
 
@@ -362,13 +355,11 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
                         refresh(key);
                     }
                 }
-
-
             }
         }
         return -1;
     }
-
+    //          近くのエンティティを集める　
     public static List<Entity> getNearbyEntities(Location where, int range) {
         List<Entity> found = new ArrayList<Entity>();
 
@@ -390,9 +381,9 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
     }
 
 
-
-
-
+    /////////////////////////////////
+    //          初期化
+    /////////////////////////////////
     static public void setup(JavaPlugin plugin){
 
         DynamicMapRenderer instance = DynamicMapRenderer.getInstance();
@@ -459,7 +450,6 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
         //      マップを保存し直す
         config.set("Maps", nmlist);
         plugin.saveConfig();
-
 
         ////////////////////////////////
         //      タイマーを作成する
@@ -564,7 +554,7 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
 
     ///////////////////////////////////////////////////
     //      プラグインフォルダの画像を読み込む
-    static public int loadImages(JavaPlugin plugin) {
+    static protected int loadImages(JavaPlugin plugin) {
 
         imageMap.clear();
         int ret = 0;
@@ -590,7 +580,6 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    image = null;
                 }
             }
         }
@@ -598,7 +587,8 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
         return ret;
     }
 
-
+    /////////////////////////////////////
+    //       イメージを描画
     static Boolean drawImage( Graphics2D g,String imageKey,int x,int y,int w,int h){
         BufferedImage image = DynamicMapRenderer.image(imageKey);
         if(image == null){
@@ -610,6 +600,8 @@ public class DynamicMapRenderer extends MapRenderer implements Listener {
         return true;
     }
 
+    /////////////////////////////////////
+    //      キャッシュからイメージ取りだし
     static BufferedImage image(String  key){
         return imageMap.get(key);
     }
