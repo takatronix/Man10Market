@@ -10,7 +10,9 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -35,15 +37,19 @@ import java.util.function.Consumer;
 
 ///    (1)
 ///    プラグインのonEnable()で　DynamicMapRenderer.setup(this)
-//     で初期化して設定をロードすること
-//
-//      (2) onEnable()で関数登録
+//     で初期化して設定をロードする
+//      pluginsfolder/images/
+//      の下に画像をおくと、自動読み込みさあれます
+
+//      (2) onEnable()で描画関数登録
 
 //     (3) 　ボタンをおされたことを検出する場合
 //     public void onInteract(PlayerInteractEvent e) {
 //
 //        //      イベントを通知してやる（ボタン検出用)
 //        DynamicMapRenderer.onPlayerInteractEvent(e);
+//         //       マップの回転を抑制
+//        DynamicMapRenderer.onPlayerInteractEntityEvent(event);
 
 public class DynamicMapRenderer extends MapRenderer {
 
@@ -174,6 +180,32 @@ public class DynamicMapRenderer extends MapRenderer {
         renderCount++;
     }
 
+    static public boolean onPlayerInteractEntityEvent(PlayerInteractEntityEvent e){
+
+        Entity ent = e.getRightClicked();
+        if(ent instanceof ItemFrame){
+            //  クリックしたアイテムフレームのアイテムがマップでなければ抜け
+            ItemFrame frame = (ItemFrame) ent;
+            ItemStack item = frame.getItem();
+            if(item.getType() != Material.MAP) {
+                return false;
+            }
+
+            //      DurabilityにいれてあるのがマップID
+            int mapId = (int)item.getDurability();
+            String key = findKey(mapId);
+            if(key == null){
+                return false;
+            }
+
+           // Bukkit.getLogger().info("DynamicMapRendererMapなので回転を禁止する");
+            e.setCancelled(true);
+           return true;
+        }
+        return false;
+    }
+
+    //      ボタンイベントを検出する
     static public int onPlayerInteractEvent(PlayerInteractEvent e){
 
         //      右ボタン以外は無視
@@ -246,6 +278,10 @@ public class DynamicMapRenderer extends MapRenderer {
         }
         return true;
     }
+
+
+
+
 
     static public void setup(JavaPlugin plugin){
 

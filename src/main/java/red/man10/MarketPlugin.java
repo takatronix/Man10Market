@@ -828,19 +828,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onItemInteract(PlayerInteractEntityEvent event){
-
-        Player player = event.getPlayer();
-
-        Entity e = event.getRightClicked();
-
-        if(e instanceof ItemFrame){
-
-
-          //  opLog("You right clicked an item frame!");
-        //    event.setCancelled(true);
-            return;
-        }
-
+        //           回転抑制用
+        DynamicMapRenderer.onPlayerInteractEntityEvent(event);
     }
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
