@@ -20,8 +20,10 @@ import org.bukkit.map.MapView;
 import org.bukkit.map.MinecraftFont;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ import java.util.function.Consumer;
 
 
 ///    (1)
-///    プラグインのonEnable()で　DynamicMapRenderer.setupMaps(this)
+///    プラグインのonEnable()で　DynamicMapRenderer.setup(this)
 //     で初期化して設定をロードすること
 //
 //      (2) onEnable()で関数登録
@@ -50,7 +52,7 @@ public class DynamicMapRenderer extends MapRenderer {
     //      描画関数インタフェース
     @FunctionalInterface
     public interface DrawFunction{
-        boolean draw(String key,Graphics2D g);
+        boolean draw(String key,int mapId,Graphics2D g);
     }
 
     //      ボタンクリックイベント
@@ -114,7 +116,7 @@ public class DynamicMapRenderer extends MapRenderer {
         if(func != null){
             long startTime = System.nanoTime();
             //      描画関数をコール
-            if(func.draw(key, bufferedImage.createGraphics())){
+            if(func.draw(key,mapId, bufferedImage.createGraphics())){
                 updateMapFlag = true;
             }
             this.drawingTime =  System.nanoTime() - startTime;
@@ -244,12 +246,21 @@ public class DynamicMapRenderer extends MapRenderer {
         }
         return true;
     }
+
+    static public void setup(JavaPlugin plugin){
+
+        loadImages(plugin);
+        setupMaps(plugin);
+    }
+
+
+
     //////////////////////////////////////////////////////////////////////
     ///    サーバーシャットダウンでレンダラはは初期化されてしまうので
     ///    再起動後にマップを作成する必要がある　
     ///    プラグインのonEnable()で　DynamicMapRenderer.setupMaps(this)
     //     で初期化して設定をロードすること
-    static public void setupMaps(JavaPlugin plugin) {
+    static void setupMaps(JavaPlugin plugin) {
 
         Configuration config = plugin.getConfig();
         if (config.getStringList("Maps").size() == 0) {
@@ -398,4 +409,47 @@ public class DynamicMapRenderer extends MapRenderer {
     }
 
 
+    //      イメージマップ　
+    static HashMap<String,BufferedImage> imageMap =  new HashMap<String,BufferedImage>();
+
+
+    ///////////////////////////////////////////////////
+    //      プラグインフォルダの画像を読み込む
+    static public int loadImages(JavaPlugin plugin) {
+
+        imageMap.clear();
+        int ret = 0;
+        File folder = new File(plugin.getDataFolder(), File.separator + "images");
+        Bukkit.getLogger().info(folder.toString());
+        File[] files = folder.listFiles();
+        for (File f : files) {
+            if (f.isFile()){
+                String filename = f.getName();
+
+                if(filename.substring(0,1).equalsIgnoreCase(".")){
+                    continue;
+                }
+
+                String key = filename.substring(0,filename.lastIndexOf('.'));
+                BufferedImage image = null;
+
+                try {
+                    image = ImageIO.read(new File(f.getAbsolutePath()));
+                    imageMap.put(key,image);
+                    Bukkit.getLogger().info((key)+" registered.");
+                    ret++;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    image = null;
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    static BufferedImage image(String  key){
+        return imageMap.get(key);
+    }
 }

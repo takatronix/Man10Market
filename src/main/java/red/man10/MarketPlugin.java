@@ -766,8 +766,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         ////////////////////////////////
-        //      マップ初期化
-        DynamicMapRenderer.setupMaps(this);
+        //      初期化
+        DynamicMapRenderer.setup(this);
+
         //      マップ関用関数登録
         MarketChart.registerFuncs();
         MarketChart.plugin = this;
