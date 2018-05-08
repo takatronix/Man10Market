@@ -752,6 +752,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        ////////////////////////////////
+        //      マップレンダラ初期化
+        DynamicMapRenderer.setup(this);
+
+
         // Plugin startup logic
         getServer().getPluginManager().registerEvents (this,this);
         getCommand("mce").setExecutor(new MarketCommand(this));
@@ -764,9 +769,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
 
-        ////////////////////////////////
-        //      初期化
-        DynamicMapRenderer.setup(this);
 
         //      マップ関用関数登録
         MarketChart.registerFuncs();
