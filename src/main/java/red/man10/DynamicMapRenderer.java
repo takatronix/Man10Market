@@ -485,6 +485,18 @@ public class DynamicMapRenderer extends MapRenderer {
         return ret;
     }
 
+
+    static Boolean drawImage( Graphics2D g,String imageKey,int x,int y,int w,int h){
+        BufferedImage image = DynamicMapRenderer.image(imageKey);
+        if(image == null){
+            return false;
+        }
+
+        g.drawImage(image,x,y,w,h,null);
+
+        return true;
+    }
+
     static BufferedImage image(String  key){
         return imageMap.get(key);
     }

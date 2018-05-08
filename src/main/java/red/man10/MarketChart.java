@@ -21,7 +21,7 @@ public class MarketChart {
 
     static int  clickedCount = 0;
 
-
+// http://www.minecraft-servers-list.org/id-list/
 
     static HashMap<Integer,Integer> gameDataMap = new HashMap<Integer, Integer>();
     public static void registerFuncs(){
@@ -32,7 +32,7 @@ public class MarketChart {
             //      マップに設定された変数の取り出し
             int value = gameDataMap.getOrDefault(mapId,-1);
             value = value + 1;
-            if(value == 5){
+            if(value == 6){
                 value = 0;
             }
             //      インクリメントして画面更新
@@ -46,15 +46,14 @@ public class MarketChart {
         DynamicMapRenderer.register( "game", 0, (String key,int mapId, Graphics2D g) -> {
 
             int value = gameDataMap.getOrDefault(mapId,0);
-            String[] imageKey = {"1","10","100","1000","10000"};
+            String[] imageKey = {"1","10","100","1000","10000","item1"};
             //      背景を黒に
             g.setColor(Color.BLACK);
             g.fillRect(0,0,128,128);
-            //      キャッシュされた画像を取り出す
-            //      画像は/pluginFolder/images のしたから自動で読まれる
-            BufferedImage image = DynamicMapRenderer.image(imageKey[value]);
-            //      画像を表示する
-            g.drawImage(image,15,25,80,80,null);
+
+
+            //      画像を描画
+            DynamicMapRenderer.drawImage(g,imageKey[value],15,25,80,80);
 
             //      trueならMapへ転送する
             return true;
