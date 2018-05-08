@@ -17,7 +17,31 @@ public class MarketChart {
     public static MarketData data = null;
 
 
+    static int  clickedCount = 0;
     public static void registerFuncs(){
+
+
+        //      ボタン押された時の処理を書く
+        DynamicMapRenderer.registerButtonEvent("click", (String key, int mapId) -> {
+            clickedCount ++;
+            //    true -> 描画更新
+            return true;
+        });
+
+        //     クリック数を表示する
+        DynamicMapRenderer.register( "click", 0, (String key, Graphics2D g) -> {
+            //      背景を黒に
+            g.setColor(Color.BLACK);
+            g.fillRect(0,0,width,height);
+            g.setColor(Color.RED);
+            g.setFont(new Font( "SansSerif", Font.BOLD ,50));
+            g.drawString(""+clickedCount,50,70);
+            //      trueならMapへ転送する
+            return true;
+        });
+
+
+
 
         //      "clock" -> 時計関数
         DynamicMapRenderer.register( "clock",20,clock);

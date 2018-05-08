@@ -844,6 +844,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
 
+        //      イベントを通知してやる（ボタン検出用)
+        DynamicMapRenderer.onPlayerInteractEvent(e);
 
         Player p = e.getPlayer();
 

@@ -2,10 +2,16 @@ package red.man10;
 
 import jdk.nashorn.internal.ir.GetSplitState;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.map.MapCanvas;
@@ -19,17 +25,26 @@ import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
 
-
+///    (1)
 ///    プラグインのonEnable()で　DynamicMapRenderer.setupMaps(this)
 //     で初期化して設定をロードすること
+//
+//      (2) onEnable()で関数登録
 
+//     (3) 　ボタンをおされたことを検出する場合
+//     public void onInteract(PlayerInteractEvent e) {
+//
+//        //      イベントを通知してやる（ボタン検出用)
+//        DynamicMapRenderer.onPlayerInteractEvent(e);
 
 public class DynamicMapRenderer extends MapRenderer {
+
 
     ///////////////////////////////////////////////
     //      描画関数インタフェース
@@ -38,10 +53,19 @@ public class DynamicMapRenderer extends MapRenderer {
         boolean draw(String key,Graphics2D g);
     }
 
+    //      ボタンクリックイベント
+    @FunctionalInterface
+    public interface ButtonClickFunction{
+        boolean onButtonClicked(String key,int mapId);
+    }
+
     ///////////////////////////////////////////////
     //      "key" ->　関数　をハッシュマップに保存
     static HashMap<String,DrawFunction> drawFunctions = new HashMap<String,DrawFunction>();
     static HashMap<String,Integer> drawRefreshTimeMap = new HashMap<String,Integer>();
+
+    //
+    static HashMap<String,ButtonClickFunction> buttonFunctions = new HashMap<String,ButtonClickFunction>();
 
     //        描画検索用
     static ArrayList<DynamicMapRenderer> renderers = new ArrayList<DynamicMapRenderer>();
@@ -51,11 +75,15 @@ public class DynamicMapRenderer extends MapRenderer {
         drawRefreshTimeMap.put(key,refreshIntervalTick);
         drawFunctions.put(key,func);
     }
+    //     ボタンクリックイベントを追加
+    public static void registerButtonEvent(String key,ButtonClickFunction func){
+        buttonFunctions.put(key,func);
+    }
 
 
     //     キー
     String key = null;
-
+    int    mapId = -1;
     //   オフスクリーンバッファを作成する
     //   高速化のためこのバッファに描画し、マップへ転送する
     BufferedImage bufferedImage = new BufferedImage(128,128,BufferedImage.TYPE_INT_RGB);
@@ -134,7 +162,7 @@ public class DynamicMapRenderer extends MapRenderer {
             updateMapFlag  = false;
             if(debugMode){
                 //      描画回数を表示(debug)
-                canvas.drawText( 4,4, MinecraftFont.Font, key);
+                canvas.drawText( 4,4, MinecraftFont.Font, key + "/map:" + mapId);
                 canvas.drawText(4, 14, MinecraftFont.Font, "update:"+updateCount +"/"+this.refreshInterval+"tick");
                 canvas.drawText( 4,24, MinecraftFont.Font, "render:"+drawingTime+"ns");
             }
@@ -144,6 +172,78 @@ public class DynamicMapRenderer extends MapRenderer {
         renderCount++;
     }
 
+    static public int onPlayerInteractEvent(PlayerInteractEvent e){
+
+        //      右ボタン以外は無視
+        if(e.getAction()!=Action.RIGHT_CLICK_BLOCK) {
+            return  -1;
+        }
+        //
+        if(e.getClickedBlock()==null){
+            return -1;
+        }
+
+        Block clickedBlock = e.getClickedBlock();
+        Location loc = clickedBlock.getLocation();
+        if(clickedBlock.getType()== Material.WOOD_BUTTON || clickedBlock.getType()== Material.STONE_BUTTON) {
+
+            //     クリックしたボタンの近くのエンティティを集める
+            Collection<Entity> entities = getNearbyEntities(loc,1);
+
+            for (Entity en : entities) {
+                //     アイテムフレーム以外は無視
+                if (en instanceof ItemFrame != true) {
+                    continue;
+                }
+                //     アイテムフレームにあるのはマップか？
+                ItemFrame frame = (ItemFrame) en;
+                ItemStack item = frame.getItem();
+                if(item.getType() != Material.MAP) {
+                    continue;
+                }
+
+                //      DurabilityにいれてあるのがマップID
+                int mapId = (int)item.getDurability();
+                String key = findKey(mapId);
+                if(key == null){
+                    continue;
+                }
+
+
+                //      ボタン用メソッドをコール
+                ButtonClickFunction func = buttonFunctions.get(key);
+                if(func != null){
+                    Bukkit.getLogger().info("ボタンが押された => map key = "+key);
+                    if(func.onButtonClicked(key,mapId)){
+                        refresh(key);
+                    }
+                }
+
+
+            }
+        }
+        return -1;
+    }
+
+    public static List<Entity> getNearbyEntities(Location where, int range) {
+        List<Entity> found = new ArrayList<Entity>();
+
+        for (Entity entity : where.getWorld().getEntities()) {
+            if (isInBorder(where, entity.getLocation(), range)) {
+                found.add(entity);
+            }
+        }
+        return found;
+    }
+    public static boolean isInBorder(Location center, Location notCenter, int range) {
+        int x = center.getBlockX(), z = center.getBlockZ();
+        int x1 = notCenter.getBlockX(), z1 = notCenter.getBlockZ();
+
+        if (x1 >= (x + range) || z1 >= (z + range) || x1 <= (x - range) || z1 <= (z - range)) {
+            return false;
+        }
+        return true;
+    }
     //////////////////////////////////////////////////////////////////////
     ///    サーバーシャットダウンでレンダラはは初期化されてしまうので
     ///    再起動後にマップを作成する必要がある　
@@ -183,6 +283,7 @@ public class DynamicMapRenderer extends MapRenderer {
             renderer.refreshOnce = true;
             renderer.refreshInterval = drawRefreshTimeMap.getOrDefault(key,0);
             renderer.key = key;
+            renderer.mapId = id;
             renderer.initialize(map);
 
             //     レンダラを追加
@@ -227,7 +328,6 @@ public class DynamicMapRenderer extends MapRenderer {
        int mapId = (int) map.getId();
         mlist.add(mapId + "," + key);
 
-      // Bukkit.getLogger().info("mapp getMapItem: key:"+mapId + "ikey:"+key);
         //      設定データ保存
         config.set("Maps", mlist);
         plugin.saveConfig();
@@ -239,7 +339,7 @@ public class DynamicMapRenderer extends MapRenderer {
        DynamicMapRenderer renderer = new DynamicMapRenderer();
        renderer.key = key;
        renderer.refreshOnce = true;
-
+       renderer.mapId = mapId;
        map.addRenderer(renderer);
 
        ItemMeta im = m.getItemMeta();
@@ -252,6 +352,17 @@ public class DynamicMapRenderer extends MapRenderer {
 
        return m;
     }
+
+    //      mapIdからキーを検索
+    static String findKey(int mapId){
+        for(DynamicMapRenderer renderer:renderers){
+            if(renderer.mapId == mapId){
+                return renderer.key;
+            }
+        }
+        return null;
+    }
+
 
     //      描画する
     //      一致したキーの数を返す
