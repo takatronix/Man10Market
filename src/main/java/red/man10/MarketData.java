@@ -27,6 +27,8 @@ public class MarketData {
 
     private final MarketPlugin plugin;
     MySQLManager mysql = null;
+
+
     public MarketData(MarketPlugin plugin) {
         this.plugin = plugin;
         this.mysql = new MySQLManager(plugin,"Market");
@@ -35,12 +37,15 @@ public class MarketData {
         this.history.data = this;
         this.history.plugin = plugin;
 
+        this.news.data = this;
+        this.news.plugin = plugin;
+
         MarketChart.data = this;
 
     }
 
     MarketHistory history = new MarketHistory();
-
+    MarketNews news = new MarketNews();
 
     class ItemIndex{
         int id;
@@ -153,6 +158,22 @@ public class MarketData {
 
         return ret;
     }
+
+
+    //
+    public int updatePriceAll(){
+        ArrayList<ItemIndex> items = getItemIndexList("select * from item_index where disabled = 0 order by id;");
+
+        int ret = 0;
+        for(ItemIndex item: items){
+            updateCurrentPrice(item.id);
+            ret++;
+        }
+
+        return  ret;
+    }
+
+
 
 
     public int cancelOrderList(ArrayList<OrderInfo> orders){

@@ -7,6 +7,11 @@ public class Settings {
     static String versionName = "2018/05/13x";
     static String adminPermission = "red.man10.market.admin";
 
+
+    static String broadcastPermission = "red.man10.market.broadcast";
+    static String newsPermission = "red.man10.market.news";
+
+
     //      マーケット Open/Close
     static String openPermission = "red.man10.market.open";
     static String closePermission = "red.man10.market.close";

@@ -851,9 +851,16 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
             @Override
             public void run() {
-            //  serverMessage("timer");
+
+                //  すべての値段を更新
+                data.updatePriceAll();
+
+                //      グローバルニュース
+                data.news.broadCastNews();;
+
             }
-        }, 0, 20);
+            //  １時間
+        }, 0, 20*60*60);
 
 
         sign = new MarketSignEvent(this);

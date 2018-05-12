@@ -32,6 +32,27 @@ public class MarketCommand implements CommandExecutor {
         String command = args[0];
 
 
+
+
+        //      market broadcast
+        if(command.equalsIgnoreCase("broadcast")){
+            if(!checkPermission(p,Settings.broadcastPermission)){
+                return false;
+            }
+            plugin.data.news.broadCastNews();
+            return true;
+        }
+
+        if(command.equalsIgnoreCase("news")){
+            if(!checkPermission(p,Settings.newsPermission)){
+                return false;
+            }
+            plugin.data.news.playerNews(p);
+            return true;
+        }
+
+
+
         //      market open
         if(command.equalsIgnoreCase("open")){
             if(!checkPermission(p,Settings.openPermission)){
