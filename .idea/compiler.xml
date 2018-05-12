@@ -6,11 +6,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Man10Market" />
+        <module name="market" />
+        <module name="market (1)" />
+        <module name="market (2)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Man10Market" target="1.8" />
+      <module name="market" target="1.8" />
+      <module name="market (1)" target="1.5" />
+      <module name="market (2)" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

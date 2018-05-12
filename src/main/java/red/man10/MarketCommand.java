@@ -15,7 +15,6 @@ public class MarketCommand implements CommandExecutor {
     }
 
 
-    String  adminPermision = "red.man10.admin";
 
 
     @Override
@@ -33,11 +32,34 @@ public class MarketCommand implements CommandExecutor {
         String command = args[0];
 
 
+        //      market open
+        if(command.equalsIgnoreCase("open")){
+            if(!checkPermission(p,Settings.openPermission)){
+                return false;
+            }
+            plugin.marketOpen(p,true);
+            return true;
+        }
+        //      market close
+        if(command.equalsIgnoreCase("close")){
+            if(!checkPermission(p,Settings.closePermission)){
+                return false;
+            }
+            plugin.marketOpen(p,false);
+            return true;
+        }
+
+        //   version
+        if(command.equalsIgnoreCase("version" ) || command.equalsIgnoreCase("ver" )){
+
+            p.sendMessage("Version:"+Settings.versionName);
+            return true;
+        }
+
         ////////////////
         //    登録
         if(command.equalsIgnoreCase("register")){
-            if(!p.hasPermission("red.man10.market.register")){
-                p.sendMessage("§4§lあなたには登録権限がない");
+            if(!checkPermission(p,Settings.adminPermission)){
                 return false;
             }
 
@@ -74,8 +96,7 @@ public class MarketCommand implements CommandExecutor {
         }
 
         if(command.equalsIgnoreCase("map")){
-            if(!p.hasPermission("red.man10.market.map")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.adminPermission)){
                 return false;
             }
 
@@ -116,9 +137,7 @@ public class MarketCommand implements CommandExecutor {
         //////////////////////////
         //      指値売り注文
         if(command.equalsIgnoreCase("ordersell") || command.equalsIgnoreCase("os")){
-
-            if(!p.hasPermission("red.man10.market.ordersell")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.orderSellPermission)){
                 return false;
             }
 
@@ -132,10 +151,10 @@ public class MarketCommand implements CommandExecutor {
         ////////////////////////////
         //   成り行き売り注文
         if(command.equalsIgnoreCase("marketsell") || command.equalsIgnoreCase("ms")) {
-            if(!p.hasPermission("red.man10.market.marketsell")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.marketSellPermission)){
                 return false;
             }
+
             if(args.length != 3){
                 p.sendMessage("§2§l/mce marketsell [id/key] [個数] - 成り行き注文（市場価格で購入)");
                 return false;
@@ -146,8 +165,7 @@ public class MarketCommand implements CommandExecutor {
 
 
         if(command.equalsIgnoreCase("itemsell") || command.equalsIgnoreCase("sell")) {
-            if(!p.hasPermission("red.man10.market.itemsell")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.itemSellPermission)){
                 return false;
             }
             if(args.length != 3){
@@ -161,8 +179,7 @@ public class MarketCommand implements CommandExecutor {
         //////////////////////////
         //   指値買い注文
         if(command.equalsIgnoreCase("orderbuy") || command.equalsIgnoreCase("ob") ) {
-            if(!p.hasPermission("red.man10.market.orderbuy")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.orderBuyPermission)){
                 return false;
             }
             if(args.length != 4){
@@ -177,8 +194,7 @@ public class MarketCommand implements CommandExecutor {
         ////////////////////////////
         //   成り行き買い注文
         if(command.equalsIgnoreCase("marketbuy") || command.equalsIgnoreCase("mb")) {
-            if(!p.hasPermission("red.man10.market.marketbuy")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.marketBuyPermission)){
                 return false;
             }
             if(args.length != 3){
@@ -190,8 +206,7 @@ public class MarketCommand implements CommandExecutor {
         }
 
         if(command.equalsIgnoreCase("buy") || command.equalsIgnoreCase("itembuy")) {
-            if(!p.hasPermission("red.man10.market.itembuy")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.itemBuyPermission)){
                 return false;
             }
             if(args.length != 3){
@@ -206,9 +221,7 @@ public class MarketCommand implements CommandExecutor {
 
         //    アイテム保存
         if(command.equalsIgnoreCase("store")){
-
-            if(!p.hasPermission("red.man10.market.store")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.adminPermission)){
                 return false;
             }
             if(args.length == 1){
@@ -224,12 +237,11 @@ public class MarketCommand implements CommandExecutor {
 
         //    注文リスト
         if(command.equalsIgnoreCase("order")){
-            if(!p.hasPermission("red.man10.market.order")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.orderPermission)){
                 return false;
             }
             if(args.length == 2){
-                if(p.hasPermission("red.man10.market.orderother")){
+                if(p.hasPermission(Settings.adminPermission)){
                     return plugin.showOrder(p,args[1]);
                 }else{
                     p.sendMessage("§4§lあなたには権限がない");
@@ -243,8 +255,7 @@ public class MarketCommand implements CommandExecutor {
 
         //    注文キャンセル
         if(command.equalsIgnoreCase("cancel")){
-            if(!p.hasPermission("red.man10.market.cancel")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.cancelPermission)){
                 return false;
             }
             if(args.length == 2){
@@ -257,8 +268,7 @@ public class MarketCommand implements CommandExecutor {
         /////////////////////////////////////////////
         //    全注文キャンセル
         if(command.equalsIgnoreCase("cancelall")){
-            if(!p.hasPermission("red.man10.market.cancel")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.cancelPermission)){
                 return false;
             }
 
@@ -267,7 +277,7 @@ public class MarketCommand implements CommandExecutor {
             }
 
             //  管理者は人の注文をキャンセルできる
-            if(p.hasPermission(adminPermision)){
+            if(p.hasPermission(Settings.adminPermission)){
                 if(args.length == 2){
                     return plugin.cancelAll(p,args[1]);
                 }
@@ -277,16 +287,15 @@ public class MarketCommand implements CommandExecutor {
             return false;
         }
 
-        //    注文キャンセル
+        //   アップデート
         if(command.equalsIgnoreCase("update")){
-            if(!p.hasPermission("red.man10.market.update")){
-                p.sendMessage("§4§lあなたには権限がない");
+            if(!checkPermission(p,Settings.adminPermission)){
                 return false;
             }
             if(args.length == 2){
                 return plugin.updatePrice(p,args[1]);
             }
-            p.sendMessage("/mce update [id/key] 金額を調整する");
+            p.sendMessage("/mce update [id/key] 最新価格アップデート");
             return false;
         }
         if(command.equalsIgnoreCase("help")) {
@@ -343,4 +352,14 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§c/mce unregister - 手にもったアイテムをマーケットから削除する");
 
     }
+
+    static public boolean checkPermission(Player p,String permission){
+        if(p.hasPermission(permission)){
+            return true;
+        }
+
+        p.sendMessage("§c§lYou don't have permission.");
+        return  false;
+    }
+
 }

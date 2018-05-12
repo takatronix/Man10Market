@@ -47,6 +47,7 @@ import java.util.Date;
 public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
+
     String  prefix = "§8§l[§4§lm§2§lMarket§8§l]";
 
     MarketData data = null;
@@ -56,12 +57,27 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public double buyLimitRatio = 10;
     public double sellLimitRatio = 10;
 
-    int mapno = 0;
+    public boolean isMarketOpen = false;
 
+
+    public boolean marketOpen(Player p,boolean flag) {
+
+
+        getConfig().set("marketOpen",flag);
+        saveConfig();;
+        loadConfig();
+
+        return true;
+    }
 
     ///////////////////////////////
     //      成り行きアイテム購入
     public boolean itemBuy(Player p, String target, int amount){
+
+        if (checkMarketClosed(p)) {
+            return false;
+        }
+
 
         if(amount > 64){
             showError(p,"64個以上のアイテムを購入することはできません");
@@ -134,6 +150,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //     アイテム成り行き売り
     public boolean itemSell(Player p, String target, int amount){
 
+        if (checkMarketClosed(p)) {
+            return false;
+        }
+
+
         if(p.getGameMode() != GameMode.SURVIVAL){
             showError(p,"サバイバルモード以外でのアイテム売りは禁止されています");
             return false;
@@ -202,6 +223,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //      成り行き購入
     public boolean marketBuy(Player p, String target, int amount){
 
+        if (checkMarketClosed(p)) {
+            return false;
+        }
+
+
         int ret = data.marketBuy(p.getUniqueId().toString(),target,amount);
         if(ret == -1){
             showError(p,"エラーが発生しました");
@@ -221,6 +247,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     ///////////////////////////////
     //      成り行き売り
     public boolean marketSell(Player p, String target, int amount){
+
+        if (checkMarketClosed(p)) {
+            return false;
+        }
+
 
         int ret = data.marketSell(p.getUniqueId().toString(),target,amount);
         if(ret == -1){
@@ -274,8 +305,31 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return true;
     }
+
+    boolean checkMarketClosed(Player p){
+
+        //      マーケット
+        if(!isMarketOpen){
+            showError(p,Settings.closedMessage);
+            return true;
+        }
+
+        if(!p.hasPermission(Settings.adminPermission)){
+            return true;
+        }
+        showMessage(p,"§4マーケットはクローズしていますか、admin権限があるためアクセス可能です");
+        return false;
+    }
+
+
     //  注文キャンセル
     public boolean cancelOrder(Player p,String target) {
+
+
+
+        if (checkMarketClosed(p)) {
+            return false;
+        }
 
         int orderNo = -1;
         try{
@@ -486,6 +540,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     ///  売り注文を出す
     public boolean orderBuy(Player p,String idOrKey,double price,int amount){
 
+        if (checkMarketClosed(p)) {
+            return false;
+        }
+
         if(data.orderBuy(p,idOrKey,price,amount)){
             showMessage(p,"買い注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
             return true;
@@ -567,6 +625,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     ///  売り注文を出す
     public boolean orderSell(Player p,String idOrKey,double price,int amount){
+
+        if (checkMarketClosed(p)) {
+            return false;
+        }
+
 
         if(data.orderSell(p,idOrKey,price,amount)){
             showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
@@ -667,7 +730,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
     public void showItemBank(Player p){
 
-
+/*
         //////////////////////////////////////////
         //   クリックイベントを作成する
 
@@ -681,7 +744,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         String br = "    ";
         BaseComponent[] pageLink = new ComponentBuilder(br).append(storeLink).append("   §f§l/   ").append(takLink).append("").create();
         p.spigot().sendMessage(pageLink);
-
+*/
     }
 
     // アイテム登録
@@ -707,13 +770,23 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
     void loadConfig(){
+        serverMessage("§bMan10 Central Exchange loading....");
+
+
         data = new MarketData(this);
         if(data == null){
-            if(data == null) {
-                Bukkit.getServer().broadcastMessage("DB接続エラー");
-                return;
-            }
+            serverMessage("§cDatabase Error");
+            return;
         }
+
+        this.isMarketOpen =  getConfig().getBoolean("marketOpen",false);
+
+        if(isMarketOpen){
+            serverMessage("Man10中央取引所オープンしました！ /MCE");
+        }else{
+            serverMessage("Man10中央取引所クローズ中です");
+        }
+
     }
 
 
@@ -766,9 +839,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         this.saveDefaultConfig();
         this.loadConfig();
-
-
-
 
         //      マップ関用関数登録
         MarketChart.registerFuncs();
