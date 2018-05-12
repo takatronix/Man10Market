@@ -16,8 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -50,6 +49,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     String  prefix = "§8§l[§4§lm§2§lMarket§8§l]";
 
+
+    ItemBank itemBank = new ItemBank();
     MarketData data = null;
     MarketVault vault = null;
     MarketSignEvent sign = null;
@@ -107,11 +108,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         //      アイテム個数をへらす
         String uuid = p.getUniqueId().toString();
-        MarketData.ItemStorage storage = data.getItemStorage(uuid,item.id);
+        ItemBank.ItemStorage storage = itemBank.getItemStorage(uuid,item.id);
 
 
         long newAmount = storage.amount - ret;
-        data.updateItemStorage(uuid,item.id,newAmount);
+        itemBank.updateItemStorage(uuid,item.id,newAmount);
 
 
         ItemStack itemStack = MarketData.itemFromBase64(item.base64);
@@ -194,10 +195,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         p.getInventory().removeItem(item);
 
 
-        //MarketData.ItemStorage store = data.getItemStorage(uuid,result.id);
+        //ItemBank.ItemStorage store = bank.getItemStorage(uuid,result.id);
         //      アイテムをストレージに入れる
         String uuid = p.getUniqueId().toString();
-        this.data.sendItemToStorage(uuid,itemIndex.id,amount);
+        this.itemBank.sendItemToStorage(uuid,itemIndex.id,amount);
 
 
         int ret = data.marketSell(p.getUniqueId().toString(),target,amount);
@@ -310,14 +311,18 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         //      マーケット
         if(!isMarketOpen){
+
+
+            if(p.hasPermission(Settings.adminPermission)){
+                showMessage(p,"§4マーケットはクローズしていますか、admin権限があるためアクセス可能です");
+                return false;
+            }
+
+
             showError(p,Settings.closedMessage);
             return true;
         }
 
-        if(!p.hasPermission(Settings.adminPermission)){
-            return true;
-        }
-        showMessage(p,"§4マーケットはクローズしていますか、admin権限があるためアクセス可能です");
         return false;
     }
 
@@ -590,7 +595,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         long itemCount = 0;
         double itemPrice = 0;
-        MarketData.ItemStorage storage = data.getItemStorage(p.getUniqueId().toString(),item.id);
+        ItemBank.ItemStorage storage = itemBank.getItemStorage(p.getUniqueId().toString(),item.id);
         if(storage != null){
             itemCount = storage.amount;
             itemPrice = itemCount * item.price;
@@ -668,8 +673,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         String uuid = p.getUniqueId().toString();
 
-        MarketData.ItemStorage store = data.getItemStorage(uuid,result.id);
-        this.data.sendItemToStorage(uuid,result.id,amount);
+        ItemBank.ItemStorage store = itemBank.getItemStorage(uuid,result.id);
+        this.itemBank.sendItemToStorage(uuid,result.id,amount);
 
 
         //      アイテム個数をへらす
@@ -773,13 +778,24 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         serverMessage("§bMan10 Central Exchange loading....");
 
 
+
+
+
         data = new MarketData(this);
         if(data == null){
             serverMessage("§cDatabase Error");
             return;
         }
 
-        this.isMarketOpen =  getConfig().getBoolean("marketOpen",false);
+        itemBank = new ItemBank();
+        itemBank.data = data;
+        itemBank.plugin = this;
+        data.itemBank = itemBank;
+
+
+
+
+                this.isMarketOpen =  getConfig().getBoolean("marketOpen",false);
 
         if(isMarketOpen){
             serverMessage("Man10中央取引所オープンしました！ /MCE");
@@ -977,5 +993,18 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 sign.signss.remove(e.getBlock().getLocation());
             }
         }
+    }
+
+
+    //
+    @EventHandler void onPlayerJoin(PlayerJoinEvent e){
+        Player p = e.getPlayer();
+        e.setJoinMessage("ジョイン");
+    }
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent e){
+        Player p = e.getPlayer();
+        showMessage(p,"ログアウト");
+        serverMessage(p.getName()+"がログアウト");
     }
 }

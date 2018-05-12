@@ -34,28 +34,6 @@ public class MarketDatabase {
             "  PRIMARY KEY (`id`)\n" +
             ") ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;";
 
-    static String item_index = "CREATE TABLE `item_index` (\n" +
-            "  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\n" +
-            "  `uuid` varchar(40) NOT NULL DEFAULT '',\n" +
-            "  `player` varchar(20) NOT NULL DEFAULT '',\n" +
-            "  `item_key` varchar(256) NOT NULL DEFAULT '',\n" +
-            "  `name` varchar(256) NOT NULL,\n" +
-            "  `type` varchar(256) NOT NULL,\n" +
-            "  `durability` int(11) DEFAULT NULL,\n" +
-            "  `price` double NOT NULL,\n" +
-            "  `initial_price` double NOT NULL,\n" +
-            "  `tick` double DEFAULT NULL,\n" +
-            "  `datetime` datetime DEFAULT NULL,\n" +
-            "  `sell` int(11) DEFAULT '0',\n" +
-            "  `buy` int(11) DEFAULT '0',\n" +
-            "  `base64` longtext,\n" +
-            "  `max_price` double DEFAULT NULL,\n" +
-            "  `min_price` double DEFAULT NULL,\n" +
-            "  `bid` double DEFAULT NULL,\n" +
-            "  `ask` double DEFAULT NULL,\n" +
-            "  `disabled` tinyint(1) DEFAULT '0',\n" +
-            "  PRIMARY KEY (`id`)\n" +
-            ") ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8;";
 
     static String item_storage = "CREATE TABLE `item_storage` (\n" +
             "  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\n" +

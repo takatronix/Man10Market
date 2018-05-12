@@ -28,10 +28,15 @@ public class MarketData {
     private final MarketPlugin plugin;
     MySQLManager mysql = null;
 
+    ItemBank itemBank = null;
 
     public MarketData(MarketPlugin plugin) {
         this.plugin = plugin;
         this.mysql = new MySQLManager(plugin,"Market");
+        this.itemBank = new ItemBank();
+
+        itemBank.data = this;
+        itemBank.plugin = plugin;
 
 
         this.history.data = this;
@@ -65,11 +70,7 @@ public class MarketData {
             return "ItemIndex:"+id+" "+key+" price:"+price+" bid:"+bid+" ask:"+ask + " sell:"+sell + " buy:"+buy;
         }
     }
-    class ItemStorage{
-        int item_id;
-        String item_key;
-        long amount;
-    }
+
     class TransactionLog{
         int id;
         String item;
@@ -150,7 +151,7 @@ public class MarketData {
         boolean ret =  mysql.execute("delete from order_tbl where id = "+order_id+";");
 
         if(order.isBuy == false){
-            sendItemToStorage(order.uuid,order.item_id,order.amount);
+            itemBank.sendItemToStorage(order.uuid,order.item_id,order.amount);
         }
         if(order.isBuy == true){
             sendMoney(order.uuid,order.item_id,order.price,order.amount,null);
@@ -590,7 +591,7 @@ public class MarketData {
         return ret;
     }
 
-    
+
     //      オーダー更新
     public boolean updateOrder(int id,int amount){
         String sql = "update order_tbl set amount = "+amount+" where id = "+id+";";
@@ -707,146 +708,6 @@ public class MarketData {
 
 
 
-    //      アイテムアイテムバンクから取得
-    public ItemStorage getItemStorage(String uuid,int item_id){
-        String sql = "select * from item_storage where item_id = "+item_id +" and uuid= '"+uuid+"';";
-
-        ItemStorage ret = new ItemStorage();
-        ret.item_id = 0;
-        ret.item_key = null;
-        ret.amount = 0;
-
-        ResultSet rs = mysql.query(sql);
-      //  Bukkit.getLogger().info(sql);
-        if(rs == null){
-            return ret;
-        }
-        try
-        {
-            while(rs.next())
-            {
-                ret.item_id = rs.getInt("item_id");
-                ret.item_key = rs.getString("key");
-                ret.amount = rs.getLong("amount");
-            }
-            rs.close();
-        }
-        catch (SQLException e)
-        {
-            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
-            return ret;
-        }
-
-
-        mysql.close();
-        return ret;
-
-    }
-
-    public boolean updateItemStorage(String uuid,int item_id,long amount){
-        String sql= "update item_storage set amount="+amount+" where item_id = "+item_id+" and uuid='"+uuid+"';";
-        boolean ret =  this.mysql.execute(sql);
-
-
-        return ret;
-    }
-    public boolean insertItemStorage(String uuid,int item_id,long amount) {
-
-        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
-        String playerName = player.getName();
-
-        ItemIndex result =  getItemPrice(String.valueOf(item_id));
-        boolean ret = mysql.execute("insert into item_storage values(0,"
-                +"'" +uuid +"',"
-                +"'" +playerName +"',"
-                +item_id +","
-                +"'" +result.key +"',"
-                +amount+","
-                +"'"+ currentTime() +"'"
-                +");");
-        return ret;
-    }
-
-
-    //   アイテムボックスへアイテムを送信する
-    public boolean sendItemToStorage(String uuid,int item_id,int amount){
-
-
-        OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
-
-        ItemIndex result =  getItemPrice(String.valueOf(item_id));
-        if(result == null){
-            if(player.isOnline()){
-                plugin.showError((Player)player,"登録されていない");
-            }
-            return false;
-        }
-
-        long total = amount;
-        ItemStorage store = getItemStorage(uuid,item_id);
-        if(store.item_key == null){
-            this.insertItemStorage(uuid,item_id,total);
-        }else{
-            total += store.amount;
-            this.updateItemStorage(uuid,item_id,total);
-        }
-
-        if(player.isOnline()){
-            Player online = (Player)player;
-            plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクに追加されました => "+total+"個");
-//            plugin.showMessage(online,"現在トータル:" +total+"個");
-        }
-
-
-        logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
-        return true;
-    }
-
-    ////////////////////////////////////////////
-    ///         アイテムバンクからアイテムを引き出す
-    public boolean removeItemFromStorage(String uuid,int item_id,int amount){
-
-
-        OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
-
-        ItemIndex result =  getItemPrice(String.valueOf(item_id));
-        if(result == null){
-            if(player.isOnline()){
-                plugin.showError((Player)player,"登録されていない");
-            }
-            return false;
-        }
-
-
-        ItemStorage store = getItemStorage(uuid,item_id);
-        if(store.item_key == null){
-            return false;
-        }
-        long total = store.amount - amount;
-        if(total > 0){
-            this.updateItemStorage(uuid,item_id,total);
-            if(player.isOnline()){
-                Player online = (Player)player;
-                plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクからひきだされました ");
-                plugin.showMessage(online,"現在トータル:" +getPriceString(total)+"個");
-            }
-            logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
-            return true;
-        }
-
-        //      引き出し失敗
-        if(player.isOnline()){
-            Player online = (Player)player;
-            plugin.showError(online,"アイテムの引き出しに失敗しました！"+result.key +":"+ amount+"個");
-            plugin.showMessage(online,"現在トータル:" +getPriceString(total)+"個");
-        }
-
-        return false;
-    }
-
-
-
-
     ///////////////////////////////////////////////
     //      買い注文を処理する ココ重要
     ///////////////////////////////////////////////
@@ -929,7 +790,7 @@ public class MarketData {
                 // オーダー削除
                 deleteOrder(o.id);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,o.amount);
+                itemBank.sendItemToStorage(o.uuid,item_id,o.amount);
                 //   料金を支払
                 sendMoney(uuid.toString(),item_id,price,o.amount,o.uuid);
                 amount -= o.amount; //　残注文
@@ -940,7 +801,7 @@ public class MarketData {
                 //  購入者の注文量を減らす
                 updateOrder(o.id,leftAmount);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,amount);
+                itemBank.sendItemToStorage(o.uuid,item_id,amount);
                 //   料金を支払
                 sendMoney(uuid,item_id,price,amount,o.uuid);
                 return amount;
@@ -949,7 +810,7 @@ public class MarketData {
                 // オーダー削除
                 deleteOrder(o.id);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(o.uuid,item_id,amount);
+                itemBank.sendItemToStorage(o.uuid,item_id,amount);
                 //   料金を支払
                 sendMoney(uuid,item_id,price,amount,o.uuid);
                 return amount;
@@ -975,7 +836,7 @@ public class MarketData {
                 //opLog("買い注文 < 売り注文 ->買い注文数をへらす 残り注文数"+leftAmount);
                 updateOrder(o.id,leftAmount);
                 //    購入できたぶんアイテムを届ける
-                sendItemToStorage(uuidBuyer,item_id,amount);
+                itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
                 //   料金を支払
                 sendMoney(o.uuid,item_id,o.price,amount,uuidBuyer);
                 return amount;
@@ -985,7 +846,7 @@ public class MarketData {
                 // オーダー削除
                 deleteOrder(o.id);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(uuidBuyer,item_id,amount);
+                itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
                 //   料金を支払
                 sendMoney(o.uuid,item_id,o.price,o.amount,uuidBuyer);
                 retOrderAmount += o.amount;
@@ -995,7 +856,7 @@ public class MarketData {
                 // オーダー削除
                 deleteOrder(o.id);
                 //    購入者へアイテムを届ける
-                sendItemToStorage(uuidBuyer,item_id,amount);
+                itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
                 //   料金を支払
                 sendMoney(o.uuid,item_id,o.price,amount,uuidBuyer);
                 return amount;
@@ -1061,7 +922,7 @@ public class MarketData {
         ArrayList<OrderInfo> sellOrders = this.getOrderByQuery("select * from order_tbl where item_id = " + item_id+" and buy = 1 order by price desc,id asc");
 
 
-        ItemStorage storage = getItemStorage(uuid,item_id);
+        ItemBank.ItemStorage storage = itemBank.getItemStorage(uuid,item_id);
         if(storage == null){
             showError(uuid,"アイテムを所有していない!!");
             return 0;
@@ -1079,7 +940,7 @@ public class MarketData {
             // 　買い注文 > 売り注文
             if(o.amount > amount ){
                 sendMoney(uuid,item_id,o.price,amount,o.uuid);
-                sendItemToStorage(o.uuid,o.item_id,amount);
+                itemBank.sendItemToStorage(o.uuid,o.item_id,amount);
                 //  売れるだけうり、注文を修正する
                 int rest = o.amount - amount;
                 totalAmount += amount;
@@ -1087,14 +948,14 @@ public class MarketData {
 
                 long newAmount = storage.amount - amount;
                 showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
-                updateItemStorage(uuid,item_id,newAmount);
+                itemBank.updateItemStorage(uuid,item_id,newAmount);
 
                 return totalAmount;
             }
             // 　買い注文 < 売り注文
             else if(o.amount < amount){
                 sendMoney(uuid,item_id,o.price,o.amount,o.uuid);
-                sendItemToStorage(o.uuid,o.item_id,o.amount);
+                itemBank.sendItemToStorage(o.uuid,o.item_id,o.amount);
                 deleteOrder(o.id);
                 totalAmount += o.amount;
                 amount -= o.amount;
@@ -1102,7 +963,7 @@ public class MarketData {
 
                 long newAmount = storage.amount - o.amount;
                 showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
-                updateItemStorage(uuid,item_id,newAmount);
+                itemBank.updateItemStorage(uuid,item_id,newAmount);
 
 
             }
@@ -1111,12 +972,12 @@ public class MarketData {
                 totalAmount += amount;
                 deleteOrder(o.id);
                 sendMoney(uuid,o.item_id,o.price,amount,o.uuid);
-                sendItemToStorage(o.uuid,o.item_id,o.amount);
+                itemBank.sendItemToStorage(o.uuid,o.item_id,o.amount);
 
 
                 long newAmount = storage.amount - o.amount;
                 showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
-                updateItemStorage(uuid,item_id,newAmount);
+                itemBank.updateItemStorage(uuid,item_id,newAmount);
                 return totalAmount;
             }
         }
@@ -1168,7 +1029,7 @@ public class MarketData {
                 if(this.payMoney(uuid,o.item_id,o.price,amount)){
                     //      お金送信
                     sendMoney(o.uuid,o.item_id,o.price,amount,uuid);
-                    sendItemToStorage(uuid,o.item_id,amount);
+                    itemBank.sendItemToStorage(uuid,o.item_id,amount);
                     totalAmount += amount;
                     int rest = o.amount - amount;
                     updateOrder(o.id,rest);
@@ -1184,7 +1045,7 @@ public class MarketData {
                 if(this.payMoney(uuid,o.item_id,o.price,o.amount)){
                     sendMoney(o.uuid,o.item_id,o.price,o.amount,uuid);
 
-                    sendItemToStorage(uuid,o.item_id,o.amount);
+                    itemBank.sendItemToStorage(uuid,o.item_id,o.amount);
                     totalAmount += o.amount;
                     amount -= o.amount;
                     deleteOrder(o.id);
@@ -1199,7 +1060,7 @@ public class MarketData {
                 if(this.payMoney(uuid,o.item_id,o.price,amount)){
                     sendMoney(o.uuid,o.item_id,o.price,amount,uuid);
 
-                    sendItemToStorage(uuid,o.item_id,amount);
+                    itemBank.sendItemToStorage(uuid,o.item_id,amount);
                     totalAmount += amount;
                     deleteOrder(o.id);
                     return totalAmount;
@@ -1299,7 +1160,7 @@ public class MarketData {
         }
 
         //      自分のアイテムバンクをチェック
-        ItemStorage storage = getItemStorage(p.getUniqueId().toString(),item.id);
+        ItemBank.ItemStorage storage = itemBank.getItemStorage(p.getUniqueId().toString(),item.id);
         if(storage == null){
             plugin.showError(p,"このアイテムを所有していません");
             return false;
@@ -1354,13 +1215,13 @@ public class MarketData {
         }
 
         // 自分のアイテム
-        ItemStorage storage = getItemStorage(p.getUniqueId().toString(),current.id);
-        //p.sendMessage("所有個数"+storage.amount + " 売り子数"+amount);
+        ItemBank.ItemStorage storage = itemBank.getItemStorage(p.getUniqueId().toString(),current.id);
+        //p.sendMessage("所有個数"+storage.amount + " 売り個数"+amount);
         long left = storage.amount - amount;
         //p.sendMessage("left:"+left);
 
 
-        if(updateItemStorage(p.getUniqueId().toString(),current.id,left) == false){
+        if(itemBank.updateItemStorage(p.getUniqueId().toString(),current.id,left) == false){
             plugin.showError(p,"自分のアイテムをへらせませんでした");
             return false;
         }
@@ -1545,7 +1406,7 @@ public class MarketData {
         for(ItemIndex item : items){
 
             //      アイテムバンクある
-            ItemStorage store = getItemStorage(uuid,item.id);
+            ItemBank.ItemStorage store = itemBank.getItemStorage(uuid,item.id);
             long amount = 0;
             if(store != null){
                 amount = store.amount;
@@ -1650,7 +1511,7 @@ public class MarketData {
 
 
                 //      アイテムバンクに合う個数
-                ItemStorage store = getItemStorage(p.getUniqueId().toString(),id);
+                ItemBank.ItemStorage store = itemBank.getItemStorage(p.getUniqueId().toString(),id);
                 long amount = 0;
                 if(store != null){
                     amount = store.amount;
