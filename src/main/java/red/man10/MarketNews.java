@@ -21,7 +21,7 @@ public class MarketNews {
         int year = datetime.get(Calendar.YEAR);
         int month = datetime.get(Calendar.MONTH) + 1;
         int day = datetime.get(Calendar.DAY_OF_MONTH);
-        int hour = datetime.get(Calendar.HOUR);
+        int hour = datetime.get(Calendar.HOUR_OF_DAY);
 
         String title = "§d§l Man10中央取引所"+year+"/"+month+"/"+day+" "+hour+"時マーケットニュース! => /mce news";
         plugin.serverMessage(title);

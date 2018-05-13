@@ -575,7 +575,7 @@ public class MarketData {
         int year = datetime.get(Calendar.YEAR);
         int month = datetime.get(Calendar.MONTH) + 1;
         int day = datetime.get(Calendar.DAY_OF_MONTH);
-        int hour = datetime.get(Calendar.HOUR);
+        int hour = datetime.get(Calendar.HOUR_OF_DAY);
         int minute = datetime.get(Calendar.MINUTE);
 
         int volume = 0;
