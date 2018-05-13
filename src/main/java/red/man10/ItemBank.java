@@ -28,7 +28,7 @@ public class ItemBank {
 
     //      プレイヤーの持っているストレージリストを得る
     public ArrayList<ItemStorage> getStorageList(String uuid){
-        String sql = "select * from item_storage where uuid= '"+uuid+"';";
+        String sql = "select * from item_storage where uuid= '"+uuid+"' order by item_id;";
 
 
         ArrayList<ItemStorage> list = new ArrayList<ItemStorage>();
