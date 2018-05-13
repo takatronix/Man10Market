@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class ItemBank {
@@ -23,6 +24,43 @@ public class ItemBank {
         long amount;
     }
 
+
+
+    //      プレイヤーの持っているストレージリストを得る
+    public ArrayList<ItemStorage> getStorageList(String uuid){
+        String sql = "select * from item_storage where uuid= '"+uuid+"';";
+
+
+        ArrayList<ItemStorage> list = new ArrayList<ItemStorage>();
+
+        ResultSet rs = data.mysql.query(sql);
+        //  Bukkit.getLogger().info(sql);
+        if(rs == null){
+            return list;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                ItemStorage storage = new ItemStorage();
+                storage.item_id = rs.getInt("item_id");
+                storage.item_key = rs.getString("key");
+                storage.amount = rs.getLong("amount");
+                list.add(storage);
+            }
+            rs.close();
+        }
+        catch (SQLException e)
+        {
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return list;
+        }
+
+
+        data.mysql.close();
+        return list;
+
+    }
 
 
 

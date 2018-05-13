@@ -16,7 +16,7 @@ import java.util.logging.Level;
 
 public class MySQLManager {
 
-    public  Boolean debugMode = false;
+    public  Boolean debugMode = true;
     private JavaPlugin plugin;
     private String HOST = null;
     private String DB = null;

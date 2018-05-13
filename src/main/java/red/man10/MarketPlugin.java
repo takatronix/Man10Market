@@ -999,12 +999,25 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //
     @EventHandler void onPlayerJoin(PlayerJoinEvent e){
         Player p = e.getPlayer();
-        e.setJoinMessage("ジョイン");
+
+        UserData user = new UserData(this,data);
+        user.updateUserAssetsHistory(p);
+
+
+        String joinMessage = user.createJoinMessage(p);
+        if(joinMessage != null){
+            e.setJoinMessage(joinMessage);
+            this.log(joinMessage);
+        }
+        this.log("syutoku 失敗");
+//        e.setJoinMessage("ジョイン");
+
     }
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e){
         Player p = e.getPlayer();
-        showMessage(p,"ログアウト");
-        serverMessage(p.getName()+"がログアウト");
+        UserData user = new UserData(this,data);
+        user.updateUserAssetsHistory(p);
+
     }
 }
