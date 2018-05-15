@@ -536,6 +536,16 @@ public class MarketData {
             min = current.price;
         }
 
+        //      売り注文が０のとき、買い注文の最上位を現在値とする
+        if(sell == 0 && buy != 0){
+            price = ask;
+        }
+
+        //      買い注文が０のとき売り注文の最低を現在値とする
+        if(sell != 0 && buy == 0){
+            price = bid;
+        }
+
         //   値上がり
         if((int)current.price < (int)price){
             plugin.serverMessage( "§a§l"+current.key +": $"+getPriceString(current.price) + "から$"+getPriceString(price)+"へ値上がりしました");
