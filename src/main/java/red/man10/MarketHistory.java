@@ -28,10 +28,12 @@ public class MarketHistory {
 
 
 
-    public boolean update(int item_id ,double price,int volume,int year,int month,int day,int hour,int minute){
+    public boolean update(int item_id ,double price,int year,int month,int day,int hour,int minute){
 
-        updateDay(item_id,price,volume,year,month,day);
-        updateHour(item_id,price,volume,year,month,day,hour);
+        long dayVolume = data.getDayVolume(item_id,year,month,day);
+        long hourVolume = data.getHourVolume(item_id,year,month,day,hour);
+        updateDay(item_id,price,(int)dayVolume,year,month,day);
+        updateHour(item_id,price,(int)hourVolume,year,month,day,hour);
 
 
         return true;

@@ -592,9 +592,9 @@ public class MarketData {
         int hour = datetime.get(Calendar.HOUR_OF_DAY);
         int minute = datetime.get(Calendar.MINUTE);
 
-        int volume = 0;
 
-        history.update(current.id,current.price,volume,year,month,day,hour,minute);
+
+        history.update(current.id,current.price,year,month,day,hour,minute);
 
         //Mr_IK 追加、Signにデータを通す
         plugin.sign.updateSign(current.key,price);
@@ -743,10 +743,60 @@ public class MarketData {
                 +","+day+","
                 +","+hour+","
                 +","+min+");";
-        
+
         boolean ret = mysql.execute(sql);
 
         return ret;
+    }
+
+
+    public long getDayVolume(int item_id,int year,int month,int day){
+        String sql = "select sum(amount) where item_id="+item_id+" and year="+year+" and month="+month+" and day="+day+";";
+        ResultSet rs = mysql.query(sql);
+        long volume = 0;
+        if(rs == null){
+            return 0;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                volume = rs.getLong("amount");
+            }
+            rs.close();
+        }
+        catch (SQLException e)
+        {
+            mysql.close();
+            return 0;
+        }
+        mysql.close();
+        return volume;
+    }
+
+
+    public long getHourVolume(int item_id,int year,int month,int day,int hour){
+        String sql = "select sum(amount) where item_id="+item_id+" and year="+year+" and month="+month+" and day="+day+" and hour="+hour+";";
+        ResultSet rs = mysql.query(sql);
+        long volume = 0;
+        if(rs == null){
+            return 0;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                volume = rs.getLong("amount");
+            }
+            rs.close();
+        }
+        catch (SQLException e)
+        {
+            mysql.close();
+            return 0;
+        }
+        mysql.close();
+        return volume;
     }
 
     ///////////////////////////////////////////////
