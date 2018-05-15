@@ -1,6 +1,10 @@
 package red.man10;
 
-import net.md_5.bungee.api.chat.*;
+//import net.md_5.bungee.api.chat.*;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -1413,6 +1417,19 @@ public class MarketData {
 
         double totalEstimated = 0;
         int index = 0;
+
+
+        //      前へ戻る
+        int prevPage = targetPageNo - 1;
+        BaseComponent[] prevLink = null;
+        //      前に戻るページ
+        if( targetPageNo > 0 ){
+            ClickEvent clickPrev = null;
+            clickPrev = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mce menu "+prevPage);
+            prevLink = new ComponentBuilder("     §b§l§n[<<]  前のページ(Previous)  [<<]").event(clickPrev).create();
+            p.spigot().sendMessage(prevLink);
+        }
+
         for(ItemIndex item : items){
 
             //      アイテムバンクある
@@ -1442,7 +1459,7 @@ public class MarketData {
 
         int curPage  = targetPageNo + 1;
         int nextPage = targetPageNo + 1;
-        int prevPage = targetPageNo - 1;
+
 
         //////////////////////////////////////////
         //   クリックイベントを作成する
@@ -1450,24 +1467,21 @@ public class MarketData {
         BaseComponent[] pageLink = null;
         String pageText = "§f§l "+curPage + "/"+maxpage+" ";
         BaseComponent[] nextLink = null;
-        BaseComponent[] prevLink = null;
+
 
         String br = "§f§l---------";
-        //      前に戻るページ
-        if( targetPageNo > 0 ){
-            ClickEvent clickPrev = null;
-            clickPrev = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mce menu "+prevPage);
-            prevLink = new ComponentBuilder("§b§l §n[<<]").event(clickPrev).create();
-        }
         //      次の進むページ
         if( curPage < maxpage ){
             ClickEvent clickNext = null;
             clickNext = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mce menu "+nextPage);
-            nextLink = new ComponentBuilder("§b§l §n[>>]").event(clickNext).create();
+            nextLink = new ComponentBuilder("     §b§l§n[>>]  次のページ(Next) [>>]").event(clickNext).create();
+
+            p.spigot().sendMessage(nextLink);
         }
 
-
+/*
         if(prevLink == null && nextLink!= null){
+
             pageLink = new ComponentBuilder(br + pageText).append(nextLink).append(br).create();
         }
 
@@ -1479,7 +1493,8 @@ public class MarketData {
             pageLink = new ComponentBuilder(br).append(prevLink).append(pageText).append(br).create();
 
         }
-        p.spigot().sendMessage(pageLink);
+        */
+     //   p.spigot().sendMessage(pageLink);
 
 
         p.sendMessage(" §f§lあなたの所持金:"+getBalanceString(uuid) + " §6§lアイテム評価額:$"+getPriceString(totalEstimated));
