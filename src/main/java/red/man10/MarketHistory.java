@@ -104,6 +104,24 @@ public class MarketHistory {
     }
 
     //      日足を得る
+    Candle getYesterdayCandle(int item_id) {
+
+        String sql = "select * from history_day where item_id =" + item_id + " order by id desc limit 1 offset 1;";
+        //data.opLog(sql);
+        ArrayList<Candle> candles = getCandleList(sql);
+        if(candles == null){
+            //     data.opLog("取得できない");
+            return null;
+        }
+
+        int count= candles.size();
+        // data.opLog("Candle:"+count);
+        if(count >= 1){
+
+            return candles.get(0);
+        }
+        return null;
+    }
     Candle getDayCandle(int item_id,int year,int month,int day) {
 
         String sql = "select * from history_day where item_id =" + item_id + " and year=" + year + " and  month=" + month + " and  day=" + day + ";";

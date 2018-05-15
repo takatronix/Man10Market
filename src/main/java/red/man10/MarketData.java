@@ -1288,6 +1288,7 @@ public class MarketData {
                 item.id = rs.getInt("id");
                 item.key = rs.getString("item_key");
                 item.price = rs.getDouble("price");
+                item.last_price = rs.getDouble("last_price");
                 item.sell = rs.getInt("sell");
                 item.buy = rs.getInt("buy");
                 item.minPrice = rs.getDouble("min_price");
