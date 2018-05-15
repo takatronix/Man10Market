@@ -720,7 +720,34 @@ public class MarketData {
         return true;
     }
 
+    public boolean registerVolume(int item_id,int amount,double price,String uuidBuyer,String uuidSeller){
 
+        Calendar datetime = Calendar.getInstance();
+        datetime.setTime(new Date());
+        int year = datetime.get(Calendar.YEAR);
+        int month = datetime.get(Calendar.MONTH) + 1;
+        int day = datetime.get(Calendar.DAY_OF_MONTH);
+        int hour = datetime.get(Calendar.HOUR_OF_DAY);
+        int min = datetime.get(Calendar.MINUTE);
+        String dateTime = currentTime();
+
+        String sql = "insert into exchange_history (0,"+item_id
+                +",'"+uuidBuyer+"',"
+                +",'"+uuidSeller+"',"
+                +","+amount+","
+                +","+price+","
+                +","+price*amount+","
+                +",'"+currentTime()+"',"
+                +","+year+","
+                +","+month+","
+                +","+day+","
+                +","+hour+","
+                +","+min+");";
+        
+        boolean ret = mysql.execute(sql);
+
+        return ret;
+    }
 
     ///////////////////////////////////////////////
     //      買い注文を処理する ココ重要
@@ -756,12 +783,12 @@ public class MarketData {
             // 買い注文個数 = 約定個数
             if(o.amount == executed){
                 //opLog( "すべてが約定した！！ -> 買い注文削除");
-
                 if(deleteOrder(o.id)){
                 //    opLog("買い注文削除成功");
                 }else{
                     opLog("なんてこったい！　買い注文削除失敗 order_id="+o.id);
                 }
+          //      registerVolume(o.item_id,o.amount,o.uuid,);
 
             }
             // 買い注文個数 > 約定個数
@@ -775,6 +802,7 @@ public class MarketData {
                 }else{
                     opLog("なんてこったい！　\"買い更新失敗 order_id="+o.id);
                 }
+                //registerVolume(o.item_id,executed);
             }
 
             // 買い注文個数 < 約定個数
@@ -809,7 +837,11 @@ public class MarketData {
                 sendMoney(uuid.toString(),item_id,price,o.amount,o.uuid);
                 amount -= o.amount; //　残注文
                 soldAmount += o.amount; // 購入できた個数
-            //  買い注文 > 売り注文
+
+                //      ボリュームを登録
+                registerVolume(o.item_id,o.amount,o.price,o.uuid,uuid);
+
+                //  買い注文 > 売り注文
             }else if(o.amount > amount){
                 int leftAmount = o.amount - amount;
                 //  購入者の注文量を減らす
@@ -818,6 +850,10 @@ public class MarketData {
                 itemBank.sendItemToStorage(o.uuid,item_id,amount);
                 //   料金を支払
                 sendMoney(uuid,item_id,price,amount,o.uuid);
+
+                //      ボリュームを登録
+                registerVolume(o.item_id,amount,o.price,o.uuid,uuid);
+
                 return amount;
                 //  売り注文 == 買い注文
             }else if(o.amount == amount){
@@ -827,6 +863,9 @@ public class MarketData {
                 itemBank.sendItemToStorage(o.uuid,item_id,amount);
                 //   料金を支払
                 sendMoney(uuid,item_id,price,amount,o.uuid);
+
+                //      ボリュームを登録
+                registerVolume(o.item_id,amount,o.price,o.uuid,uuid);
                 return amount;
             }
         }
@@ -853,6 +892,10 @@ public class MarketData {
                 itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
                 //   料金を支払
                 sendMoney(o.uuid,item_id,o.price,amount,uuidBuyer);
+
+                //      ボリュームを登録
+                registerVolume(o.item_id,amount,o.price,uuidBuyer,o.uuid);
+
                 return amount;
                 //  買い注文 > 売り注文
             }else if(o.amount < amount){
@@ -864,6 +907,9 @@ public class MarketData {
                 //   料金を支払
                 sendMoney(o.uuid,item_id,o.price,o.amount,uuidBuyer);
                 retOrderAmount += o.amount;
+
+                //      ボリュームを登録
+                registerVolume(o.item_id,o.amount,o.price,uuidBuyer,o.uuid);
                 //  売り注文 == 買い注文
             }else if(o.amount == amount){
                // opLog("買い注文 > 売り注文 -> 売り注文を削除する order_id"+o.id);
@@ -873,6 +919,10 @@ public class MarketData {
                 itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
                 //   料金を支払
                 sendMoney(o.uuid,item_id,o.price,amount,uuidBuyer);
+
+                //      ボリュームを登録
+                registerVolume(o.item_id,o.amount,o.price,uuidBuyer,o.uuid);
+
                 return amount;
             }
         }
@@ -964,6 +1014,9 @@ public class MarketData {
                 showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
                 itemBank.updateItemStorage(uuid,item_id,newAmount);
 
+                //      ボリュームを登録
+                registerVolume(o.item_id,amount,o.price,o.uuid,uuid);
+
                 return totalAmount;
             }
             // 　買い注文 < 売り注文
@@ -979,6 +1032,8 @@ public class MarketData {
                 showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
                 itemBank.updateItemStorage(uuid,item_id,newAmount);
 
+                //      ボリュームを登録
+                registerVolume(o.item_id,o.amount,o.price,o.uuid,uuid);
 
             }
             //     同量
@@ -992,6 +1047,10 @@ public class MarketData {
                 long newAmount = storage.amount - o.amount;
                 showMessage(uuid,"アイテム個数が"+newAmount+"になりました");
                 itemBank.updateItemStorage(uuid,item_id,newAmount);
+
+                //      ボリュームを登録
+                registerVolume(o.item_id,amount,o.price,o.uuid,uuid);
+
                 return totalAmount;
             }
         }
@@ -1047,6 +1106,10 @@ public class MarketData {
                     totalAmount += amount;
                     int rest = o.amount - amount;
                     updateOrder(o.id,rest);
+
+                    //      ボリュームを登録
+                    registerVolume(o.item_id,amount,o.price,uuid,o.uuid);
+
                     return totalAmount;
                 }else{
                     opLog("金がたらないので注文キャンセル");
@@ -1063,6 +1126,10 @@ public class MarketData {
                     totalAmount += o.amount;
                     amount -= o.amount;
                     deleteOrder(o.id);
+
+                    //      ボリュームを登録
+                    registerVolume(o.item_id,o.amount,o.price,uuid,o.uuid);
+
                 }else{
                     opLog("金がたらないので注文キャンセル");
                     return totalAmount;
@@ -1077,6 +1144,10 @@ public class MarketData {
                     itemBank.sendItemToStorage(uuid,o.item_id,amount);
                     totalAmount += amount;
                     deleteOrder(o.id);
+
+                    //      ボリュームを登録
+                    registerVolume(o.item_id,o.amount,o.price,uuid,o.uuid);
+
                     return totalAmount;
                 }else{
                     opLog("金がたらないので注文キャンセル");
