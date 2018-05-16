@@ -61,6 +61,23 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public boolean isMarketOpen = false;
 
 
+
+    public void updateCurrentPriceListOnBackground(Player p){
+
+        new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                p.sendMessage("現在値更新中");
+                data.updatePriceAll();
+                p.sendMessage("現在値更新終了");
+
+            }
+
+        }.runTaskLater(this, 20);
+    }
+
+
     public boolean marketOpen(Player p,boolean flag) {
 
 

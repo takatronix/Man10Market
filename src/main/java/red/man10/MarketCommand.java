@@ -31,7 +31,14 @@ public class MarketCommand implements CommandExecutor {
 
         String command = args[0];
 
-
+        //      market broadcast
+        if(command.equalsIgnoreCase("updateall")){
+            if(!checkPermission(p,Settings.broadcastPermission)){
+                return false;
+            }
+            plugin.updateCurrentPriceListOnBackground(p);
+            return true;
+        }
 
 
         //      market broadcast

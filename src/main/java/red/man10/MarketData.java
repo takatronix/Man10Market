@@ -503,11 +503,15 @@ public class MarketData {
     //      現在値更新
     public boolean updateCurrentPrice(int item_id){
 
+        Bukkit.getLogger().info("現在値更新中:"+item_id);
+
         //  現在価格を求める
         ItemIndex current = getItemPrice(item_id);
         if(current == null){
             return false;
         }
+
+
 
         double last_price = current.price;
         ArrayList<OrderInfo> sellList = this.getGroupedOrderList(null,item_id,false,-1);
@@ -601,6 +605,8 @@ public class MarketData {
         plugin.sign.updateSign(String.valueOf(current.id),price);
 
         plugin.updateMapList(current.id,current.key,"$"+getPriceString(current.price));
+
+        Bukkit.getLogger().info("現在値更新中:"+item_id + " price:"+current.price);
 
         return ret;
     }
