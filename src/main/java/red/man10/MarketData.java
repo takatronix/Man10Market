@@ -729,19 +729,23 @@ public class MarketData {
         int day = datetime.get(Calendar.DAY_OF_MONTH);
         int hour = datetime.get(Calendar.HOUR_OF_DAY);
         int min = datetime.get(Calendar.MINUTE);
-        String dateTime = currentTime();
 
-        String sql = "insert into exchange_history (0,"+item_id
-                +",'"+uuidBuyer+"',"
-                +",'"+uuidSeller+"',"
-                +","+amount+","
-                +","+price+","
-                +","+price*amount+","
-                +",'"+currentTime()+"',"
-                +","+year+","
-                +","+month+","
-                +","+day+","
-                +","+hour+","
+        String buyer = Bukkit.getOfflinePlayer(UUID.fromString(uuidBuyer)).getName();
+        String seller = Bukkit.getOfflinePlayer(UUID.fromString(uuidSeller)).getName();
+
+        String sql = "insert into exchange_history values(0,"+item_id
+                +",'"+uuidBuyer+"'"
+                +",'"+buyer+"'"
+                +",'"+uuidSeller+"'"
+                +",'"+seller+"'"
+                +","+amount+""
+                +","+price
+                +","+price*amount
+                +",'"+currentTime()+"'"
+                +","+year
+                +","+month
+                +","+day
+                +","+hour
                 +","+min+");";
 
         boolean ret = mysql.execute(sql);
@@ -751,7 +755,7 @@ public class MarketData {
 
 
     public long getDayVolume(int item_id,int year,int month,int day){
-        String sql = "select sum(amount) where item_id="+item_id+" and year="+year+" and month="+month+" and day="+day+";";
+        String sql = "select sum(amount) from exchange_history where item_id="+item_id+" and year="+year+" and month="+month+" and day="+day+";";
         ResultSet rs = mysql.query(sql);
         long volume = 0;
         if(rs == null){
@@ -761,7 +765,7 @@ public class MarketData {
         {
             while(rs.next())
             {
-                volume = rs.getLong("amount");
+                volume = rs.getLong("sum(amount)");
             }
             rs.close();
         }
@@ -771,12 +775,14 @@ public class MarketData {
             return 0;
         }
         mysql.close();
+
+        //Bukkit.getServer().broadcastMessage("dayVolme = "+volume + "year"+year+"month"+month+"day:"+day);
         return volume;
     }
 
 
     public long getHourVolume(int item_id,int year,int month,int day,int hour){
-        String sql = "select sum(amount) where item_id="+item_id+" and year="+year+" and month="+month+" and day="+day+" and hour="+hour+";";
+        String sql = "select sum(amount) from exchange_history where item_id="+item_id+" and year="+year+" and month="+month+" and day="+day+" and hour="+hour+";";
         ResultSet rs = mysql.query(sql);
         long volume = 0;
         if(rs == null){
@@ -786,7 +792,7 @@ public class MarketData {
         {
             while(rs.next())
             {
-                volume = rs.getLong("amount");
+                volume = rs.getLong("sum(amount)");
             }
             rs.close();
         }
@@ -796,6 +802,8 @@ public class MarketData {
             return 0;
         }
         mysql.close();
+      //  Bukkit.getServer().broadcastMessage("hourvol = "+volume + "year"+year+"month"+month+"day:"+day + "h "+hour);
+
         return volume;
     }
 

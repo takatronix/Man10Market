@@ -54,6 +54,7 @@ public class MarketHistory {
         }
         //   data.opLog("candle -> update");
 
+        candle.volume = volume;
 
         candle.close = price;
         if(candle.high < price){
@@ -85,9 +86,8 @@ public class MarketHistory {
 
             return true;
         }
-     //   data.opLog("candle -> update");
 
-
+        candle.volume = volume;
         candle.close = price;
         if(candle.high < price){
             candle.high = price;
