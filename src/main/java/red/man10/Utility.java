@@ -4,10 +4,10 @@ public class Utility {
 
 
     static public String getPriceString(double price){
-        return String.format("$%,d",(int)(price));
+        return String.format("$%,.0f",price);
     }
     static public String getColorPriceString(double price){
-        return String.format("§e§l$%,d",(int)(price));
+        return String.format("§e§l$%,.0f",price);
     }
 
     static public String getItemString(long amount){
