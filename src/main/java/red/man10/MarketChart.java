@@ -117,7 +117,7 @@ public class MarketChart {
         g.fillRect(0,0,width,height);
 
 
-        MappDraw.drawImage(g,"item"+id,64,40,64,64);
+        MappDraw.drawImage(g,"item"+id,64,20,64,64);
 
 
 
@@ -164,15 +164,16 @@ public class MarketChart {
         g.setColor(Color.GREEN);
         g.setFont(new Font( "SansSerif", Font.BOLD ,16 ));
         if(item.sell == 0){
-            g.drawString("売り注文なし",4,80);
+            //g.drawString("売り注文なし",4,80);
+            MappDraw.drawOutlineString(g,"売り注文なし",Color.GREEN,Color.black,4,80);
         }else{
             g.drawString("Sell:"+Utility.getPriceString(item.ask) +"-",4,80 );
         }
 
         g.setColor(Color.RED);
         if (item.buy == 0) {
+            MappDraw.drawOutlineString(g,"買い注文なし",Color.RED,Color.black,4,95);
 
-            g.drawString("買い注文なし",4,95);
 
         }else{
             g.setFont(new Font( "SansSerif", Font.BOLD ,16 ));
