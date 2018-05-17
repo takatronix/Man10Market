@@ -55,6 +55,14 @@ public class MarketChart {
                 return drawPrice(g,getId(key));
             });
 
+            MappRenderer.displayTouchEvent("price:"+i,(String key,int mapId,Player player, int x,int y) ->{
+
+
+                String[] item = key.split(":");
+                player.chat("/mce price "+item[1]);
+                return false;
+            });
+
         }
         for (int i = 1;i <= itemmax;i++){
             MappRenderer.draw( "chart:"+i, 0,(String key,int mapId,Graphics2D g) -> {
@@ -78,11 +86,11 @@ public class MarketChart {
         }
 
         //      背景を黒に
-        g.setColor(Color.BLACK);
-       // g.fillRect(0,0,width,height);
+        g.setColor(Color.GRAY);
+        g.fillRect(0,0,width,height);
 
 
-        MappDraw.drawImage(g,"item"+id,0,0,128,128);
+        MappDraw.drawImage(g,"item"+id,64,64,64,64);
 
 
         g.setColor(Color.WHITE);
