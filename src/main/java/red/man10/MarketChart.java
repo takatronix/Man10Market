@@ -4,9 +4,11 @@ package red.man10;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import red.man10.MarketData;
 
 import javax.lang.model.type.UnionType;
+import javax.rmi.CORBA.Util;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
@@ -50,7 +52,10 @@ public class MarketChart {
             return true;
         });
 
-        int     itemmax = 40;
+
+        ArrayList<MarketData.ItemIndex> items = data.getItemIndexList("select * from item_index order by id;");
+
+        int     itemmax = items.size();
         //
         for (int i = 1;i <= itemmax;i++){
             MappRenderer.draw( "price:"+i,0,(String key,int mapId,Graphics2D g) -> {
@@ -151,7 +156,35 @@ public class MarketChart {
 
         g.setColor(col);
 //        g.drawString(strPrice,10,50);
-        MappDraw.drawShadowString(g,strPrice,Color.YELLOW,Color.BLACK,10,50);
+        MappDraw.drawShadowString(g,strPrice,col,Color.BLACK,10,50);
+
+
+
+
+        g.setColor(Color.GREEN);
+        g.setFont(new Font( "SansSerif", Font.BOLD ,16 ));
+        if(item.sell == 0){
+            g.drawString("売り注文なし",4,80);
+        }else{
+            g.drawString("Sell:"+Utility.getPriceString(item.ask) +"-",4,80 );
+        }
+
+        g.setColor(Color.RED);
+        if (item.buy == 0) {
+
+            g.drawString("買い注文なし",4,95);
+
+        }else{
+            g.setFont(new Font( "SansSerif", Font.BOLD ,16 ));
+            g.drawString("Buy:"+Utility.getPriceString(item.bid) +"-",4,98 );
+        }
+
+
+
+
+
+
+
 
         drawGauge(g,item.sell,item.buy);
 
