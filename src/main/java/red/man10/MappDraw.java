@@ -37,4 +37,16 @@ public class MappDraw {
         g.drawString(text, x, y);
 
     }
+
+    static public void drawShadowString(Graphics2D g,String text, Color textCol, Color shadowCol, int x, int y){
+
+        g.setColor(shadowCol);
+        g.drawString(text ,x+1,y+1);
+        g.setColor(textCol);
+        g.drawString(text ,x,y);
+
+
+    }
 }
+
+

@@ -70,6 +70,7 @@ public class MarketData {
         boolean result;
         int disabled;
         String base64;
+        int lot;
         String getString(){
             return "ItemIndex:"+id+" "+key+" price:"+price+" bid:"+bid+" ask:"+ask + " sell:"+sell + " buy:"+buy;
         }
@@ -1431,6 +1432,7 @@ public class MarketData {
                 item.bid = rs.getDouble("bid");
                 item.ask = rs.getDouble("ask");
                 item.disabled = rs.getInt("disabled");
+                item.lot = rs.getInt("lot");
                 item.base64 = rs.getString("base64");
                 item.result = true;
                 ret.add(item);
@@ -1522,6 +1524,7 @@ public class MarketData {
                 ret.maxPrice = rs.getDouble("max_price");
                 ret.base64 = rs.getString("base64");
                 ret.disabled = rs.getInt("disabled");
+                ret.lot = rs.getInt("lot");
                 ret.result = true;
             }
             rs.close();
@@ -1745,7 +1748,7 @@ public class MarketData {
                 +initialPrice +","
                 +initialPrice
 
-                +",0);");
+                +",0,64);");
 
         logTransaction(uuid,"Register",key,initialPrice,0,0,"");
 

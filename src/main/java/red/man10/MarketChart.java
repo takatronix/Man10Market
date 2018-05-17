@@ -5,6 +5,8 @@ package red.man10;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import red.man10.MarketData;
+
+import javax.lang.model.type.UnionType;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
@@ -56,12 +58,32 @@ public class MarketChart {
             });
 
             MappRenderer.displayTouchEvent("price:"+i,(String key,int mapId,Player player, int x,int y) ->{
-
-
                 String[] item = key.split(":");
                 player.chat("/mce price "+item[1]);
                 return false;
             });
+
+
+            MappRenderer.draw( "buy:"+i,0,(String key,int mapId,Graphics2D g) -> {
+                return drawBuy(g,getId(key));
+            });
+
+            MappRenderer.displayTouchEvent("buy:"+i,(String key,int mapId,Player player, int x,int y) ->{
+                String[] item = key.split(":");
+                player.chat("/mce buy "+item[1] + " 64");
+                return false;
+            });
+
+            MappRenderer.draw( "sell:"+i,0,(String key,int mapId,Graphics2D g) -> {
+                return drawSell(g,getId(key));
+            });
+
+            MappRenderer.displayTouchEvent("sell:"+i,(String key,int mapId,Player player, int x,int y) ->{
+                String[] item = key.split(":");
+                player.chat("/mce sell "+item[1] +" 64");
+                return false;
+            });
+
 
         }
         for (int i = 1;i <= itemmax;i++){
@@ -94,13 +116,17 @@ public class MarketChart {
 
 
         g.setColor(Color.WHITE);
-        g.setFont(new Font( "SansSerif", Font.BOLD ,20 ));
-        g.drawString(item.key,10,20);
+        g.setFont(new Font( "SansSerif", Font.PLAIN ,14 ));
+
+        MappDraw.drawShadowString(g,item.key,Color.WHITE,Color.BLACK,10,20);
+
+ //       g.drawString(item.key,10,20);
 
       // g.setFont(new Font( "SansSerif", Font.BOLD ,14 ));
 
 
 
+        g.setFont(new Font( "SansSerif", Font.BOLD ,20 ));
 
         Color col = Color.YELLOW;
         String strPrice = Utility.getPriceString(item.price);
@@ -123,6 +149,101 @@ public class MarketChart {
     }
 
 
+    //      現在値を表示
+    static boolean drawBuy(Graphics2D g,int id){
+
+        MarketData.ItemIndex item = data.getItemPrice(id);
+        if(item == null){
+            return false;
+        }
+
+        //      背景を黒に
+        g.setColor(Color.black);
+        g.fillRect(0,0,width,height);
+
+
+        MappDraw.drawImage(g,"item"+id,64,0,48,48);
+
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font( "SansSerif", Font.PLAIN ,14 ));
+
+      //  MappDraw.drawShadowString(g,item.key,Color.WHITE,Color.BLACK,10,20);
+
+        //       g.drawString(item.key,10,20);
+
+        // g.setFont(new Font( "SansSerif", Font.BOLD ,14 ));
+
+
+        g.setColor(Color.GREEN);
+        g.setFont(new Font( "SansSerif", Font.BOLD ,16 ));
+        g.drawString("アイテム購入x64",0,20);
+
+
+
+        g.setFont(new Font( "SansSerif", Font.BOLD ,17 ));
+
+        String onePrice = Utility.getPriceString(item.bid);
+        String stPrice = Utility.getPriceString(item.bid*64);
+
+        g.drawString(onePrice+"/1個",0,50);
+        g.drawString(stPrice+"/64個",0,70);
+
+
+        g.setColor(Color.WHITE);
+        g.drawString("在庫:",10,90);
+        g.drawString(" "+Utility.getItemString(item.sell)+"個",10,110);
+
+        return true;
+    }
+
+    //      現在値を表示
+    static boolean drawSell(Graphics2D g,int id){
+
+        MarketData.ItemIndex item = data.getItemPrice(id);
+        if(item == null){
+            return false;
+        }
+
+        //      背景を黒に
+        g.setColor(Color.black);
+        g.fillRect(0,0,width,height);
+
+
+        MappDraw.drawImage(g,"item"+id,64,64,64,64);
+
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font( "SansSerif", Font.PLAIN ,14 ));
+
+        //  MappDraw.drawShadowString(g,item.key,Color.WHITE,Color.BLACK,10,20);
+
+        //       g.drawString(item.key,10,20);
+
+        // g.setFont(new Font( "SansSerif", Font.BOLD ,14 ));
+
+
+        g.setColor(Color.RED);
+        g.setFont(new Font( "SansSerif", Font.BOLD ,20 ));
+        g.drawString("アイテム売却",0,20);
+
+
+        g.setFont(new Font( "SansSerif", Font.BOLD ,20 ));
+
+        Color col = Color.GREEN;
+        String strPrice = Utility.getPriceString(item.ask);
+
+
+
+        g.setColor(col);
+        g.drawString(strPrice,10,50);
+        g.drawString("注文個数: ",10,70);
+
+        g.drawString(strPrice,10,80);
+        g.drawString(" "+item.buy,10,100);
+
+        return true;
+    }
     //      現在値を表示
     static boolean drawChart(Graphics2D g,int id){
 

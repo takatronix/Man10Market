@@ -720,6 +720,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         MappRenderer.refresh("price:"+item_id);
+        MappRenderer.refresh("buy:"+item_id);
+        MappRenderer.refresh("sell:"+item_id);
         MappRenderer.refresh("chart:"+item_id);
 
 
