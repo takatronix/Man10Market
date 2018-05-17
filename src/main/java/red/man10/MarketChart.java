@@ -112,13 +112,22 @@ public class MarketChart {
         g.fillRect(0,0,width,height);
 
 
-        MappDraw.drawImage(g,"item"+id,64,64,64,64);
+        MappDraw.drawImage(g,"item"+id,64,40,64,64);
+
+
 
 
         g.setColor(Color.WHITE);
-        g.setFont(new Font( "SansSerif", Font.PLAIN ,14 ));
 
-        MappDraw.drawShadowString(g,item.key,Color.WHITE,Color.BLACK,10,20);
+
+        int titleSize = 20;
+        if(item.key.length() > 6){
+            titleSize = 12;
+        }
+
+        g.setFont(new Font( "SansSerif", Font.BOLD ,titleSize ));
+
+        MappDraw.drawShadowString(g,item.key,Color.WHITE,Color.BLACK,5,20);
 
  //       g.drawString(item.key,10,20);
 
@@ -129,6 +138,7 @@ public class MarketChart {
         g.setFont(new Font( "SansSerif", Font.BOLD ,20 ));
 
         Color col = Color.YELLOW;
+
         String strPrice = Utility.getPriceString(item.price);
 
         if(item.price > item.last_price){
@@ -140,13 +150,57 @@ public class MarketChart {
         }
 
         g.setColor(col);
-        g.drawString(strPrice,10,50);
+//        g.drawString(strPrice,10,50);
+        MappDraw.drawShadowString(g,strPrice,Color.YELLOW,Color.BLACK,10,50);
+
+        drawGauge(g,item.sell,item.buy);
 
 
 
 
         return true;
     }
+
+    static void drawGauge(Graphics g,int green,int red){
+
+        int x = 12;
+        int w = 100;
+        int y = 108;
+        int h = 10;
+
+        int glen = 100;
+        int blen = 0;
+
+        if(red != 0){
+
+            double r = (double)green / ((double)green + (double)red);
+            glen = (int)((double)w * r);
+            blen = w - glen;
+        }
+
+        if(green == 0 && red == 0){
+            g.setColor(Color.BLACK);
+            g.fillRect(x,y,w,h);
+            //      枠
+            g.setColor(Color.WHITE);
+            g.drawRect(x,y,w,h);
+            return;
+        }
+
+
+        g.setColor(Color.GREEN);
+        g.fillRect(x,y,glen,h);
+
+        g.setColor(Color.RED);
+        g.fillRect(x+glen,y,blen,h);
+
+        //      枠
+        g.setColor(Color.WHITE);
+        g.drawRect(x,y,w,h);
+
+
+    }
+
 
 
     //      現在値を表示
