@@ -39,6 +39,13 @@ public class VaultManager {
         return economy != null;
     }
 
+    public boolean canUseVault() {
+        if(economy != null){
+            return true;
+        }
+        return false;
+    }
+
     /////////////////////////////////////
     //      残高確認
     /////////////////////////////////////

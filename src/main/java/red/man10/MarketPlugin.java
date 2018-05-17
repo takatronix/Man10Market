@@ -708,10 +708,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public boolean giveMap(Player p,String target){
 
         //      アイテム作成
-        ItemStack map = DynamicMapRenderer.getMapItem(this,target);
+        ItemStack map = MappRenderer.getMapItem(this,target);
         p.getInventory().addItem(map);
 
-        DynamicMapRenderer.updateAll();
+        MappRenderer.updateAll();
 
         return true;
     }
@@ -719,8 +719,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
 
-        DynamicMapRenderer.refresh("price:"+item_id);
-        DynamicMapRenderer.refresh("chart:"+item_id);
+        MappRenderer.refresh("price:"+item_id);
+        MappRenderer.refresh("chart:"+item_id);
 
 
         return 0;
@@ -860,7 +860,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         ////////////////////////////////
         //      マップレンダラ初期化
-        DynamicMapRenderer.setup(this);
+        MappRenderer.setup(this);
 
 
         // Plugin startup logic
@@ -940,13 +940,13 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onItemInteract(PlayerInteractEntityEvent event){
         //           回転抑制用
-     //   DynamicMapRenderer.onPlayerInteractEntityEvent(event);
+     //   MappRenderer.onPlayerInteractEntityEvent(event);
     }
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
 
         //      イベントを通知してやる（ボタン検出用)
-       // DynamicMapRenderer.onPlayerInteractEvent(e);
+       // MappRenderer.onPlayerInteractEvent(e);
 
         Player p = e.getPlayer();
 
