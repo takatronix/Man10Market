@@ -476,6 +476,9 @@ public class MappRenderer extends MapRenderer implements Listener {
 
 
         Block clickedBlock = e.getClickedBlock();
+        if(clickedBlock == null){
+            return 0;
+        }
         Location loc = clickedBlock.getLocation();
 
         /////////////////////////////////////////////////////
