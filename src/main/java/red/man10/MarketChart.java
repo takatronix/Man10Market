@@ -172,7 +172,7 @@ public class MarketChart {
 
         g.setColor(Color.RED);
         if (item.buy == 0) {
-            MappDraw.drawOutlineString(g,"買い注文なし",Color.RED,Color.black,4,95);
+            MappDraw.drawOutlineString(g,"買い注文なし",Color.RED,Color.black,4,100);
 
 
         }else{
