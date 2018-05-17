@@ -14,7 +14,7 @@
     <bytecodeTargetLevel>
       <module name="Man10Market" target="1.8" />
       <module name="market" target="1.8" />
-      <module name="market (1)" target="1.5" />
+      <module name="market (1)" target="1.8" />
       <module name="market (2)" target="1.8" />
     </bytecodeTargetLevel>
   </component>

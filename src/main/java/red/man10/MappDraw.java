@@ -1,5 +1,6 @@
 package red.man10;
 
+import org.bukkit.Bukkit;
 import red.man10.MappRenderer;
 
 import java.awt.*;
@@ -13,6 +14,7 @@ public class MappDraw {
     static public Boolean drawImage( Graphics2D g,String imageKey,int x,int y,int w,int h){
         BufferedImage image = MappRenderer.image(imageKey);
         if(image == null){
+            Bukkit.getLogger().warning("no image:"+imageKey);
             return false;
         }
 

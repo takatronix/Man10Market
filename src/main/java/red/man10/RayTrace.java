@@ -1,8 +1,8 @@
-package  red.man10;
+package red.man10;
 import org.bukkit.Effect;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
-import red.man10.BoundingBox;
+
 
 import java.util.ArrayList;
 

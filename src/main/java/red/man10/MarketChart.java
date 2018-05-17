@@ -29,60 +29,6 @@ public class MarketChart {
     public static void registerFuncs(){
 
 
-        //      マップの近くのボタンが押された時の処理
-        MappRenderer.buttonEvent("game", (String key, int mapId,Player player) -> {
-            //      マップに設定された変数の取り出し
-            int value = gameDataMap.getOrDefault(mapId,-1);
-            value = value + 1;
-            if(value == 6){
-                value = 0;
-            }
-            //      インクリメントして画面更新
-            gameDataMap.put(mapId,value);
-
-            //    true -> 描画更新
-            return true;
-        });
-
-        //     クリック数を表示する
-        MappRenderer.draw( "game", 0, (String key,int mapId, Graphics2D g) -> {
-
-            int value = gameDataMap.getOrDefault(mapId,0);
-            String[] imageKey = {"1","10","100","1000","10000","item1"};
-            //      背景を黒に
-            g.setColor(Color.BLACK);
-            g.fillRect(0,0,128,128);
-
-
-            //      画像を描画
-            MappDraw.drawImage(g,imageKey[value],15,25,80,80);
-
-            //      trueならMapへ転送する
-            return true;
-        });
-
-
-
-        //      ボタン押された時の処理を書く
-        MappRenderer.buttonEvent("click", (String key, int mapId,Player p) -> {
-            clickedCount ++;
-            //    true -> 描画更新
-            return true;
-        });
-
-        //     クリック数を表示する
-        MappRenderer.draw( "click", 0, (String key, int mapId,Graphics2D g) -> {
-            //      背景を黒に
-            g.setColor(Color.BLACK);
-            g.fillRect(0,0,width,height);
-            g.setColor(Color.RED);
-            g.setFont(new Font( "SansSerif", Font.BOLD ,50));
-            g.drawString(""+clickedCount,50,70);
-            //      trueならMapへ転送する
-            return true;
-        });
-
-
 
         //      "time" -> 時計
         MappRenderer.draw( "time", 20*60, (String key,int mapId, Graphics2D g) -> {
@@ -133,14 +79,34 @@ public class MarketChart {
 
         //      背景を黒に
         g.setColor(Color.BLACK);
-        g.fillRect(0,0,width,height);
+       // g.fillRect(0,0,width,height);
+
+
+        MappDraw.drawImage(g,"item"+id,0,0,128,128);
+
 
         g.setColor(Color.WHITE);
         g.setFont(new Font( "SansSerif", Font.BOLD ,20 ));
         g.drawString(item.key,10,20);
 
       // g.setFont(new Font( "SansSerif", Font.BOLD ,14 ));
-        g.drawString("$"+data.getPriceString(item.price),10,50);
+
+
+
+
+        Color col = Color.YELLOW;
+        String strPrice = Utility.getPriceString(item.price);
+
+        if(item.price > item.last_price){
+            col = Color.GREEN;
+            strPrice += "↑";
+        }else if(item.price > item.last_price){
+            col = Color.RED;
+            strPrice += "↓";
+        }
+
+        g.setColor(col);
+        g.drawString(strPrice,10,50);
 
 
 
