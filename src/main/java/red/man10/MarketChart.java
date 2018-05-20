@@ -56,34 +56,36 @@ public class MarketChart {
         ArrayList<MarketData.ItemIndex> items = data.getItemIndexList("select * from item_index order by id;");
 
         int     itemmax = items.size();
+        Bukkit.getServer().broadcastMessage("itemIndex: "+itemmax);
         //
-        for (int i = 1;i <= itemmax;i++){
-            MappRenderer.draw( "price:"+i,0,(String key,int mapId,Graphics2D g) -> {
+        for (int n = 0;n < itemmax;n++){
+            int no = items.get(n).id;
+            MappRenderer.draw( "price:"+no,0,(String key,int mapId,Graphics2D g) -> {
                 return drawPrice(g,getId(key));
             });
 
-            MappRenderer.displayTouchEvent("price:"+i,(String key,int mapId,Player player, int x,int y) ->{
+            MappRenderer.displayTouchEvent("price:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
                 player.chat("/mce price "+item[1]);
                 return false;
             });
 
 
-            MappRenderer.draw( "buy:"+i,0,(String key,int mapId,Graphics2D g) -> {
+            MappRenderer.draw( "buy:"+no,0,(String key,int mapId,Graphics2D g) -> {
                 return drawBuy(g,getId(key));
             });
 
-            MappRenderer.displayTouchEvent("buy:"+i,(String key,int mapId,Player player, int x,int y) ->{
+            MappRenderer.displayTouchEvent("buy:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
                 player.chat("/mce buy "+item[1] + " 64");
                 return false;
             });
 
-            MappRenderer.draw( "sell:"+i,0,(String key,int mapId,Graphics2D g) -> {
+            MappRenderer.draw( "sell:"+no,0,(String key,int mapId,Graphics2D g) -> {
                 return drawSell(g,getId(key));
             });
 
-            MappRenderer.displayTouchEvent("sell:"+i,(String key,int mapId,Player player, int x,int y) ->{
+            MappRenderer.displayTouchEvent("sell:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
                 player.chat("/mce sell "+item[1] +" 64");
                 return false;
@@ -280,7 +282,7 @@ public class MarketChart {
 
         g.setColor(Color.WHITE);
         g.drawString("在庫:",10,90);
-        g.drawString(" "+Utility.getItemString(item.sell)+"個",10,110);
+        g.drawString(Utility.getItemString(item.sell)+"個",10,110);
 
         return true;
     }

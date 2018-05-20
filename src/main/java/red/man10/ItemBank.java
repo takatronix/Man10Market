@@ -100,13 +100,51 @@ public class ItemBank {
 
     }
 
-    public boolean updateItemStorage(String uuid,int item_id,long amount){
+    public boolean updateItemStorageX(String uuid,int item_id,long amount){
         String sql= "update item_storage set amount="+amount+" where item_id = "+item_id+" and uuid='"+uuid+"';";
         boolean ret =  data.mysql.execute(sql);
 
 
         return ret;
     }
+
+
+
+
+
+
+
+    //      アイテム追加
+    public boolean addItem(String uuid,int item_id,long amount){
+
+        //      アイテムストレージになければ初期登録
+        ItemStorage store = getItemStorage(uuid,item_id);
+        if(store.item_key == null){
+            return this.insertItemStorage(uuid,item_id,amount);
+        }
+
+        //      追加
+        boolean ret = data.mysql.execute("update item_storage set amount = amount + "+amount+" where uuid='"+uuid+"' and item_id="+item_id+";");
+        return ret;
+    }
+
+    public boolean reduceItem(String uuid,int item_id,long amount){
+
+        //      アイテムストレージになければ初期登録
+        ItemStorage store = getItemStorage(uuid,item_id);
+        if(store.item_key == null){
+            return false;
+        }
+
+        if( store.amount < amount){
+            return  false;
+        }
+
+        boolean ret = data.mysql.execute("update item_storage set amount = amount - "+amount+" where uuid='"+uuid+"' and item_id="+item_id+";");
+        return ret;
+    }
+
+
     public boolean insertItemStorage(String uuid,int item_id,long amount) {
 
         OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
@@ -123,7 +161,7 @@ public class ItemBank {
                 +");");
         return ret;
     }
-
+/*
 
     //   アイテムボックスへアイテムを送信する
     public boolean sendItemToStorage(String uuid,int item_id,int amount){
@@ -131,6 +169,25 @@ public class ItemBank {
 
         OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
 
+
+        MarketData.ItemIndex result =  data.getItemPrice(String.valueOf(item_id));
+        if(result == null){
+            if(player.isOnline()){
+                plugin.showError((Player)player,"登録されていない");
+            }
+            return false;
+        }
+
+        if(addItem(uuid,item_id,amount)){
+            if(player.isOnline()){
+                Player online = (Player)player;
+                plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクに追加されました => "+amount+"個");
+            }
+        }
+
+
+
+        /*
         MarketData.ItemIndex result =  data.getItemPrice(String.valueOf(item_id));
         if(result == null){
             if(player.isOnline()){
@@ -146,6 +203,7 @@ public class ItemBank {
         }else{
             total += store.amount;
             this.updateItemStorage(uuid,item_id,total);
+            //this.addItem(uuid,item_id,amount);
         }
 
         if(player.isOnline()){
@@ -156,9 +214,12 @@ public class ItemBank {
 
 
         data.logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
+
         return true;
     }
+        */
 
+    /*
     ////////////////////////////////////////////
     ///         アイテムバンクからアイテムを引き出す
     public boolean removeItemFromStorage(String uuid,int item_id,int amount){
@@ -176,16 +237,19 @@ public class ItemBank {
 
 
         ItemStorage store = getItemStorage(uuid,item_id);
+
+
+
         if(store.item_key == null){
             return false;
         }
-        long total = store.amount - amount;
-        if(total > 0){
-            this.updateItemStorage(uuid,item_id,total);
+
+
+        if(this.reduceItem(uuid,item_id,amount)){
+
             if(player.isOnline()){
                 Player online = (Player)player;
                 plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクからひきだされました ");
-                plugin.showMessage(online,"現在トータル:" +data.getPriceString(total)+"個");
             }
             data.logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
             return true;
@@ -195,13 +259,12 @@ public class ItemBank {
         if(player.isOnline()){
             Player online = (Player)player;
             plugin.showError(online,"アイテムの引き出しに失敗しました！"+result.key +":"+ amount+"個");
-            plugin.showMessage(online,"現在トータル:" +data.getPriceString(total)+"個");
         }
 
         return false;
     }
 
-
+*/
 
 
 }

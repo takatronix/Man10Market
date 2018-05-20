@@ -123,15 +123,27 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             return false;
         }
 
+
+
         //      アイテム個数をへらす
         String uuid = p.getUniqueId().toString();
-        ItemBank.ItemStorage storage = itemBank.getItemStorage(uuid,item.id);
 
+
+        //      アイテムを減らせた
+        if(itemBank.reduceItem(uuid,item.id,ret) == false){
+            opLog(p.getName()+"のアイテムを減らすことに失敗した");
+            return false;
+        }
+
+
+/*
+
+        ItemBank.ItemStorage storage = itemBank.getItemStorage(uuid,item.id);
 
         long newAmount = storage.amount - ret;
         itemBank.updateItemStorage(uuid,item.id,newAmount);
 
-
+*/
         ItemStack itemStack = MarketData.itemFromBase64(item.base64);
         if(itemStack == null){
             showError(p,"アイテム生成に失敗");
@@ -141,6 +153,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         itemStack.setAmount((int)ret);
 
         p.getInventory().addItem(itemStack);
+
+
+        data.logTransaction(uuid,"ItemBuy",""+item.id,item.price,ret,0,null);
 
         return true;
     }
@@ -215,7 +230,15 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         //ItemBank.ItemStorage store = bank.getItemStorage(uuid,result.id);
         //      アイテムをストレージに入れる
         String uuid = p.getUniqueId().toString();
-        this.itemBank.sendItemToStorage(uuid,itemIndex.id,amount);
+        //this.itemBank.sendItemToStorage(uuid,itemIndex.id,amount);
+
+        if(itemBank.addItem(uuid,itemIndex.id,amount) == false){
+
+            showError(p,"アイテムバンクへの登録に失敗しました");
+            opLog(p.getName()+"のItemSell時のアイテムバンク登録失敗");
+            return false;
+        }
+
 
 
         int ret = data.marketSell(p.getUniqueId().toString(),target,amount);
@@ -394,7 +417,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     void showMainMenuLink(Player p){
-        MarketData.sendHoverText(p," §f§lメインメニューへ戻る => §b§l§n[メインメニュー]","クリックするとメインメニューへ戻ります /mce","/mce menu");
+        Utility.sendHoverText(p," §f§lメインメニューへ戻る => §b§l§n[メインメニュー]","クリックするとメインメニューへ戻ります /mce","/mce menu");
     }
 
     //  注文表示
@@ -470,7 +493,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 ,o.id,buyOrSell,o.key,o.player,price,data.getPriceString(o.amount),o.date.toString(),o.time.toString()
             );
 
-            MarketData.sendHoverText(p, order,"クリックすると注文がキャンセルされます","/mce cancel "+o.id);
+            Utility.sendHoverText(p, order,"クリックすると注文がキャンセルされます","/mce cancel "+o.id);
 
 
 /*
@@ -489,7 +512,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
            // MarketData.sendHoverText(p, "§f§l§n てすとおおおおお ","クリックすると全ての注文がキャンセルされます","/test ");
         }else{
             p.sendMessage("§b§l"+count+"§f件の注文があります");
-            MarketData.sendHoverText(p, "         §c§n[全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mce cancelall");
+            Utility.sendHoverText(p, "         §c§n[全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mce cancelall");
         }
         showMainMenuLink(p);
 /*
@@ -620,22 +643,22 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         //  現在所有個数　
 
-        MarketData.sendHoverText(p,  "あなたは"+itemCount+"個の"+item.key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
+        Utility.sendHoverText(p,  "あなたは"+itemCount+"個の"+item.key+"を所有/所持金:" + data.getBalanceString(p.getUniqueId().toString()),"アイテム評価額:$"+data.getPriceString(itemPrice)+ "\n 販売するにはアイテムボックスにアイテムを登録してください /mitembox /mib","/mib");
 
         if(item.sell >0){
-            MarketData.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §f=> §a§l§n[成り行き買い]" ,"指定した個数を金額が安い順に買います\n/mce marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mce marketbuy "+item.key + " ");
+            Utility.sendSuggestCommand(p,"§2現在売注文数:"+item.sell+"個 $"+ data.getPriceString(item.bid)+"/1個〜 §f=> §a§l§n[成り行き買い]" ,"指定した個数を金額が安い順に買います\n/mce marketbuy(mb) "+item.key +" [買いたい個数] 最大:"+item.sell,"/mce marketbuy "+item.key + " ");
         }
 
         if(itemCount > 0){
             if(item.buy > 0){
-                MarketData.sendSuggestCommand(p, "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§f=> §c§l§n[成り行き売り]" ,"指定した個数を金額が高い順に売ります\n/mce marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mce marketsell "+item.key + " ");
+                Utility.sendSuggestCommand(p, "§e現在買注文数:"+item.buy+ "個 $"+data.getPriceString(item.ask)+"/1個〜§f=> §c§l§n[成り行き売り]" ,"指定した個数を金額が高い順に売ります\n/mce marketsell(ms) "+item.key +" [売りたい個数] 最大:"+itemCount,"/mce marketsell "+item.key + " ");
             }
         }
 
 
-        MarketData.sendSuggestCommand(p, "金額を指定して買い注文 [1:金額][2:個数] => §a§l§n[指し値買い注文]" ,"指定した金額、個数の買い注文をします\n§a§l/mce orderbuy(ob) "+item.key +" [金額] [買い個数] §e\n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mce orderbuy "+item.key + " ");
+        Utility.sendSuggestCommand(p, "金額を指定して買い注文 [1:金額][2:個数] => §a§l§n[指し値買い注文]" ,"指定した金額、個数の買い注文をします\n§a§l/mce orderbuy(ob) "+item.key +" [金額] [買い個数] §e\n※金額が安すぎる場合、買えない場合があります。\n注文キャンセルすると返金されます","/mce orderbuy "+item.key + " ");
         if(itemCount > 0){
-            MarketData.sendSuggestCommand(p,  "金額を指定して売り注文 [1:金額][2:個数] => §c§l§n[指し値売り注文]" ,"指定した金額、個数の売り注文をします\n§c§l/mce ordersell(os) "+item.key +" [金額] [売り個数] §e\n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mce ordersell "+item.key + " ");
+            Utility.sendSuggestCommand(p,  "金額を指定して売り注文 [1:金額][2:個数] => §c§l§n[指し値売り注文]" ,"指定した金額、個数の売り注文をします\n§c§l/mce ordersell(os) "+item.key +" [金額] [売り個数] §e\n※金額が高すぎる場合、売れない場合があります。\n注文キャンセルすると返品されます","/mce ordersell "+item.key + " ");
         }
 
 
@@ -691,7 +714,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         String uuid = p.getUniqueId().toString();
 
         ItemBank.ItemStorage store = itemBank.getItemStorage(uuid,result.id);
-        this.itemBank.sendItemToStorage(uuid,result.id,amount);
+     //   this.itemBank.sendItemToStorage(uuid,result.id,amount);
+        if(itemBank.addItem(uuid,result.id,amount) == false){
+            showError(p,"アイテムバンクへの登録に失敗しました");
+            return false;
+        }
 
 
         //      アイテム個数をへらす
@@ -709,6 +736,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         //      アイテム作成
         ItemStack map = MappRenderer.getMapItem(this,target);
+        if(map == null){
+            p.sendMessage("マップが取得できなかった");
+            return false;
+        }
         p.getInventory().addItem(map);
 
         MappRenderer.updateAll();
@@ -868,6 +899,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents (this,this);
         getCommand("mce").setExecutor(new MarketCommand(this));
+
+      //  getCommand("balance").setExecutor(new Balance(this));
+      //  getCommand("bal").setExecutor(new Balance(this));
+      //  getCommand("mbal").setExecutor(new Balance(this));
 
 
         vault = new MarketVault(this);

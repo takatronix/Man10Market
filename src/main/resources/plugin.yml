@@ -9,5 +9,9 @@ website: http://man10.red
 commands:
    mce:
       description: Man10 Minecraft Market System
-      permission: red.man10.market
-      permission-message: You don't have <permission>
+   bal:
+      description: Man10 Minecraft Market System
+   mbal:
+      description: Man10 Minecraft Market System
+   balance:
+      description: Man10 Minecraft Market System
