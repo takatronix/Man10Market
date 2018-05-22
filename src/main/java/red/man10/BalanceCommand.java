@@ -47,27 +47,27 @@ public class BalanceCommand  implements CommandExecutor {
     UserData.UserAssetsHistory last = null;
 
 
-    boolean showAssetUUID(CommandSender p,String uuid){
-
-        String sql = "select * from user_assets_history where uuid = '"+uuid+"' order by id desc limit 2;";
+    boolean showAssetUUID(CommandSender p, String uuid)
+    {
+        String sql = "select * from user_assets_history where uuid = '" + uuid + "' order by id desc limit 2;";
 
 
         ArrayList<UserData.UserAssetsHistory> his = userData.getAssetHistory(sql);
-        if(his.size() == 0){
+        if (his.size() == 0) {
             return false;
         }
 
 
-        today = his.get(0);
+        today = ((UserData.UserAssetsHistory)his.get(0));
 
 
-        //      前日データあり
-        if(his.size() == 2){
-            last = his.get(1);
+
+        if (his.size() == 2) {
+            last = ((UserData.UserAssetsHistory)his.get(1));
         }
 
-        Utility.sendHoverText((Player)p,"§f--------[アイテムバンク] §n§lクリックすると開きます /MIB ","クリックするとアイテムバンクを開きます","/mib");
-        String ret = "§fアイテム個数:"+Utility.getColoredItemString(today.total_amount) + "  §e§l評価額:"+Utility.getColoredPriceString(today.estimated_value) + "§f("+Utility.getJpBal(today.estimated_value)+"§f)";
+        Utility.sendHoverText((Player)p, "§a§l--------[アイテムバンク] => §a§n/mib", "クリックするとアイテムバンクを開きます", "/mib");
+        String ret = "§f評価額:" + Utility.getColoredPriceString(today.estimated_value) + " §f: " + Utility.getColoredItemString(today.total_amount);
 
         p.sendMessage(ret);
 
@@ -75,8 +75,8 @@ public class BalanceCommand  implements CommandExecutor {
         return true;
     }
 
-    boolean showBalanceUUID(Player p,String uuid){
-
+    boolean showBalanceUUID(Player p, String uuid)
+    {
         double bal = plugin.vault.getBalance(UUID.fromString(uuid));
 
 
@@ -85,24 +85,53 @@ public class BalanceCommand  implements CommandExecutor {
         userData.updateUserAssetsHistory((Player)player);
 
 
-        p.sendMessage("§e§l=====================["+player.getName()+"の資産]======================");
-        String balMessage = "口座残高:" + Utility.getColoredPriceString(bal) + "§f(" + Utility.getJpBal(bal)+"§f)";
+        p.sendMessage("§e§l=====================[" + player.getName() + "の資産]======================");
+        String balMessage = "口座残高:" + Utility.getColoredPriceString(bal);
 
         p.sendMessage(balMessage);
 
 
-        showAssetUUID(p,uuid);
-
-
-
-
-
+        showAssetUUID(p, uuid);
+        showOrderUUID(p, uuid);
 
         return true;
     }
 
-    boolean showOrderUUID(CommandSender p,String uuid) {
+    boolean showOrderUUID(Player p, String uuid)
+    {
+        ArrayList<MarketData.OrderInfo> orders = plugin.data.getOrderOfUser(p, uuid);
+        if (orders == null) {
+            return false;
+        }
 
+        if (orders.size() == 0) {
+            return false;
+        }
+
+
+
+        long buyAmount = 0L;
+        long sellAmount = 0L;
+        double buyTotal = 0.0D;
+        long sellTotal = 0L;
+        for (MarketData.OrderInfo order : orders) {
+            if (order.isBuy) {
+                buyAmount += order.amount;
+                buyTotal += order.price * order.amount;
+            } else {
+                sellAmount += order.amount;
+
+
+                MarketData.ItemIndex itemIndex = plugin.data.getItemPrice(order.item_id);
+                sellTotal += itemIndex.price * order.amount;
+            }
+        }
+
+
+        Utility.sendHoverText(p, "§9§l--------[注文件数:" + orders.size() + "] => §9§n/mce order", "クリックすると注文を開きます", "/mce order");
+        p.sendMessage("§f買い注文:" + Utility.getColoredPriceString(buyTotal) + " §f: " + Utility.getColoredItemString(buyAmount));
+
+        p.sendMessage("§f売り注文評価額:" + Utility.getColoredPriceString(sellTotal) + " §f: " + Utility.getColoredItemString(sellAmount));
 
 
         return true;
@@ -115,39 +144,38 @@ public class BalanceCommand  implements CommandExecutor {
 
 
 
-    boolean showBalance(Player sender,String playerName){
 
 
 
-
+    boolean showBalance(Player sender, String playerName)
+    {
         userData = new UserData(plugin);
 
 
 
         String uuid = null;
 
-        if(playerName == null){
-            Player p = (Player)sender;
+        if (playerName == null) {
+            Player p = sender;
             uuid = p.getPlayer().getUniqueId().toString();
-        }else{
+        } else {
             uuid = Bukkit.getPlayer(playerName).getUniqueId().toString();
         }
 
-        //     Player名をUUIDから取得
-        if(uuid == null && playerName != null){
 
+        if ((uuid == null) && (playerName != null))
+        {
             uuid = userData.getUUID(playerName);
         }
 
-        if(uuid == null){
+        if (uuid == null) {
             sender.sendMessage("プレイヤーはこのサーバに存在していません");
             return false;
         }
 
-        showBalanceUUID(sender,uuid);
+        showBalanceUUID(sender, uuid);
 
         return false;
     }
-
 
 }
