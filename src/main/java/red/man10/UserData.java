@@ -124,6 +124,8 @@ public class UserData {
             return 0;
         }
 
+        Bukkit.getLogger().info("ユーザーデータ更新成功"+p.getName());
+
 
         long totalAmount = 0;
         double estimatedValue = 0;
@@ -131,7 +133,7 @@ public class UserData {
         for(ItemBank.ItemStorage storage:list){
             totalAmount += storage.amount;
             MarketData.ItemIndex index  = data.getItemPrice(storage.item_id);
-            estimatedValue += index.price;
+            estimatedValue += index.price * storage.amount;
 
             if(!itemList.isEmpty()){
                 itemList += " ";
@@ -168,6 +170,9 @@ public class UserData {
            plugin.showError(p,"個人データの更新に失敗");
            return  -1;
         }
+
+
+        Bukkit.getLogger().info("ユーザーデータ更新成功"+p.getName());
 
 
         return list.size();

@@ -2,6 +2,7 @@ package red.man10;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
@@ -109,7 +110,12 @@ public class ItemBank {
     }
 
 
-
+    void UpdateUserAsset(String uuid){
+        //      ユーザの評価を更新
+        Player p = Bukkit.getPlayer(UUID.fromString(uuid));
+        UserData user = new UserData(this.plugin);
+        user.updateUserAssetsHistory(p);
+    }
 
 
 
@@ -125,6 +131,12 @@ public class ItemBank {
 
         //      追加
         boolean ret = data.mysql.execute("update item_storage set amount = amount + "+amount+" where uuid='"+uuid+"' and item_id="+item_id+";");
+        UpdateUserAsset(uuid);
+
+        data.showMessage(uuid,"§f§lアイテムバンクに"+store.item_key+"が"+Utility.getColoredItemString(amount)+"§f§l追加されました");
+
+        Utility.playSound(uuid,Sound.ENTITY_PLAYER_LEVELUP);
+
         return ret;
     }
 
@@ -141,6 +153,12 @@ public class ItemBank {
         }
 
         boolean ret = data.mysql.execute("update item_storage set amount = amount - "+amount+" where uuid='"+uuid+"' and item_id="+item_id+";");
+        UpdateUserAsset(uuid);
+
+        data.showMessage(uuid,"§f§lアイテムバンクから"+store.item_key+"が"+Utility.getColoredItemString(amount)+"§f§l引き出されました");
+
+        Utility.playSound(uuid,Sound.BLOCK_NOTE_PLING);
+
         return ret;
     }
 
@@ -159,6 +177,10 @@ public class ItemBank {
                 +amount+","
                 +"'"+ data.currentTime() +"'"
                 +");");
+
+
+        UpdateUserAsset(uuid);
+
         return ret;
     }
 /*

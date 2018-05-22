@@ -271,17 +271,17 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         int ret = data.marketBuy(p.getUniqueId().toString(),target,amount);
         if(ret == -1){
-            showError(p,"エラーが発生しました");
+            showError(p,"§c§lエラーが発生しました");
             return false;
         }
 
 
         if(ret == 0){
-            showMessage(p,"購入できませんでした");
+            showMessage(p,"§c§l購入できませんでした");
             return true;
         }
 
-        showMessage(p,"購入成功:"+ret+"個購入できました");
+        showMessage(p,"§f§l購入成功:"+Utility.getColoredItemString(ret)+"購入できました");
 
         return true;
     }
@@ -296,17 +296,17 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         int ret = data.marketSell(p.getUniqueId().toString(),target,amount);
         if(ret == -1){
-            showError(p,"エラーが発生しました");
+            showError(p,"§c§lエラーが発生しました");
             return false;
         }
 
 
         if(ret == 0){
-            showMessage(p,"売却できませんでした");
+            showMessage(p,"§c§l売却できませんでした");
             return true;
         }
 
-        showMessage(p,"売却成功:"+ret+"個売却できました");
+        showMessage(p,"§f§l売却成功:"+Utility.getColoredItemString(ret)+"売却できました");
 
         return true;
     }
@@ -565,7 +565,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             p.sendMessage(String.format("%s%7d  %7s",color,o.amount,data.getPriceString(o.price)));
         }
         if(sellList.size() == 0){
-            p.sendMessage("§1売り注文がありません");
+            p.sendMessage("§9売り注文がありません");
         }
         for(int i = 0;i < buyList.size();i++){
             MarketData.OrderInfo o = buyList.get(i);
@@ -576,7 +576,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             p.sendMessage(String.format("%s         %7s  %7d",color,data.getPriceString(o.price),o.amount));
         }
         if(buyList.size() == 0){
-            p.sendMessage("§1買い注文がありません");
+            p.sendMessage("§9買い注文がありません");
         }
 
         return true;
@@ -762,7 +762,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     public boolean showLog(Player p,String target,int offset) {
 
-        p.sendMessage("§1§l-----------[注文履歴]-------------");
+        p.sendMessage("§9§l-----------[注文履歴]-------------");
 
         String uuidTarget = p.getUniqueId().toString();
         if (target != null) {
@@ -903,7 +903,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         getCommand("balance").setExecutor(new BalanceCommand(this));
         getCommand("bal").setExecutor(new BalanceCommand(this));
         getCommand("mbal").setExecutor(new BalanceCommand(this));
-        getCommand("mbalance").setExecutor(new BalanceCommand(this));
 
 
         vault = new MarketVault(this);
@@ -1053,19 +1052,14 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     //
     @EventHandler void onPlayerJoin(PlayerJoinEvent e){
+
         Player p = e.getPlayer();
 
-        UserData user = new UserData(this);
-        user.updateUserAssetsHistory(p);
+//        UserData user = new UserData(this);
+ //       user.updateUserAssetsHistory(p);
 
 
-        String joinMessage = user.createJoinMessage(p);
-        if(joinMessage != null){
-            e.setJoinMessage(joinMessage);
-            this.log(joinMessage);
-        }
-        this.log("syutoku 失敗");
-//        e.setJoinMessage("ジョイン");
+        p.chat("/bal");
 
     }
     @EventHandler

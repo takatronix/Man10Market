@@ -31,11 +31,11 @@ public class BalanceCommand  implements CommandExecutor {
         }
 
         if(args.length == 2){
-            return showBalance(sender,args[1]);
+            return showBalance((Player)sender,args[1]);
         }
 
         if((sender instanceof Player) ){
-            return showBalance(sender,null);
+            return showBalance((Player)sender,null);
 
         }
 
@@ -47,7 +47,7 @@ public class BalanceCommand  implements CommandExecutor {
     UserData.UserAssetsHistory last = null;
 
 
-    boolean showAssetUUID(Command p,String uuid){
+    boolean showAssetUUID(CommandSender p,String uuid){
 
         String sql = "select * from user_assets_history where uuid = '"+uuid+"' order by id desc limit 2;";
 
@@ -66,26 +66,32 @@ public class BalanceCommand  implements CommandExecutor {
             last = his.get(1);
         }
 
-        String ret = "§f§l残高:"+Utility.getPriceString(today.bal) + "§f§lアイテムバンク評価額:"+Utility.getPriceString(today.estimated_value) +" §f§lアイテム個数:"+Utility.getItemString((int)today.total_amount);
+        Utility.sendHoverText((Player)p,"§f--------[アイテムバンク] §n§lクリックすると開きます /MIB ","クリックするとアイテムバンクを開きます","/mib");
+        String ret = "§fアイテム個数:"+Utility.getColoredItemString(today.total_amount) + "  §e§l評価額:"+Utility.getColoredPriceString(today.estimated_value) + "§f("+Utility.getJpBal(today.estimated_value)+"§f)";
 
+        p.sendMessage(ret);
 
 
         return true;
     }
 
-    boolean showBalanceUUID(CommandSender p,String uuid){
+    boolean showBalanceUUID(Player p,String uuid){
 
         double bal = plugin.vault.getBalance(UUID.fromString(uuid));
 
 
-        p.sendMessage("=====================[あなたの資産]======================");
-        String balMessage = "口座残高:" + Utility.getColoredPriceString(bal) + "  " + Utility.getJpBal(bal);
+        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+
+        userData.updateUserAssetsHistory((Player)player);
+
+
+        p.sendMessage("§e§l=====================["+player.getName()+"の資産]======================");
+        String balMessage = "口座残高:" + Utility.getColoredPriceString(bal) + "§f(" + Utility.getJpBal(bal)+"§f)";
 
         p.sendMessage(balMessage);
 
 
-
-
+        showAssetUUID(p,uuid);
 
 
 
@@ -94,16 +100,29 @@ public class BalanceCommand  implements CommandExecutor {
 
         return true;
     }
+
+    boolean showOrderUUID(CommandSender p,String uuid) {
+
+
+
+        return true;
+    }
+
+
 
     UserData userData = null;
 
 
 
 
-    boolean showBalance(CommandSender sender,String playerName){
+    boolean showBalance(Player sender,String playerName){
+
+
 
 
         userData = new UserData(plugin);
+
+
 
         String uuid = null;
 

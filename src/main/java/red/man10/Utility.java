@@ -4,13 +4,17 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 public class Utility {
 
 
-    static public String getItemString(int amount){
-        return String.format("$%,.0f",amount);
+    static public String getItemString(long amount){
+        return String.format("%,d個",amount);
     }
     static public String getPriceString(double price){
         return String.format("$%,.0f",price);
@@ -20,7 +24,7 @@ public class Utility {
         return String.format("§e§l$%,.0f",price);
     }
     static public String getColoredItemString(long amount){
-        return String.format("§b§l$%,d個",amount);
+        return String.format("§b§l%,d個",amount);
     }
 
 
@@ -84,6 +88,16 @@ public class Utility {
 
         BaseComponent[] message = new ComponentBuilder(text). event(hoverEvent).event(clickEvent). create();
         p.spigot().sendMessage(message);
+    }
+
+    public static void playSound(String uuid,Sound sound){
+        Player p = Bukkit.getPlayer(UUID.fromString(uuid));
+        if(p == null){
+            return;
+        }
+        if(p.isOnline()){
+            p.playSound(p.getLocation(),sound,1,1);
+        }
     }
 
 }

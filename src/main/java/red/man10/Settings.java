@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 
 public class Settings {
 
-    static String versionName = "2018/05/13x";
+    static String versionName = "2018/05/22x";
     static String adminPermission = "red.man10.market.admin";
 
 

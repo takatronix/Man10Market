@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -707,7 +708,7 @@ public class MarketData {
 
         if(player.isOnline()){
             Player online = (Player)player;
-            plugin.showMessage(online,info.key + "が"+amount+"個移動し、§e§l$"+getPriceString(money)+"受け取りました");
+            plugin.showMessage(online,"§f§l"+info.key +Utility.getColoredItemString(amount) + "の代金 " + Utility.getColoredPriceString(money)+"を受け取りました");
             return true;
         }
         return false;
@@ -740,7 +741,7 @@ public class MarketData {
 
         if(player.isOnline()){
             Player online = (Player)player;
-            plugin.showMessage(online,info.key + "を"+amount+"個注文し、§e§l$"+getPriceString(money)+"引き出されました");
+            plugin.showMessage(online,"§f§l"+info.key + "を"+amount+"個注文し、§e§l$"+getPriceString(money)+"引き出されました");
             return true;
         }
         return true;
@@ -1324,6 +1325,13 @@ public class MarketData {
                     return totalAmount;
                 }
 
+                //      購入者へアイテム送信
+                if(itemBank.addItem(uuid,o.item_id,o.amount) == false){
+                    opLog(player.getName()+"のMarketBuyのアイテム追加に失敗5 )");
+                    return totalAmount;
+                }
+
+
                 //      支払い
                 sendMoney(o.uuid,o.item_id,o.price,o.amount,uuid);
 
@@ -1338,6 +1346,7 @@ public class MarketData {
             }
             //   同量
             else if(o.amount == amount) {
+
                 // opLog("marketBuy=:"+o.player +":amount:"+o.amount +" price:"+o.price);
                 if (payMoney(uuid, item_id, o.price, amount) == false) {
                     opLog(player.getName() + "のMarketBuyは金がたらないので注文キャンセルされた(5)");
@@ -1350,6 +1359,10 @@ public class MarketData {
                     showError(uuid, "注文エラー:相手方のオーダー更新失敗(6)");
                     return totalAmount;
                 }
+
+
+                //
+                sendMoney(o.uuid,o.item_id,o.price,amount,uuid);
 
                 if (itemBank.addItem(uuid, item_id, amount) == false) {
                     return totalAmount;
@@ -1799,7 +1812,7 @@ public class MarketData {
             }
         }
 
-        Utility.sendHoverText(p, " 過去の注文を参照する => §1§n[注文履歴]","注文の履歴を表示します /mce log","/mce log");
+        Utility.sendHoverText(p, " 過去の注文を参照する => §9§n[注文履歴]","注文の履歴を表示します /mce log","/mce log");
         return true;
 
 
@@ -1951,6 +1964,8 @@ public class MarketData {
             throw new IllegalStateException("Unable to save item stacks.", e);
         }
     }
+
+
 
 
 
