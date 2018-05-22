@@ -24,6 +24,21 @@ public class Utility {
     }
 
 
+
+    public static String getJpBal(double balance){
+        int val = (int)balance;
+        String addition = "";
+        String form = "万";
+        long man = val/10000;
+        if(val >= 100000000){
+            man = val/100000000;
+            form = "億";
+            long mann = (val - man * 100000000) / 10000;
+            addition = mann + "万";
+        }
+        return man + form + addition;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////
     //  マインクラフトチャットに、ホバーテキストや、クリックコマンドを設定する関数
     // [例1] sendHoverText(player,"ここをクリック",null,"/say おはまん");

@@ -900,9 +900,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents (this,this);
         getCommand("mce").setExecutor(new MarketCommand(this));
 
-      //  getCommand("balance").setExecutor(new Balance(this));
-      //  getCommand("bal").setExecutor(new Balance(this));
-      //  getCommand("mbal").setExecutor(new Balance(this));
+        getCommand("balance").setExecutor(new BalanceCommand(this));
+        getCommand("bal").setExecutor(new BalanceCommand(this));
+        getCommand("mbal").setExecutor(new BalanceCommand(this));
+        getCommand("mbalance").setExecutor(new BalanceCommand(this));
 
 
         vault = new MarketVault(this);
@@ -1054,7 +1055,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     @EventHandler void onPlayerJoin(PlayerJoinEvent e){
         Player p = e.getPlayer();
 
-        UserData user = new UserData(this,data);
+        UserData user = new UserData(this);
         user.updateUserAssetsHistory(p);
 
 
@@ -1070,7 +1071,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e){
         Player p = e.getPlayer();
-        UserData user = new UserData(this,data);
+        UserData user = new UserData(this);
         user.updateUserAssetsHistory(p);
 
     }

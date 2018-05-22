@@ -16,9 +16,9 @@ public class UserData {
     public  MarketData data = null;
 
 
-    UserData(MarketPlugin plugin,MarketData data){
+    UserData(MarketPlugin plugin){
         this.plugin = plugin;
-        this.data = data;
+        this.data = plugin.data;
     }
 
     class UserAssetsHistory{
@@ -97,6 +97,18 @@ public class UserData {
         return ret;
     }
 
+    String getUUID(String player){
+
+        String sql = "select * from user_assets_history where player = '" +player+";";
+        ArrayList<UserAssetsHistory> his = getAssetHistory(sql);
+        if(his == null){
+            return null;
+        }
+        if(his.size() == 0){
+            return null;
+        }
+        return his.get(0).uuid;
+    }
 
 
 
