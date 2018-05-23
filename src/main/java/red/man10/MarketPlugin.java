@@ -172,7 +172,24 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         {
             if ((item != null) && item.getType() == itemCheck.getType() && (item.getAmount() > 0))
             {
-                has += item.getAmount();
+
+                //      item meta がある
+                if(itemCheck.getItemMeta() != null){
+                    if(item.getItemMeta() != null){
+
+
+                        if(itemCheck.getItemMeta().toString().equals( item.getItemMeta().toString() )){
+
+                            has += item.getAmount();
+                        }
+                    }
+
+                }else{
+
+
+                     has += item.getAmount();
+                }
+
             }
         }
         return has;
