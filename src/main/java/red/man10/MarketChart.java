@@ -9,13 +9,19 @@ import red.man10.MarketData;
 
 import javax.lang.model.type.UnionType;
 import javax.rmi.CORBA.Util;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
+
 
 
 public class MarketChart {
@@ -424,5 +430,10 @@ public class MarketChart {
 
             return true;
         };
+
+
+
+
+
 
 }

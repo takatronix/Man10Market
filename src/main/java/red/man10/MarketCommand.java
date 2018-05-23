@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.omg.CORBA.INTERNAL;
 
 public class MarketCommand implements CommandExecutor {
@@ -15,6 +16,40 @@ public class MarketCommand implements CommandExecutor {
     }
 
 
+    public boolean cancelProc(Player p,String[] args){
+
+        if(!checkPermission(p,Settings.cancelPermission)){
+            return false;
+        }
+        if(args.length == 2){
+            return plugin.cancelOrder(p,args[1]);
+        }
+        p.sendMessage("/mce cancel [order_id] 注文をキャンセルする");
+        return false;
+    }
+
+    public  boolean cancelAllProc(Player p,String[] args){
+
+
+
+        if(!checkPermission(p,Settings.cancelPermission)){
+            return false;
+        }
+
+        if(args.length == 1){
+            return plugin.cancelAll(p,null);
+        }
+
+        //  管理者は人の注文をキャンセルできる
+        if(p.hasPermission(Settings.adminPermission)){
+            if(args.length == 2){
+                return plugin.cancelAll(p,args[1]);
+            }
+        }
+
+        p.sendMessage("/mce cancelall すべての注文をキャンセルする");
+        return false;
+    }
 
 
     @Override
@@ -24,7 +59,18 @@ public class MarketCommand implements CommandExecutor {
 
 
         if(args.length == 0){
-            plugin.showMenu(p,0);
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+                    plugin.showMenu(p,0);
+
+
+                }
+
+            }.runTaskLater(this.plugin, 1);
+
             return false;
         }
 
@@ -46,7 +92,19 @@ public class MarketCommand implements CommandExecutor {
             if(!checkPermission(p,Settings.broadcastPermission)){
                 return false;
             }
-            plugin.data.news.broadCastNews();
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+                    plugin.data.news.broadCastNews();
+
+
+                }
+
+            }.runTaskLater(this.plugin, 5);
+
+
             return true;
         }
 
@@ -153,12 +211,31 @@ public class MarketCommand implements CommandExecutor {
         //      売り注文
         if(command.equalsIgnoreCase("price")){
 
+
+            //      一度きりの実行
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if(args.length == 2){
+                        plugin.showPrice(p,args[1]);
+                    }else{
+                        plugin.showPrice(p,null);
+                    }
+
+
+                }
+
+            }.runTaskLater(this.plugin, 1);
+
+
+/*
             if(args.length == 2){
-               // p.sendMessage("length2"+args[1]);
                 plugin.showPrice(p,args[1]);
                 return true;
             }
             plugin.showPrice(p,null);
+*/
+
             return true;
         }
 
@@ -283,36 +360,38 @@ public class MarketCommand implements CommandExecutor {
 
         //    注文キャンセル
         if(command.equalsIgnoreCase("cancel")){
-            if(!checkPermission(p,Settings.cancelPermission)){
-                return false;
-            }
-            if(args.length == 2){
-                return plugin.cancelOrder(p,args[1]);
-            }
-            p.sendMessage("/mce cancel [order_id] 注文をキャンセルする");
-            return false;
+
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+
+                cancelProc(p,args);
+
+
+                }
+            }.runTaskLater(this.plugin, 1);
+
         }
+
+
+
 
         /////////////////////////////////////////////
         //    全注文キャンセル
         if(command.equalsIgnoreCase("cancelall")){
-            if(!checkPermission(p,Settings.cancelPermission)){
-                return false;
-            }
 
-            if(args.length == 1){
-                return plugin.cancelAll(p,null);
-            }
+            new BukkitRunnable() {
+                @Override
+                public void run() {
 
-            //  管理者は人の注文をキャンセルできる
-            if(p.hasPermission(Settings.adminPermission)){
-                if(args.length == 2){
-                    return plugin.cancelAll(p,args[1]);
+
+                    cancelAllProc(p,args);
+
+
                 }
-            }
-
-            p.sendMessage("/mce cancelall すべての注文をキャンセルする");
-            return false;
+            }.runTaskLater(this.plugin, 1);
         }
 
         //   アップデート
