@@ -7,6 +7,7 @@ public class Settings {
     static String versionName = "2018/05/22xxx";
     static String adminPermission = "red.man10.market.admin";
 
+    static String showBalanceOther = "red.man10.market.balanceother";
 
     static String broadcastPermission = "red.man10.market.broadcast";
     static String newsPermission = "red.man10.market.news";

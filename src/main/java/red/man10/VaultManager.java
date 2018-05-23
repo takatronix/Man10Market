@@ -50,7 +50,14 @@ public class VaultManager {
     //      残高確認
     /////////////////////////////////////
     public double  getBalance(UUID uuid){
-        return economy.getBalance(Bukkit.getOfflinePlayer(uuid).getPlayer());
+
+        OfflinePlayer p = Bukkit.getOfflinePlayer(uuid).getPlayer();
+        if(p == null){
+
+            Bukkit.getLogger().warning("vault getbalance:Cant get player :"+ uuid);
+            return 0;
+        }
+        return economy.getBalance(p);
     }
 
     /////////////////////////////////////
@@ -67,7 +74,7 @@ public class VaultManager {
     public Boolean  withdraw(UUID uuid, double money){
         OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
         if(p == null){
-            Bukkit.getLogger().info(uuid.toString()+"は見つからない");
+            Bukkit.getLogger().warning(uuid.toString()+"は見つからない");
             return false;
         }
         EconomyResponse resp = economy.withdrawPlayer(p,money);

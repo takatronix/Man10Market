@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.BatchUpdateException;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -23,24 +24,25 @@ public class BalanceCommand  implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
-
-
+        if((sender instanceof Player) == false) {
+            sender.sendMessage("プレイヤーのみ実行できます");
+        }
         if(args.length > 2){
             sender.sendMessage("/balance/bal/mbal/mblance [playername]");
             return false;
         }
 
-        if(args.length == 2){
-            return showBalance((Player)sender,args[1]);
+        if(args.length == 1){
+            if(sender.hasPermission(Settings.showBalanceOther)){
+                return showBalance((Player)sender,args[0]);
+            }else{
+                sender.sendMessage("あなたには他人の資産をみる権限がない");
+                return false;
+            }
         }
 
-        if((sender instanceof Player) ){
-            return showBalance((Player)sender,null);
+        return showBalance((Player)sender,null);
 
-        }
-
-        sender.sendMessage("プレイヤーのみ実行できます");
-        return false;
     }
 
     UserData.UserAssetsHistory today = null;
@@ -77,15 +79,25 @@ public class BalanceCommand  implements CommandExecutor {
 
     boolean showBalanceUUID(Player p, String uuid)
     {
-        double bal = plugin.vault.getBalance(UUID.fromString(uuid));
 
 
-        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
 
-        userData.updateUserAssetsHistory((Player)player);
+        double bal = 0;
+        Player target = Bukkit.getPlayer(UUID.fromString(uuid));
+
+        if(target != null){
+            if(target.isOnline()){
+                userData.updateUserAssetsHistory(target);
+            }
+        }
+
+        UserData.UserAssetsHistory asset = userData.getUserAsset(uuid.toString());
+        bal = asset.bal;
 
 
-        p.sendMessage("§e§l=====================[" + player.getName() + "の資産]======================");
+
+
+        p.sendMessage("§e§l===============[§f§l" + asset.player + "の資産§e§l]==============");
         String balMessage = "口座残高:" + Utility.getColoredPriceString(bal);
 
         p.sendMessage(balMessage);
@@ -114,6 +126,7 @@ public class BalanceCommand  implements CommandExecutor {
         long sellAmount = 0L;
         double buyTotal = 0.0D;
         long sellTotal = 0L;
+        String orderPlyer = "";
         for (MarketData.OrderInfo order : orders) {
             if (order.isBuy) {
                 buyAmount += order.amount;
@@ -124,11 +137,16 @@ public class BalanceCommand  implements CommandExecutor {
 
                 MarketData.ItemIndex itemIndex = plugin.data.getItemPrice(order.item_id);
                 sellTotal += itemIndex.price * order.amount;
+                orderPlyer = order.player;
             }
         }
 
+        String command = "/mce order";
+        if(p.getUniqueId().toString().equalsIgnoreCase(uuid) == false){
+            command += " "+orderPlyer;
+        }
 
-        Utility.sendHoverText(p, "§9§l--------[注文件数:" + orders.size() + "] => §9§n/mce order", "クリックすると注文を開きます", "/mce order");
+        Utility.sendHoverText(p, "§9§l--------[注文件数:" + orders.size() + "] => §9§n/mce order", "クリックすると注文を開きます", command);
         p.sendMessage("§f買い注文:" + Utility.getColoredPriceString(buyTotal) + " §f: " + Utility.getColoredItemString(buyAmount));
 
         p.sendMessage("§f売り注文評価額:" + Utility.getColoredPriceString(sellTotal) + " §f: " + Utility.getColoredItemString(sellAmount));
@@ -159,13 +177,17 @@ public class BalanceCommand  implements CommandExecutor {
             Player p = sender;
             uuid = p.getPlayer().getUniqueId().toString();
         } else {
-            uuid = Bukkit.getPlayer(playerName).getUniqueId().toString();
+            Player p = Bukkit.getPlayer(playerName);
+            if(p != null){
+                uuid = p.getUniqueId().toString();
+            }
         }
 
 
         if ((uuid == null) && (playerName != null))
         {
             uuid = userData.getUUID(playerName);
+            sender.sendMessage("プレイヤーがDBからみつかりました UUID: "+uuid);
         }
 
         if (uuid == null) {

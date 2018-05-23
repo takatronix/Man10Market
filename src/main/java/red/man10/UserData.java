@@ -59,6 +59,17 @@ public class UserData {
         return ret;
     }
 
+    public UserAssetsHistory getUserAsset(String uuid){
+        String sql = "select * from user_assets_history where uuid = '"+uuid+"' order by id desc limit 1;";
+
+
+        ArrayList<UserAssetsHistory> his = getAssetHistory(sql);
+        if(his.size() == 0){
+            return null;
+        }
+        return his.get(0);
+    }
+
     ArrayList<UserAssetsHistory> getAssetHistory(String sql){
 
         ArrayList<UserAssetsHistory> ret = new ArrayList<UserAssetsHistory>();
@@ -99,7 +110,7 @@ public class UserData {
 
     String getUUID(String player){
 
-        String sql = "select * from user_assets_history where player = '" +player+";";
+        String sql = "select * from user_assets_history where player = '" +player+"';";
         ArrayList<UserAssetsHistory> his = getAssetHistory(sql);
         if(his == null){
             return null;
