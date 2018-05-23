@@ -5,6 +5,7 @@ package red.man10;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.map.MapRenderer;
 import red.man10.MarketData;
 
 import javax.lang.model.type.UnionType;
@@ -35,9 +36,184 @@ public class MarketChart {
 
 // http://www.minecraft-servers-list.org/id-list/
 
+
+    static public  void showBalance( Graphics2D g,Player player){
+        g.setColor(Color.BLACK);
+        g.fillRect(0,0,128,128);
+
+
+        g.setColor(Color.CYAN);
+        g.fillRoundRect(4,2,120,30,8,8);
+        g.setColor(Color.white);
+        g.drawRoundRect(4,2,120,30,8,8);
+
+        //      残高を得る
+        double balance = MappRenderer.vaultManager.getBalance(player.getUniqueId());
+
+        g.setColor(Color.RED);
+
+
+        g.setFont(new Font( "SansSerif", Font.PLAIN,13));
+        g.drawString(player.getName()+"の残高",10,14);
+
+
+
+        g.setFont(new Font( "SansSerif", Font.PLAIN,15));
+        MappDraw.drawOutlineString(g,Utility.getPriceString(balance),Color.YELLOW,Color.BLACK,10,30);
+
+
+
+
+
+        showItemBank(g,player);
+        showOrder(g,player);
+
+    }
+
+    static public  void showOrder( Graphics2D g,Player player) {
+
+
+        g.setColor(new Color(50,50,100,255));
+        g.drawRoundRect(4,85,120,40,8,8);
+
+
+        ArrayList<MarketData.OrderInfo> orders = plugin.data.getOrderOfUser(player, player.getUniqueId().toString());
+        if (orders == null) {
+            return;
+        }
+        if (orders.size() == 0) {
+            return;
+        }
+        g.setColor(new Color(100,100,255,255));
+        g.setFont(new Font( "SansSerif", Font.PLAIN,11));
+
+
+        g.drawString("注文件数:"+orders.size()+"件",10,97);
+
+
+        long buyAmount = 0L;
+        long sellAmount = 0L;
+        double buyTotal = 0.0D;
+        long sellTotal = 0L;
+        String orderPlyer = "";
+        for (MarketData.OrderInfo order : orders) {
+            MarketData.ItemIndex itemIndex = plugin.data.getItemPrice(order.item_id);
+            if (order.isBuy) {
+                buyAmount += order.amount;
+                buyTotal += order.price * order.amount;
+            } else {
+                sellAmount += order.amount;
+                sellTotal += itemIndex.price * order.amount;
+                orderPlyer = order.player;
+            }
+        }
+
+        g.setColor(new Color(100,100,255,255));
+        g.setFont(new Font( "SansSerif", Font.PLAIN,11));
+
+        g.drawString("買:"+Utility.getPriceString(buyTotal),10,110);
+        g.drawString("売:"+Utility.getPriceString(sellTotal),10,122);
+    }
+    static public  void showItemBank( Graphics2D g,Player player) {
+
+        g.setColor(Color.GREEN);
+        g.drawRoundRect(4,38,120,42,8,8);
+
+
+        g.setFont(new Font( "SansSerif", Font.BOLD,14));
+        g.drawString("アイテムバンク",10,52);
+
+
+
+
+
+        String sql = "select * from user_assets_history where uuid = '" + player.getUniqueId().toString() + "' order by id desc limit 2;";
+
+        UserData userData = new UserData(plugin);
+
+
+        ArrayList<UserData.UserAssetsHistory> his = userData.getAssetHistory(sql);
+        if (his.size() == 0) {
+            return ;
+        }
+
+
+        UserData.UserAssetsHistory today = ((UserData.UserAssetsHistory)his.get(0));
+
+        g.setColor(Color.CYAN);
+        g.setFont(new Font( "SansSerif", Font.BOLD,13));
+        g.drawString(Utility.getItemString(today.total_amount),10,65);
+
+
+        g.setColor(Color.YELLOW);
+        g.setFont(new Font( "SansSerif", Font.BOLD,13));
+        g.drawString(Utility.getPriceString(today.estimated_value),10,77);
+
+
+
+    }
+
+    static void createBalanceApp(){
+        MappRenderer.draw( "balance", 0, (String key,int mapId, Graphics2D g) -> {
+
+
+            //      画面更新をする
+            return true;
+        });
+        MappRenderer.displayTouchEvent("balance", (String key, int mapId, Player player, int x, int y) -> {
+
+            //////////////////////////////////////////////
+            //  Get Graphics context for drawing
+            //  描画用コンテキスト取得
+            Graphics2D g = MappRenderer.getGraphics(mapId);
+            if(g == null){
+                return false;
+            }
+
+            showBalance(g,player);
+
+            if(y < 40){
+
+                player.chat("/atm");
+            }else if (y< 85){
+
+                player.chat("/mib");
+
+            }else{
+
+                player.chat("/mce order");
+            }
+
+
+            //    true -> call drawing logic :描画更新
+            return true;
+        });
+
+        MappRenderer.draw( "balance", 0, (String key,int mapId, Graphics2D g) -> {
+
+
+            //      画面更新をする
+            return true;
+        });
+
+        MappRenderer.plateEvent("balance", (String key, int mapId,Player player) -> {
+            Graphics2D g = MappRenderer.getGraphics(mapId);
+
+            g.fillRect(0,0,128,128);
+            showBalance(g,player);
+
+
+
+            return true;
+        });
+
+    }
+
     static HashMap<Integer,Integer> gameDataMap = new HashMap<Integer, Integer>();
     public static void registerFuncs(){
 
+
+        createBalanceApp();
 
 
         //      "time" -> 時計
@@ -57,6 +233,9 @@ public class MarketChart {
             //      画面更新をする
             return true;
         });
+
+
+
 
 
         ArrayList<MarketData.ItemIndex> items = data.getItemIndexList("select * from item_index order by id;");
@@ -103,15 +282,12 @@ public class MarketChart {
                 player.chat("/mce sell "+ item_id +" "+index.lot);
                 return false;
             });
-
-
-        }
-        for (int i = 1;i <= itemmax;i++){
-            MappRenderer.draw( "chart:"+i, 0,(String key,int mapId,Graphics2D g) -> {
+            MappRenderer.draw( "chart:"+no, 0,(String key,int mapId,Graphics2D g) -> {
                 return drawChart(g,getId(key));
             });
 
         }
+
 
     }
     static int getId(String key){
