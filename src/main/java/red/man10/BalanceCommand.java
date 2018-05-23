@@ -131,11 +131,9 @@ public class BalanceCommand  implements CommandExecutor {
             MarketData.ItemIndex itemIndex = plugin.data.getItemPrice(order.item_id);
             if (order.isBuy) {
                 buyAmount += order.amount;
-                buyTotal += itemIndex.price * order.amount;
+                buyTotal += order.price * order.amount;
             } else {
                 sellAmount += order.amount;
-
-
                 sellTotal += itemIndex.price * order.amount;
                 orderPlyer = order.player;
             }
