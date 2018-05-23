@@ -77,7 +77,11 @@ public class MarketChart {
 
             MappRenderer.displayTouchEvent("buy:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
-                player.chat("/mce buy "+item[1] + " 64");
+                int item_id = Integer.parseInt(item[1]);
+
+                MarketData.ItemIndex index = data.getItemPrice(item_id);
+
+                player.chat("/mce buy "+item_id + " "+index.lot);
                 return false;
             });
 
@@ -87,7 +91,10 @@ public class MarketChart {
 
             MappRenderer.displayTouchEvent("sell:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
-                player.chat("/mce sell "+item[1] +" 64");
+                int item_id = Integer.parseInt(item[1]);
+
+                MarketData.ItemIndex index = data.getItemPrice(item_id);
+                player.chat("/mce sell "+ item_id +" "+index.lot);
                 return false;
             });
 
@@ -170,7 +177,7 @@ public class MarketChart {
             MappDraw.drawOutlineString(g,"売り注文なし",Color.RED,Color.black,4,100);
         }else{
 
-            g.drawString("Buy:"+Utility.getPriceString(item.bid) +"-",4,98 );
+            g.drawString("買:"+Utility.getPriceString(item.bid) +"-",4,98 );
         }
 
         g.setColor(Color.RED);
@@ -180,7 +187,7 @@ public class MarketChart {
 
         }else{
             g.setFont(new Font( "SansSerif", Font.BOLD ,16 ));
-            g.drawString("Sell:"+Utility.getPriceString(item.ask) +"-",4,80 );
+            g.drawString("売:"+Utility.getPriceString(item.ask) +"-",4,80 );
         }
 
 
@@ -253,8 +260,9 @@ public class MarketChart {
         g.fillRect(0,0,width,height);
 
 
-        MappDraw.drawImage(g,"item"+id,64,0,48,48);
-
+        MappDraw.drawImage(g,"money10",10,34,32,32);
+        MappDraw.drawImage(g,"arrow_right",64-16,32,32,32);
+        MappDraw.drawImage(g,"item"+id,85,32,32,32);
 
         g.setColor(Color.WHITE);
         g.setFont(new Font( "SansSerif", Font.PLAIN ,14 ));
@@ -268,21 +276,29 @@ public class MarketChart {
 
         g.setColor(Color.GREEN);
         g.setFont(new Font( "SansSerif", Font.PLAIN ,30 ));
-        g.drawString("買う",0,30);
+        g.drawString("買うx"+item.lot,8,30);
 
 
 
         g.setFont(new Font( "SansSerif", Font.BOLD ,17 ));
 
         String onePrice = Utility.getPriceString(item.bid);
-        String stPrice = Utility.getPriceString(item.bid*64);
 
-        g.drawString(onePrice+"/1個",0,55);
-        g.drawString(stPrice+"/64個",0,75);
+
+
+        double price =  item.bid*item.lot;
+        String stPrice = Utility.getPriceString(price);
+        if(stPrice.length() >= 10){
+            g.setFont(new Font( "SansSerif", Font.BOLD ,15 ));
+        }
+
+//        g.drawString(onePrice+"/1個",0,55);
+        g.drawString(stPrice+"/"+item.lot+"個",0,80);
 
 
         g.setColor(Color.WHITE);
         g.drawString("のこり",10,100);
+        g.setColor(Color.CYAN);
         g.drawString(Utility.getItemString(item.sell),10,120);
 
         return true;
@@ -301,14 +317,15 @@ public class MarketChart {
         g.fillRect(0,0,width,height);
 
 
-        MappDraw.drawImage(g,"item"+id,64,64,64,64);
-
+        MappDraw.drawImage(g,"item"+id,10,32,32,32);
+        MappDraw.drawImage(g,"arrow_right",64-16,32,32,32);
+        MappDraw.drawImage(g,"money10",90,34,32,32);
 
         g.setFont(new Font( "SansSerif", Font.BOLD ,17 ));
         g.setColor(Color.RED);
 
         g.setFont(new Font( "SansSerif", Font.PLAIN ,30 ));
-        g.drawString("売る",0,30);
+        g.drawString("売るx"+item.lot,8,30);
 
 
         g.setFont(new Font( "SansSerif", Font.BOLD ,17 ));
@@ -316,17 +333,23 @@ public class MarketChart {
         Color col = Color.RED;
 
 
-        String onePrice = Utility.getPriceString(item.ask);
-        String stPrice = Utility.getPriceString(item.ask*64);
+    //    String onePrice = Utility.getPriceString(item.ask);
 
-        g.drawString(onePrice+"/1個",0,55);
-        g.drawString(stPrice+"/64個",0,75);
+        double price =  item.ask*item.lot;
+        String stPrice = Utility.getPriceString(price);
+        if(stPrice.length() >= 10){
+            g.setFont(new Font( "SansSerif", Font.BOLD ,15 ));
+        }
+
+      //  g.drawString(onePrice+"/1個",0,55);
+        g.drawString(stPrice+"/"+item.lot+"個",0,80);
 
 
 
         g.setColor(Color.WHITE);
         g.setFont(new Font( "SansSerif", Font.BOLD ,17 ));
         g.drawString("売れる数",10,100);
+        g.setColor(Color.CYAN);
         g.drawString(Utility.getItemString(item.buy),10,120);
 
         return true;

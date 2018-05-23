@@ -1269,7 +1269,7 @@ public class MarketData {
             return 0;
         }
 
-        Player player = Bukkit.getPlayer(uuid);
+        Player player = Bukkit.getPlayer(UUID.fromString(uuid));
 
             //  安い順の売り注文を列挙
         ArrayList<OrderInfo> sellOrders = this.getOrderByQuery("select * from order_tbl where item_id = " + item_id+" and buy = 0 order by price,id desc");
@@ -1282,7 +1282,8 @@ public class MarketData {
                // opLog("marketBuy>:"+o.player +":amount:"+o.amount +" price:"+o.price);
 
                 if(this.payMoney(uuid,o.item_id,o.price,amount) == false){
-                    opLog(player.getName()+"のMarketBuyは金がたらないので注文キャンセルされた(1)");
+                    String playerName = player.getName();
+                    opLog(playerName+"のMarketBuyは金がたらないので注文キャンセルされた(1)");
                     return totalAmount;
                 }
 

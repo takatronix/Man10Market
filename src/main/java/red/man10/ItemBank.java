@@ -113,8 +113,10 @@ public class ItemBank {
     void UpdateUserAsset(String uuid){
         //      ユーザの評価を更新
         Player p = Bukkit.getPlayer(UUID.fromString(uuid));
-        UserData user = new UserData(this.plugin);
-        user.updateUserAssetsHistory(p);
+        if(p != null){
+            UserData user = new UserData(this.plugin);
+            user.updateUserAssetsHistory(p);
+        }
     }
 
 

@@ -125,6 +125,11 @@ public class UserData {
 
     //      ユーザーの資産をアップデート
     int updateUserAssetsHistory(Player p){
+
+        if(p == null){
+            Bukkit.getLogger().info("updateUserAssetsHistory nullt");
+            return 0;
+        }
         String uuid = p.getUniqueId().toString();
 
 
@@ -135,7 +140,6 @@ public class UserData {
             return 0;
         }
 
-        Bukkit.getLogger().info("ユーザーデータ更新成功"+p.getName());
 
 
         long totalAmount = 0;
