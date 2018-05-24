@@ -92,6 +92,9 @@ public class BalanceCommand  implements CommandExecutor {
         }
 
         UserData.UserAssetsHistory asset = userData.getUserAsset(uuid.toString());
+        if(asset == null){
+            return false;
+        }
         bal = asset.bal;
 
 
