@@ -1072,8 +1072,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         Player p = e.getPlayer();
 
-//        UserData user = new UserData(this);
- //       user.updateUserAssetsHistory(p);
+        UserData user = new UserData(this);
+        user.updateUserAssetsHistory(p);
 
 
         p.chat("/bal");
