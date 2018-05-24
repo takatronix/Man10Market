@@ -1719,6 +1719,7 @@ public class MarketData {
 
         int pageLimit = 10;
         int maxpage = items.size() / pageLimit;
+        maxpage++;
 
         double totalEstimated = 0;
         int index = 0;

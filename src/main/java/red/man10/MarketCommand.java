@@ -63,7 +63,6 @@ public class MarketCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-
                     plugin.showMenu(p,0);
 
 
@@ -112,7 +111,16 @@ public class MarketCommand implements CommandExecutor {
             if(!checkPermission(p,Settings.newsPermission)){
                 return false;
             }
-            plugin.data.news.playerNews(p);
+
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.data.news.playerNews(p);
+                }
+            }.runTaskLater(this.plugin, 1);
+
+//            plugin.data.news.playerNews(p);
             return true;
         }
 
@@ -250,7 +258,16 @@ public class MarketCommand implements CommandExecutor {
                 p.sendMessage("§2§l/mce ordersell [id/key] [一つあたりの金額] [個数] -  指定した金額で売り注文を出す");
                 return false;
             }
-            return plugin.orderSell(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.orderSell(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+                }
+            }.runTaskLater(this.plugin, 1);
+
+//            return plugin.orderSell(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
         }
 
         ////////////////////////////
@@ -264,8 +281,15 @@ public class MarketCommand implements CommandExecutor {
                 p.sendMessage("§2§l/mce marketsell [id/key] [個数] - 成り行き注文（市場価格で購入)");
                 return false;
             }
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.marketSell(p,args[1],Integer.parseInt(args[2]));
+                }
+            }.runTaskLater(this.plugin, 1);
 
-            return plugin.marketSell(p,args[1],Integer.parseInt(args[2]));
+//            return plugin.marketSell(p,args[1],Integer.parseInt(args[2]));
         }
 
 
@@ -277,8 +301,14 @@ public class MarketCommand implements CommandExecutor {
                 p.sendMessage("§2§l/mce sell [id/key] [個数] - アイテム成り行き売り（市場価格で購入)");
                 return false;
             }
-
-            return plugin.itemSell(p,args[1],Integer.parseInt(args[2]));
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.itemSell(p,args[1],Integer.parseInt(args[2]));
+                }
+            }.runTaskLater(this.plugin, 1);
+//            return plugin.itemSell(p,args[1],Integer.parseInt(args[2]));
         }
 
         //////////////////////////
@@ -292,7 +322,15 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
 
-            return plugin.orderBuy(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.orderBuy(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+                }
+            }.runTaskLater(this.plugin, 1);
+
+    //        return plugin.orderBuy(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
         }
 
 
@@ -307,7 +345,18 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
 
-            return plugin.marketBuy(p,args[1],Integer.parseInt(args[2]));
+
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.marketBuy(p,args[1],Integer.parseInt(args[2]));
+                }
+
+            }.runTaskLater(this.plugin, 1);
+
+
+//            return plugin.marketBuy(p,args[1],Integer.parseInt(args[2]));
         }
 
         if(command.equalsIgnoreCase("buy") || command.equalsIgnoreCase("itembuy")) {
@@ -319,7 +368,15 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
 
-            return plugin.itemBuy(p,args[1],Integer.parseInt(args[2]));
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.itemBuy(p,args[1],Integer.parseInt(args[2]));
+                }
+            }.runTaskLater(this.plugin, 1);
+
+//            return plugin.itemBuy(p,args[1],Integer.parseInt(args[2]));
         }
 
 
@@ -354,7 +411,16 @@ public class MarketCommand implements CommandExecutor {
                 }
 
             }
-            return plugin.showOrder(p,null);
+
+            //      スレッド処理に変更
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.showOrder(p,null);
+                }
+            }.runTaskLater(this.plugin, 1);
+
+//            return plugin.showOrder(p,null);
         }
 
 
