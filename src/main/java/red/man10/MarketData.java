@@ -858,18 +858,18 @@ public class MarketData {
 
         //
         for(OrderInfo o : orders){
-           // opLog("買い注文実行中:" + o.getString());
+            opLog("買い注文実行中:" + o.getString());
             int executed = buyExchange(o.uuid,o.item_id,o.price,o.amount);
-          //  opLog("購入できた個数->"+executed);
+            opLog("購入できた個数->"+executed);
             if(executed == 0){
                 continue;
             }
 
             // 買い注文個数 = 約定個数
             if(o.amount == executed){
-                //opLog( "すべてが約定した！！ -> 買い注文削除");
+                opLog( "すべてが約定した！！ -> 買い注文削除");
                 if(deleteOrder(o.id)){
-                //    opLog("買い注文削除成功");
+                    opLog("買い注文削除成功");
                 }else{
                     opLog("なんてこったい！　買い注文削除失敗 order_id="+o.id);
                 }
@@ -880,10 +880,10 @@ public class MarketData {
             if(o.amount > executed){
 
                 int rest = o.amount - executed;
-               // opLog( "一部約定 -> 買い注文を更新 "+ o.amount + " -> " + rest);
+                opLog( "一部約定 -> 買い注文を更新 "+ o.amount + " -> " + rest);
 
                 if(updateOrder(o.id,rest)){
-                  //  opLog("買い更新成功");
+                    opLog("買い更新成功");
                 }else{
                     opLog("なんてこったい！　買い更新失敗 order_id="+o.id);
                 }
@@ -898,7 +898,7 @@ public class MarketData {
             excutedTotal += executed;
         }
 
-      //  opLog("トータル:"+excutedTotal+"個の買い注文を処理した! ");
+        opLog("exchange トータル:"+excutedTotal+"個の買い注文を処理した! ");
         return excutedTotal;
     }
 
@@ -971,14 +971,18 @@ public class MarketData {
 
         //      売り注文を列挙
         ArrayList<OrderInfo> orders = getOrderInfo(uuidBuyer,item_id,price,false);
+        for(OrderInfo o: orders){
+            showMessage(uuidBuyer,"order:"+o.id + " price"+o.price+" amount:"+amount);
+        }
+
         int retOrderAmount = 0;
         for (OrderInfo o : orders) {
-          //  opLog("buyExchange() ->売り注文を処理する-> : "+o.toString());
+            opLog("buyExchange() ->売り注文を処理する-> : "+o.toString());
             //   買い注文 < 売り注文
             if(o.amount > amount){
                 //  買い注文数をへらす
                 int leftAmount = o.amount - amount;
-                //opLog("買い注文 < 売り注文 ->買い注文数をへらす 残り注文数"+leftAmount);
+                opLog("買い注文 < 売り注文 ->買い注文数をへらす 残り注文数"+leftAmount);
                 if(updateOrder(o.id,leftAmount) == false){
                     showError(uuidBuyer,"(1)注文エラー");
                     opLog("(1)buyExchange:"+o.player+"の注文更新に失敗");
@@ -1003,7 +1007,7 @@ public class MarketData {
                 return amount;
                 //  買い注文 > 売り注文
             }else if(o.amount < amount){
-               // opLog("買い注文 <  売り注文 -> 売り注文を削除する order_id"+o.id);
+                opLog("買い注文 >  売り注文 -> 売り注文を削除する order_id"+o.id + " 売り注文"+o.amount + " 買い注文:"+amount);
                 // オーダー削除
                 if(deleteOrder(o.id)==false){
                     showError(uuidBuyer,"(3)注文エラー");
@@ -1012,7 +1016,7 @@ public class MarketData {
                 }
                 //    購入者へアイテムを届ける
                 //itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
-                if(itemBank.addItem(uuidBuyer,item_id,amount) == false){
+                if(itemBank.addItem(uuidBuyer,item_id,o.amount) == false){
                     showError(uuidBuyer,"(4)購入できたアイテムをアイテムバンクへ届けられなかった");
                     opLog("(4)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
                     continue;
@@ -1024,9 +1028,10 @@ public class MarketData {
 
                 //      ボリュームを登録
                 registerVolume(o.item_id,o.amount,o.price,uuidBuyer,o.uuid);
+                opLog("次の注文へ！");
                 //  売り注文 == 買い注文
             }else if(o.amount == amount){
-               // opLog("買い注文 > 売り注文 -> 売り注文を削除する order_id"+o.id);
+                opLog("買い注文 == 売り注文 -> 売り注文を削除する order_id"+o.id);
                 // オーダー削除
                 if(deleteOrder(o.id) == false){
                     showError(uuidBuyer,"(5)注文エラー");
