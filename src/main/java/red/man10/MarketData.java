@@ -858,20 +858,20 @@ public class MarketData {
 
         //
         for(OrderInfo o : orders){
-            opLog("買い注文実行中:" + o.getString());
+           // opLog("買い注文実行中:" + o.getString());
             int executed = buyExchange(o.uuid,o.item_id,o.price,o.amount);
-            opLog("購入できた個数->"+executed);
+            //opLog("購入できた個数->"+executed);
             if(executed == 0){
                 continue;
             }
 
             // 買い注文個数 = 約定個数
             if(o.amount == executed){
-                opLog( "すべてが約定した！！ -> 買い注文削除");
+               // opLog( "すべてが約定した！！ -> 買い注文削除");
                 if(deleteOrder(o.id)){
-                    opLog("買い注文削除成功");
+                //    opLog("買い注文削除成功");
                 }else{
-                    opLog("なんてこったい！　買い注文削除失敗 order_id="+o.id);
+                //    opLog("なんてこったい！　買い注文削除失敗 order_id="+o.id);
                 }
           //      registerVolume(o.item_id,o.amount,o.uuid,);
 
@@ -880,19 +880,19 @@ public class MarketData {
             if(o.amount > executed){
 
                 int rest = o.amount - executed;
-                opLog( "一部約定 -> 買い注文を更新 "+ o.amount + " -> " + rest);
+              //  opLog( "一部約定 -> 買い注文を更新 "+ o.amount + " -> " + rest);
 
                 if(updateOrder(o.id,rest)){
-                    opLog("買い更新成功");
+            //        opLog("買い更新成功");
                 }else{
-                    opLog("なんてこったい！　買い更新失敗 order_id="+o.id);
+              //      opLog("なんてこったい！　買い更新失敗 order_id="+o.id);
                 }
                 //registerVolume(o.item_id,executed);
             }
 
             // 買い注文個数 < 約定個数
             if(o.amount < executed){
-                opLog("なんてこったい！　買い注文個数 < 約定個数  なんてありえない");
+            //    opLog("なんてこったい！　買い注文個数 < 約定個数  なんてありえない");
             }
 
             excutedTotal += executed;
@@ -902,67 +902,6 @@ public class MarketData {
         return excutedTotal;
     }
 
-
-    /////////////////////////////////////////
-    //  売り交換処理(ここ重要)  現在未使用
-    public int sellExchangeXOld(String uuid,int item_id,double price,int amount){
-        int soldAmount = 0;
-        //  買い注文を列挙
-        ArrayList<OrderInfo> orders = getOrderInfo(uuid,item_id,price,true);
-        for (OrderInfo o : orders) {
-
-            //   買い注文 < 売り注文
-            if(o.amount < amount){
-                //  売れるだけさばき次注文へ
-                // オーダー削除
-                deleteOrder(o.id);
-                //    購入者へアイテムを届ける
-                //itemBank.sendItemToStorage(o.uuid,item_id,o.amount);
-                if(itemBank.addItem(uuid,item_id,o.amount) == false){
-
-                }
-
-
-                //   料金を支払
-                sendMoney(uuid.toString(),item_id,price,o.amount,o.uuid);
-                amount -= o.amount; //　残注文
-                soldAmount += o.amount; // 購入できた個数
-
-                //      ボリュームを登録
-                registerVolume(o.item_id,o.amount,o.price,o.uuid,uuid);
-
-                //  買い注文 > 売り注文
-            }else if(o.amount > amount){
-                int leftAmount = o.amount - amount;
-                //  購入者の注文量を減らす
-                updateOrder(o.id,leftAmount);
-                //    購入者へアイテムを届ける
-                //itemBank.sendItemToStorage(o.uuid,item_id,amount);
-                itemBank.addItem(o.uuid,o.item_id,amount);
-                //   料金を支払
-                sendMoney(uuid,item_id,price,amount,o.uuid);
-
-                //      ボリュームを登録
-                registerVolume(o.item_id,amount,o.price,o.uuid,uuid);
-
-                return amount;
-                //  売り注文 == 買い注文
-            }else if(o.amount == amount){
-                // オーダー削除
-                deleteOrder(o.id);
-                //    購入者へアイテムを届ける
-//                itemBank.sendItemToStorage(o.uuid,item_id,amount);
-                itemBank.addItem(o.uuid,o.item_id,amount);
-                //   料金を支払
-                sendMoney(uuid,item_id,price,amount,o.uuid);
-
-                //      ボリュームを登録
-                registerVolume(o.item_id,amount,o.price,o.uuid,uuid);
-                return amount;
-            }
-        }
-        return soldAmount;
-    }
 
     /////////////////////////////////////////
     //  買い交換処理(ここ重要)
@@ -977,15 +916,15 @@ public class MarketData {
 
         int retOrderAmount = 0;
         for (OrderInfo o : orders) {
-            opLog("buyExchange() ->売り注文を処理する-> : "+o.toString());
+            //opLog("buyExchange() ->売り注文を処理する-> : "+o.toString());
             //   買い注文 < 売り注文
             if(o.amount > amount){
                 //  買い注文数をへらす
                 int leftAmount = o.amount - amount;
-                opLog("買い注文 < 売り注文 ->買い注文数をへらす 残り注文数"+leftAmount);
+             //   opLog("買い注文 < 売り注文 ->買い注文数をへらす 残り注文数"+leftAmount);
                 if(updateOrder(o.id,leftAmount) == false){
                     showError(uuidBuyer,"(1)注文エラー");
-                    opLog("(1)buyExchange:"+o.player+"の注文更新に失敗");
+                    //opLog("(1)buyExchange:"+o.player+"の注文更新に失敗");
                     continue;
                 }
 
@@ -994,7 +933,7 @@ public class MarketData {
 
                 if(itemBank.addItem(uuidBuyer,item_id,amount) == false){
                     showError(uuidBuyer,"(2)購入できたアイテムをアイテムバンクへ届けられなかった");
-                    opLog("(2)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
+                    //opLog("(2)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
                     continue;
                 }
 
@@ -1007,18 +946,18 @@ public class MarketData {
                 return amount;
                 //  買い注文 > 売り注文
             }else if(o.amount < amount){
-                opLog("買い注文 >  売り注文 -> 売り注文を削除する order_id"+o.id + " 売り注文"+o.amount + " 買い注文:"+amount);
+              //  opLog("買い注文 >  売り注文 -> 売り注文を削除する order_id"+o.id + " 売り注文"+o.amount + " 買い注文:"+amount);
                 // オーダー削除
                 if(deleteOrder(o.id)==false){
                     showError(uuidBuyer,"(3)注文エラー");
-                    opLog("(3)buyExchange:"+o.player+"の注文削除失敗");
+                    //opLog("(3)buyExchange:"+o.player+"の注文削除失敗");
                     continue;
                 }
                 //    購入者へアイテムを届ける
                 //itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
                 if(itemBank.addItem(uuidBuyer,item_id,o.amount) == false){
                     showError(uuidBuyer,"(4)購入できたアイテムをアイテムバンクへ届けられなかった");
-                    opLog("(4)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
+                   //opLog("(4)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
                     continue;
                 }
 
@@ -1028,21 +967,21 @@ public class MarketData {
 
                 //      ボリュームを登録
                 registerVolume(o.item_id,o.amount,o.price,uuidBuyer,o.uuid);
-                opLog("次の注文へ！");
+                //opLog("次の注文へ！");
                 //  売り注文 == 買い注文
             }else if(o.amount == amount){
                 opLog("買い注文 == 売り注文 -> 売り注文を削除する order_id"+o.id);
                 // オーダー削除
                 if(deleteOrder(o.id) == false){
                     showError(uuidBuyer,"(5)注文エラー");
-                    opLog("(5)buyExchange:"+o.player+"の注文削除失敗");
+                   //opLog("(5)buyExchange:"+o.player+"の注文削除失敗");
                     continue;
                 }
                 //    購入者へアイテムを届ける
         //        itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
                 if(itemBank.addItem(uuidBuyer,item_id,amount) == false){
                     showError(uuidBuyer,"(6)購入できたアイテムをアイテムバンクへ届けられなかった");
-                    opLog("(6)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
+                    //opLog("(6)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
                     continue;
                 }
 

@@ -1,6 +1,7 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
@@ -32,6 +33,83 @@ public class UserData {
         int day;
         String itemList;
     }
+
+
+
+    class UserInformation{
+        double balance;
+    }
+
+
+    ////////////////////////////////////////////
+    //     get user information
+    ////////////////////////////////////////////
+    UserInformation getUserInformation(String uuid){
+
+        String sql = "select * from user_information where uuid='"+uuid+"';";
+        ResultSet rs = data.mysql.query(sql);
+        if(rs == null){
+            return null;
+        }
+        try {
+            while (rs.next()) {
+                UserInformation ui = new UserInformation();
+                ui.balance = rs.getDouble("balance");
+
+                return ui;
+            }
+        }catch(Exception e){
+
+        }
+
+        data.mysql.close();
+        return null;
+    }
+
+
+    boolean insertUserInformation(String uuid){
+
+        String sql = "insert into user_information set uuid values('"+uuid+"')";
+
+        return  data.mysql.execute(sql);
+    }
+
+
+    boolean deposit(String uuid,double money){
+
+        UserInformation ui = getUserInformation(uuid);
+        if(ui == null){
+            if(insertUserInformation(uuid) == false){
+                return false;
+            }
+        }
+
+
+        //      追加
+        boolean ret = data.mysql.execute("update user_information set balance = balance + "+money+" where uuid='"+uuid+"';");
+
+
+        return true;
+    }
+
+
+    boolean withdraw(String uuid,double money){
+        UserInformation ui = getUserInformation(uuid);
+        if(ui == null){
+            return false;
+        }
+
+        if(ui.balance < money){
+            return false;
+        }
+
+
+
+        return true;
+    }
+
+
+
 
 
     String  createJoinMessage(Player p){
@@ -103,7 +181,7 @@ public class UserData {
             Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode()+" reason:"+e.getLocalizedMessage());
             return ret;
         }
-         data.mysql.close();
+        data.mysql.close();
 
         return ret;
     }
@@ -182,8 +260,8 @@ public class UserData {
 
 
         if(data.mysql.execute(sql) == false){
-           plugin.showError(p,"個人データの更新に失敗");
-           return  -1;
+            plugin.showError(p,"個人データの更新に失敗");
+            return  -1;
         }
 
 

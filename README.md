@@ -1,5 +1,6 @@
 # Minecraft Market Plugin
 
+
 ## 株や為替のようにアイテムを売買するプラグインです
 
 ###コマンド
@@ -21,3 +22,5 @@
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§c§l/mce register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
         p.sendMessage("§c/mce unregister - 手にもったアイテムをマーケットから削除する");
+
+##Update
