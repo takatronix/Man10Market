@@ -34,6 +34,7 @@ public class MarketData {
     MySQLManager mysql = null;
 
     ItemBank itemBank = null;
+    UserData userData = null;
 
     public MarketData(MarketPlugin plugin) {
         this.plugin = plugin;
@@ -49,6 +50,10 @@ public class MarketData {
 
         this.news.data = this;
         this.news.plugin = plugin;
+
+
+        this.userData = new UserData(plugin);
+        this.userData.data = this;
 
         MarketChart.data = this;
 
@@ -703,7 +708,13 @@ public class MarketData {
         double money =  price*amount;
 
 
-        plugin.vault.deposit(player.getUniqueId(),money);
+
+
+        userData.deposit(uuid,money);
+
+
+ //       plugin.vault.deposit(player.getUniqueId(),money);
+
         logTransaction(uuid,"ReceivedMoney",info.key,price,amount,0,uuidBuyer);
 
         if(player.isOnline()){
@@ -898,7 +909,7 @@ public class MarketData {
             excutedTotal += executed;
         }
 
-        opLog("exchange トータル:"+excutedTotal+"個の買い注文を処理した! ");
+        //opLog("exchange トータル:"+excutedTotal+"個の買い注文を処理した! ");
         return excutedTotal;
     }
 
@@ -1759,6 +1770,16 @@ public class MarketData {
         }
 
         Utility.sendHoverText(p, " 過去の注文を参照する => §9§n[注文履歴]","注文の履歴を表示します /mce log","/mce log");
+
+
+        //      ユーザーデータがあるか
+        UserData ud = new UserData(this.plugin);
+        ud.data = this.plugin.data;
+        if(ud != null){
+            ud.showEarnings(p,p.getUniqueId().toString());
+        }
+
+
         return true;
 
 

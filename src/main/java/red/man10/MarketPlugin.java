@@ -55,6 +55,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     MarketVault vault = null;
     MarketSignEvent sign = null;
 
+
     public double buyLimitRatio = 10;
     public double sellLimitRatio = 10;
 
@@ -748,6 +749,20 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     //ArrayList<ChartMapRenderer> mapList = new ArrayList<ChartMapRenderer>();
 
+    public boolean withdrawAll(Player p){
+
+        UserData ud = new UserData(this);
+        if(ud == null){
+            return false;
+        }
+
+        UserData.UserInformation ui = ud.getUserInformation(p.getUniqueId().toString());
+
+
+        return ud.withdraw(p.getUniqueId().toString(),ui.balance);
+
+
+    }
 
     public boolean giveMap(Player p,String target){
 
@@ -798,7 +813,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public void showMenu(Player p,int pageNo){
 
         data.showItemList(p,pageNo);
-        showItemBank(p);
+
     }
     public void showItemBank(Player p){
 
@@ -1074,7 +1089,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         UserData user = new UserData(this);
         user.updateUserAssetsHistory(p);
-
 
         p.chat("/bal");
 

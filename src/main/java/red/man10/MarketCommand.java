@@ -76,6 +76,18 @@ public class MarketCommand implements CommandExecutor {
 
         String command = args[0];
 
+
+        //     withdraw
+        if(command.equalsIgnoreCase("withdraw")){
+            if(!checkPermission(p,Settings.withdraw)){
+                return false;
+            }
+
+            plugin.withdrawAll(p);
+            return true;
+        }
+
+
         //      market broadcast
         if(command.equalsIgnoreCase("updateall")){
             if(!checkPermission(p,Settings.broadcastPermission)){
@@ -504,6 +516,8 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("/mce cancel [order_id] 注文をキャンセルする");
         p.sendMessage("/mce cancelall  全ての注文をキャンセルする");
         p.sendMessage("/mce canceltem [id/key]");
+
+        p.sendMessage("/mce withdraw - 売上をすべて引き出す");
 
 
         p.sendMessage("§c--------------------------------");

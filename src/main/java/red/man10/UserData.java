@@ -1,6 +1,7 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -46,31 +47,33 @@ public class UserData {
     ////////////////////////////////////////////
     UserInformation getUserInformation(String uuid){
 
-        String sql = "select * from user_information where uuid='"+uuid+"';";
+        String sql = "select * from user_index where uuid='"+uuid+"';";
         ResultSet rs = data.mysql.query(sql);
+        UserInformation ui = new UserInformation();
         if(rs == null){
             return null;
         }
         try {
             while (rs.next()) {
-                UserInformation ui = new UserInformation();
                 ui.balance = rs.getDouble("balance");
-
-                return ui;
+                break;
             }
+            rs.close();
+
         }catch(Exception e){
 
         }
 
         data.mysql.close();
-        return null;
+        return ui;
     }
 
 
     boolean insertUserInformation(String uuid){
 
-        String sql = "insert into user_information set uuid values('"+uuid+"')";
+        OfflinePlayer p = Bukkit.getPlayer(UUID.fromString(uuid));
 
+        String sql = "insert into user_index values(0,'" + uuid + "','"+p.getName()+"',0,null,0,0);";
         return  data.mysql.execute(sql);
     }
 
@@ -86,7 +89,7 @@ public class UserData {
 
 
         //      追加
-        boolean ret = data.mysql.execute("update user_information set balance = balance + "+money+" where uuid='"+uuid+"';");
+        boolean ret = data.mysql.execute("update user_index set balance = balance + "+money+" where uuid='"+uuid+"';");
 
 
         return true;
@@ -94,16 +97,28 @@ public class UserData {
 
 
     boolean withdraw(String uuid,double money){
+
         UserInformation ui = getUserInformation(uuid);
         if(ui == null){
             return false;
         }
 
         if(ui.balance < money){
+            plugin.data.showError(uuid,"残額より多くはひきだせない");
             return false;
         }
 
+        boolean ret = data.mysql.execute("update user_index set balance = balance - "+money+" where uuid='"+uuid+"';");
 
+
+
+        if(ret){
+            this.plugin.vault.deposit(UUID.fromString(uuid),money);
+            plugin.data.showMessage(uuid,Utility.getColoredPriceString(money)+"§f§l口座に追加されました");
+        }else{
+            plugin.data.showError(uuid,"口座からの引き出しに失敗した");
+
+        }
 
         return true;
     }
@@ -201,6 +216,19 @@ public class UserData {
 
 
 
+    //          売上を表示するs
+    void showEarnings(Player p,String uuid){
+        ///
+        UserData.UserInformation ui = this.getUserInformation(uuid);
+        if(ui != null){
+            if(ui.balance != 0){
+                Utility.sendHoverText(p,"§k§l $$$$ §f§l§nあなたの売上金額:"+Utility.getColoredPriceString(ui.balance) +" §l§n [引き出す] => /mce withdraw","クリックすると支払われます /mce withdraw","/mce withdraw");
+            }
+        }
+    }
+
+
+
     //      ユーザーの資産をアップデート
     int updateUserAssetsHistory(Player p){
 
@@ -209,6 +237,10 @@ public class UserData {
             return 0;
         }
         String uuid = p.getUniqueId().toString();
+
+
+        this.insertUserInformation(uuid);
+
 
 
         //

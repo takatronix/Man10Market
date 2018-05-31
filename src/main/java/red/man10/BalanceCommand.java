@@ -79,7 +79,7 @@ public class BalanceCommand  implements CommandExecutor {
 
     boolean showBalanceUUID(Player p, String uuid)
     {
-
+        userData = new UserData(plugin);
 
 
         double bal = 0;
@@ -153,6 +153,12 @@ public class BalanceCommand  implements CommandExecutor {
         p.sendMessage("§f売り注文評価額:" + Utility.getColoredPriceString(sellTotal) + " §f: " + Utility.getColoredItemString(sellAmount));
 
 
+
+        userData.showEarnings(p,uuid);
+
+
+
+
         return true;
     }
 
@@ -168,7 +174,7 @@ public class BalanceCommand  implements CommandExecutor {
 
     boolean showBalance(Player sender, String playerName)
     {
-        userData = new UserData(plugin);
+
 
 
 
