@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
@@ -34,14 +35,36 @@ public class BalanceCommand  implements CommandExecutor {
 
         if(args.length == 1){
             if(sender.hasPermission(Settings.showBalanceOther)){
-                return showBalance((Player)sender,args[0]);
+
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        showBalance((Player)sender,args[0]);
+                    }
+
+                }.runTaskLater(this.plugin, 1);
+
+
+
+                return true;
             }else{
                 sender.sendMessage("あなたには他人の資産をみる権限がない");
                 return false;
             }
         }
 
-        return showBalance((Player)sender,null);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                showBalance((Player)sender,null);
+            }
+
+        }.runTaskLater(this.plugin, 1);
+
+
+        return true;
 
     }
 
@@ -109,6 +132,8 @@ public class BalanceCommand  implements CommandExecutor {
         showAssetUUID(p, uuid);
         showOrderUUID(p, uuid);
 
+        userData.showEarnings(p,uuid);
+
         return true;
     }
 
@@ -151,10 +176,6 @@ public class BalanceCommand  implements CommandExecutor {
         p.sendMessage("§f買い注文:" + Utility.getColoredPriceString(buyTotal) + " §f: " + Utility.getColoredItemString(buyAmount));
 
         p.sendMessage("§f売り注文評価額:" + Utility.getColoredPriceString(sellTotal) + " §f: " + Utility.getColoredItemString(sellAmount));
-
-
-
-        userData.showEarnings(p,uuid);
 
 
 

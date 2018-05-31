@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapRenderer;
+import org.bukkit.scheduler.BukkitRunnable;
 import red.man10.MarketData;
 
 import javax.lang.model.type.UnionType;
@@ -196,11 +197,33 @@ public class MarketChart {
             return true;
         });
 
-        MappRenderer.plateEvent("balance", (String key, int mapId,Player player) -> {
-            Graphics2D g = MappRenderer.getGraphics(mapId);
+        MappRenderer.buttonEvent("balance", (String key, int mapId,Player player) -> {
 
-            g.fillRect(0,0,128,128);
-            showBalance(g,player);
+
+            Graphics2D g = MappRenderer.getGraphics(mapId);
+            g.setColor(Color.black);
+            g.fillRect(0,0,127,127);
+            g.drawString("取得中",20,20);
+
+            return  true;
+        });
+
+    MappRenderer.plateEvent("balance", (String key, int mapId,Player player) -> {
+
+
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+                    Graphics2D g = MappRenderer.getGraphics(mapId);
+                    g.fillRect(0,0,128,128);
+                    showBalance(g,player);
+
+                }
+
+            }.runTaskLater(plugin, 1);
+
 
 
 
@@ -246,7 +269,18 @@ public class MarketChart {
         for (int n = 0;n < itemmax;n++){
             int no = items.get(n).id;
             MappRenderer.draw( "price:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                return drawPrice(g,getId(key));
+
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        drawPrice(g,getId(key));
+                    }
+
+                }.runTaskLater(plugin, 1);
+
+                return true;
+//                return drawPrice(g,getId(key));
             });
 
             MappRenderer.displayTouchEvent("price:"+no,(String key,int mapId,Player player, int x,int y) ->{
@@ -257,7 +291,19 @@ public class MarketChart {
 
 
             MappRenderer.draw( "buy:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                return drawBuy(g,getId(key));
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+
+                        drawBuy(g,getId(key));
+                    }
+
+                }.runTaskLater(plugin, 1);
+
+//                return drawBuy(g,getId(key));
+                return true;
+
             });
 
             MappRenderer.displayTouchEvent("buy:"+no,(String key,int mapId,Player player, int x,int y) ->{
@@ -271,7 +317,20 @@ public class MarketChart {
             });
 
             MappRenderer.draw( "sell:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                return drawSell(g,getId(key));
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+
+                        drawSell(g,getId(key));
+                    }
+
+                }.runTaskLater(plugin, 1);
+
+                return true;
+
+
+         ///       return drawSell(g,getId(key));
             });
 
             MappRenderer.displayTouchEvent("sell:"+no,(String key,int mapId,Player player, int x,int y) ->{

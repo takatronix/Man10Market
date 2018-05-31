@@ -49,12 +49,13 @@ public class UserData {
 
         String sql = "select * from user_index where uuid='"+uuid+"';";
         ResultSet rs = data.mysql.query(sql);
-        UserInformation ui = new UserInformation();
+        UserInformation ui = null;
         if(rs == null){
             return null;
         }
         try {
             while (rs.next()) {
+                ui = new UserInformation();
                 ui.balance = rs.getDouble("balance");
                 break;
             }
@@ -71,7 +72,12 @@ public class UserData {
 
     boolean insertUserInformation(String uuid){
 
-        OfflinePlayer p = Bukkit.getPlayer(UUID.fromString(uuid));
+        Player p = Bukkit.getPlayer(UUID.fromString(uuid));
+        if(p == null){
+            Bukkit.getLogger().info("insertUserInformation 取得失敗");
+            return false;
+        }
+        Bukkit.getLogger().info("ユーザーデータ挿入中");
 
         String sql = "insert into user_index values(0,'" + uuid + "','"+p.getName()+"',0,null,0,0);";
         return  data.mysql.execute(sql);
@@ -239,7 +245,8 @@ public class UserData {
         String uuid = p.getUniqueId().toString();
 
 
-        this.insertUserInformation(uuid);
+
+
 
 
 

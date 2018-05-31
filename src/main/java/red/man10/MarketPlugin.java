@@ -55,6 +55,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     MarketVault vault = null;
     MarketSignEvent sign = null;
 
+    UserData userData = null;
 
     public double buyLimitRatio = 10;
     public double sellLimitRatio = 10;
@@ -751,15 +752,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     public boolean withdrawAll(Player p){
 
-        UserData ud = new UserData(this);
-        if(ud == null){
-            return false;
-        }
 
-        UserData.UserInformation ui = ud.getUserInformation(p.getUniqueId().toString());
+        UserData.UserInformation ui = userData.getUserInformation(p.getUniqueId().toString());
 
 
-        return ud.withdraw(p.getUniqueId().toString(),ui.balance);
+        return userData.withdraw(p.getUniqueId().toString(),ui.balance);
 
 
     }
@@ -863,7 +860,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
 
-        data = new MarketData(this);
+
         if(data == null){
             serverMessage("§cDatabase Error");
             return;
@@ -938,6 +935,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         vault = new MarketVault(this);
+        data = new MarketData(this);
 
         this.saveDefaultConfig();
         this.loadConfig();
@@ -948,7 +946,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         Bukkit.getServer().broadcastMessage(prefix+"Started");
-
 
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
             @Override
@@ -964,6 +961,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             //  １時間
         }, 0, 20*60*60);
 
+
+        userData = new UserData(this);
+        userData.data = this.data;
 
         sign = new MarketSignEvent(this);
     }
@@ -1082,22 +1082,53 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
 
+
     //
     @EventHandler void onPlayerJoin(PlayerJoinEvent e){
 
+
         Player p = e.getPlayer();
+        Bukkit.getLogger().info(p.getName()+" onPlayerJoin");
 
-        UserData user = new UserData(this);
-        user.updateUserAssetsHistory(p);
 
-        p.chat("/bal");
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Bukkit.getLogger().info(p.getName()+"updating history");
+
+                userData.updateUserAssetsHistory(p);
+
+
+                String uuid = p.getUniqueId().toString();
+                UserData.UserInformation ui = userData.getUserInformation(uuid);
+                if(ui == null){
+                    Bukkit.getLogger().info(p.getName()+"のUserデータを作成中");
+                    userData.insertUserInformation(uuid);
+                }
+
+                p.chat("/bal");
+
+
+            }
+
+        }.runTaskLater(this, 1);
+
 
     }
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e){
-        Player p = e.getPlayer();
-        UserData user = new UserData(this);
-        user.updateUserAssetsHistory(p);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+
+                Player p = e.getPlayer();
+                userData.updateUserAssetsHistory(p);
+
+
+
+            }
+        }.runTaskLater(this, 1);
 
     }
 }

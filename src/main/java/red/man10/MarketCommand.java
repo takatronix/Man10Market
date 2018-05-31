@@ -83,7 +83,17 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
 
-            plugin.withdrawAll(p);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    plugin.withdrawAll(p);
+
+
+                }
+
+            }.runTaskLater(this.plugin, 1);
+
+
             return true;
         }
 
