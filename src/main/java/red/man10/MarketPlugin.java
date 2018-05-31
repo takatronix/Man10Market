@@ -877,9 +877,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 this.isMarketOpen =  getConfig().getBoolean("marketOpen",false);
 
         if(isMarketOpen){
-            serverMessage("Man10中央取引所オープンしました！ /MCE");
+            serverMessage("§e§lMan10中央取引所オープンしました！ /MCE");
         }else{
-            serverMessage("Man10中央取引所クローズ中です");
+            serverMessage("§e§lMan10中央取引所クローズ中です");
         }
 
     }

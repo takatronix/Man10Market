@@ -449,17 +449,14 @@ public class MarketCommand implements CommandExecutor {
         //    注文キャンセル
         if(command.equalsIgnoreCase("cancel")){
 
-
+            //      スレッド処理に変更
             new BukkitRunnable() {
                 @Override
                 public void run() {
-
-
-                cancelProc(p,args);
-
-
+                    cancelProc(p,args);
                 }
             }.runTaskLater(this.plugin, 1);
+
 
         }
 
