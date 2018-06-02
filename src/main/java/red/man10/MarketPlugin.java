@@ -174,7 +174,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public static int getAmount(Player player, ItemStack itemCheck)
     {
         PlayerInventory inventory = player.getInventory();
-        ItemStack[] items = inventory.getContents();
+
+//        ItemStack[] items = inventory.getContents();
+        ItemStack[] items = inventory.getStorageContents();
+
         int has = 0;
         for (ItemStack item : items)
         {
