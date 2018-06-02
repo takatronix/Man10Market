@@ -41,6 +41,7 @@ import java.util.UUID;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static red.man10.MarketCommand.checkPermission;
 
 
 public final class MarketPlugin extends JavaPlugin implements Listener {
@@ -93,6 +94,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     ///////////////////////////////
     //      成り行きアイテム購入
     public boolean itemBuy(Player p, String target, int amount){
+
+
+        if(!checkPermission(p,Settings.itemBuyPermission)){
+            return false;
+        }
 
         if (checkMarketClosed(p)) {
             return false;
@@ -201,6 +207,12 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     ///////////////////////////////
     //     アイテム成り行き売り
     public boolean itemSell(Player p, String target, int amount){
+
+
+        if(!checkPermission(p,Settings.itemSellPermission)){
+            return false;
+        }
+
 
         if (checkMarketClosed(p)) {
             return false;

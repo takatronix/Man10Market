@@ -312,7 +312,18 @@ public class MarketChart {
 
                 MarketData.ItemIndex index = data.getItemPrice(item_id);
 
-                player.chat("/mce buy "+item_id + " "+index.lot);
+                //player.chat("/mce buy "+item_id + " "+index.lot);
+
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        plugin.itemBuy(player,""+item_id , index.lot);
+                    }
+                }.runTaskLater(plugin, 1);
+
+
+
                 return false;
             });
 
@@ -338,7 +349,20 @@ public class MarketChart {
                 int item_id = Integer.parseInt(item[1]);
 
                 MarketData.ItemIndex index = data.getItemPrice(item_id);
-                player.chat("/mce sell "+ item_id +" "+index.lot);
+
+
+                //player.chat("/mce sell "+ item_id +" "+index.lot);
+
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        plugin.itemSell(player,""+item_id , index.lot);
+                    }
+                }.runTaskLater(plugin, 1);
+
+
+
                 return false;
             });
             MappRenderer.draw( "chart:"+no, 0,(String key,int mapId,Graphics2D g) -> {
