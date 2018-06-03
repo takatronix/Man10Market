@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import sun.jvm.hotspot.oops.Mark;
 
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
@@ -16,9 +17,13 @@ public class BalanceCommand  implements CommandExecutor {
 
     private final MarketPlugin plugin;
 
+
+    MarketData data = null;
+
     //      コンストラクタ
     public BalanceCommand(MarketPlugin plugin) {
         this.plugin = plugin;
+        this.data = new MarketData(plugin);
     }
 
 
@@ -37,13 +42,14 @@ public class BalanceCommand  implements CommandExecutor {
             if(sender.hasPermission(Settings.showBalanceOther)){
 
 
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                    try {
                         showBalance((Player)sender,args[0]);
+                    } catch (Exception e) {
+                        Bukkit.getLogger().info(e.getMessage());
+                        System.out.println(e.getMessage());
                     }
-
-                }.runTaskLater(this.plugin, 1);
+                });
 
 
 
@@ -55,13 +61,14 @@ public class BalanceCommand  implements CommandExecutor {
         }
 
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
+        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+            try {
                 showBalance((Player)sender,null);
+            } catch (Exception e) {
+                Bukkit.getLogger().info(e.getMessage());
+                System.out.println(e.getMessage());
             }
-
-        }.runTaskLater(this.plugin, 1);
+        });
 
 
         return true;
@@ -77,7 +84,7 @@ public class BalanceCommand  implements CommandExecutor {
         String sql = "select * from user_assets_history where uuid = '" + uuid + "' order by id desc limit 2;";
 
 
-        ArrayList<UserData.UserAssetsHistory> his = userData.getAssetHistory(sql);
+        ArrayList<UserData.UserAssetsHistory> his = data.userData.getAssetHistory(sql);
         if (his.size() == 0) {
             return false;
         }
@@ -102,19 +109,17 @@ public class BalanceCommand  implements CommandExecutor {
 
     boolean showBalanceUUID(Player p, String uuid)
     {
-        userData = new UserData(plugin);
-
 
         double bal = 0;
         Player target = Bukkit.getPlayer(UUID.fromString(uuid));
 
         if(target != null){
             if(target.isOnline()){
-                userData.updateUserAssetsHistory(target);
+                data.userData.updateUserAssetsHistory(target);
             }
         }
 
-        UserData.UserAssetsHistory asset = userData.getUserAsset(uuid.toString());
+        UserData.UserAssetsHistory asset = data.userData.getUserAsset(uuid.toString());
         if(asset == null){
             return false;
         }
@@ -132,14 +137,15 @@ public class BalanceCommand  implements CommandExecutor {
         showAssetUUID(p, uuid);
         showOrderUUID(p, uuid);
 
-        userData.showEarnings(p,uuid);
+        data.userData.showEarnings(p,uuid);
 
         return true;
     }
 
     boolean showOrderUUID(Player p, String uuid)
     {
-        ArrayList<MarketData.OrderInfo> orders = plugin.data.getOrderOfUser(p, uuid);
+        MarketData data = new MarketData(plugin);
+        ArrayList<MarketData.OrderInfo> orders = data.getOrderOfUser(p, uuid);
         if (orders == null) {
             return false;
         }
@@ -156,7 +162,7 @@ public class BalanceCommand  implements CommandExecutor {
         long sellTotal = 0L;
         String orderPlyer = "";
         for (MarketData.OrderInfo order : orders) {
-            MarketData.ItemIndex itemIndex = plugin.data.getItemPrice(order.item_id);
+            MarketData.ItemIndex itemIndex = data.getItemPrice(order.item_id);
             if (order.isBuy) {
                 buyAmount += order.amount;
                 buyTotal += order.price * order.amount;
@@ -183,21 +189,8 @@ public class BalanceCommand  implements CommandExecutor {
         return true;
     }
 
-
-
-    UserData userData = null;
-
-
-
-
-
-
-
     boolean showBalance(Player sender, String playerName)
     {
-
-
-
 
         String uuid = null;
 
@@ -214,7 +207,7 @@ public class BalanceCommand  implements CommandExecutor {
 
         if ((uuid == null) && (playerName != null))
         {
-            uuid = userData.getUUID(playerName);
+            uuid = data.userData.getUUID(playerName);
             sender.sendMessage("プレイヤーがDBからみつかりました UUID: "+uuid);
         }
 

@@ -12,12 +12,9 @@ import java.util.UUID;
 
 public class ItemBank {
 
-//    pri MarketPlugin plugin;
-   // private final MarketData data;
 
     MarketPlugin plugin = null;
     MarketData data = null;
-
 
     class ItemStorage{
         int item_id;
@@ -25,10 +22,10 @@ public class ItemBank {
         long amount;
     }
 
-
-
     //      プレイヤーの持っているストレージリストを得る
     public ArrayList<ItemStorage> getStorageList(String uuid){
+
+        //MarketData data = new MarketData(plugin);
         String sql = "select * from item_storage where uuid= '"+uuid+"' order by item_id;";
 
 
@@ -74,6 +71,7 @@ public class ItemBank {
         ret.item_key = null;
         ret.amount = 0;
 
+
         ResultSet rs = data.mysql.query(sql);
         //  Bukkit.getLogger().info(sql);
         if(rs == null){
@@ -101,21 +99,12 @@ public class ItemBank {
 
     }
 
-    public boolean updateItemStorageX(String uuid,int item_id,long amount){
-        String sql= "update item_storage set amount="+amount+" where item_id = "+item_id+" and uuid='"+uuid+"';";
-        boolean ret =  data.mysql.execute(sql);
-
-
-        return ret;
-    }
-
 
     void UpdateUserAsset(String uuid){
         //      ユーザの評価を更新
         Player p = Bukkit.getPlayer(UUID.fromString(uuid));
         if(p != null){
-            UserData user = new UserData(this.plugin);
-            user.updateUserAssetsHistory(p);
+            this.data.userData.updateUserAssetsHistory(p);
         }
     }
 
@@ -130,6 +119,7 @@ public class ItemBank {
         if(store.item_key == null){
             return this.insertItemStorage(uuid,item_id,amount);
         }
+       // MarketData data = new MarketData(plugin);
 
         //      追加
         boolean ret = data.mysql.execute("update item_storage set amount = amount + "+amount+" where uuid='"+uuid+"' and item_id="+item_id+";");
@@ -169,6 +159,7 @@ public class ItemBank {
 
         OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
         String playerName = player.getName();
+       // MarketData data = new MarketData(plugin);
 
         MarketData.ItemIndex result =  data.getItemPrice(String.valueOf(item_id));
         boolean ret = data.mysql.execute("insert into item_storage values(0,"
@@ -185,110 +176,6 @@ public class ItemBank {
 
         return ret;
     }
-/*
-
-    //   アイテムボックスへアイテムを送信する
-    public boolean sendItemToStorage(String uuid,int item_id,int amount){
-
-
-        OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
-
-
-        MarketData.ItemIndex result =  data.getItemPrice(String.valueOf(item_id));
-        if(result == null){
-            if(player.isOnline()){
-                plugin.showError((Player)player,"登録されていない");
-            }
-            return false;
-        }
-
-        if(addItem(uuid,item_id,amount)){
-            if(player.isOnline()){
-                Player online = (Player)player;
-                plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクに追加されました => "+amount+"個");
-            }
-        }
-
-
-
-        /*
-        MarketData.ItemIndex result =  data.getItemPrice(String.valueOf(item_id));
-        if(result == null){
-            if(player.isOnline()){
-                plugin.showError((Player)player,"登録されていない");
-            }
-            return false;
-        }
-
-        long total = amount;
-        ItemStorage store = getItemStorage(uuid,item_id);
-        if(store.item_key == null){
-            this.insertItemStorage(uuid,item_id,total);
-        }else{
-            total += store.amount;
-            this.updateItemStorage(uuid,item_id,total);
-            //this.addItem(uuid,item_id,amount);
-        }
-
-        if(player.isOnline()){
-            Player online = (Player)player;
-            plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクに追加されました => "+total+"個");
-//            plugin.showMessage(online,"現在トータル:" +total+"個");
-        }
-
-
-        data.logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
-
-        return true;
-    }
-        */
-
-    /*
-    ////////////////////////////////////////////
-    ///         アイテムバンクからアイテムを引き出す
-    public boolean removeItemFromStorage(String uuid,int item_id,int amount){
-
-
-        OfflinePlayer player= Bukkit.getOfflinePlayer(UUID.fromString(uuid));
-
-        MarketData.ItemIndex result =  data.getItemPrice(String.valueOf(item_id));
-        if(result == null){
-            if(player.isOnline()){
-                plugin.showError((Player)player,"登録されていない");
-            }
-            return false;
-        }
-
-
-        ItemStorage store = getItemStorage(uuid,item_id);
-
-
-
-        if(store.item_key == null){
-            return false;
-        }
-
-
-        if(this.reduceItem(uuid,item_id,amount)){
-
-            if(player.isOnline()){
-                Player online = (Player)player;
-                plugin.showMessage(online,"アイテム:" + result.key +"が"+ amount+"個アイテムバンクからひきだされました ");
-            }
-            data.logTransaction(uuid,"ReceivedItem",result.key,result.price,0,0,"");
-            return true;
-        }
-
-        //      引き出し失敗
-        if(player.isOnline()){
-            Player online = (Player)player;
-            plugin.showError(online,"アイテムの引き出しに失敗しました！"+result.key +":"+ amount+"個");
-        }
-
-        return false;
-    }
-
-*/
 
 
 }

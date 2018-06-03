@@ -49,14 +49,14 @@ public class MySQLManager {
     //       設定ファイル読み込み
     /////////////////////////////////
     public void loadConfig(){
-        plugin.getLogger().info("MYSQL Config loading");
+     //   plugin.getLogger().info("MYSQL Config loading");
         plugin.reloadConfig();
         HOST = plugin.getConfig().getString("mysql.host");
         USER = plugin.getConfig().getString("mysql.user");
         PASS = plugin.getConfig().getString("mysql.pass");
         PORT = plugin.getConfig().getString("mysql.port");
         DB = plugin.getConfig().getString("mysql.db");
-        plugin.getLogger().info("Config loaded");
+      //  plugin.getLogger().info("Config loaded");
 
     }
 

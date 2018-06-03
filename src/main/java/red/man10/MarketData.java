@@ -35,15 +35,18 @@ public class MarketData {
 
     ItemBank itemBank = null;
     UserData userData = null;
+    MarketHistory history = new MarketHistory();
+    MarketNews news = new MarketNews();
+
 
     public MarketData(MarketPlugin plugin) {
         this.plugin = plugin;
+
+
         this.mysql = new MySQLManager(plugin,"Market");
         this.itemBank = new ItemBank();
-
-        itemBank.data = this;
         itemBank.plugin = plugin;
-
+        itemBank.data = this;
 
         this.history.data = this;
         this.history.plugin = plugin;
@@ -51,16 +54,23 @@ public class MarketData {
         this.news.data = this;
         this.news.plugin = plugin;
 
-
         this.userData = new UserData(plugin);
         this.userData.data = this;
 
-        MarketChart.data = this;
-
     }
 
-    MarketHistory history = new MarketHistory();
-    MarketNews news = new MarketNews();
+    public void close(){
+
+        this.mysql.close();
+        this.mysql = null;
+        this.itemBank = null;
+        this.history = null;
+        this.news = null;
+        this.userData = null;
+    }
+
+
+
 
     class ItemIndex{
         int id;
@@ -626,10 +636,11 @@ public class MarketData {
 
         history.update(current.id,current.price,year,month,day,hour,minute);
 
+        /*
         //Mr_IK 追加、Signにデータを通す
         plugin.sign.updateSign(current.key,price);
         plugin.sign.updateSign(String.valueOf(current.id),price);
-
+*/
         plugin.updateMapList(current.id,current.key,"$"+getPriceString(current.price));
 
         Bukkit.getLogger().info("現在値更新中:"+item_id + " price:"+current.price);
@@ -1740,22 +1751,7 @@ public class MarketData {
             p.spigot().sendMessage(nextLink);
         }
 
-/*
-        if(prevLink == null && nextLink!= null){
 
-            pageLink = new ComponentBuilder(br + pageText).append(nextLink).append(br).create();
-        }
-
-        if(prevLink != null && nextLink!= null){
-            pageLink = new ComponentBuilder(br).append(prevLink).append(pageText). append(nextLink).append(br).create();
-
-        }
-        if(prevLink != null && nextLink==null){
-            pageLink = new ComponentBuilder(br).append(prevLink).append(pageText).append(br).create();
-
-        }
-        */
-     //   p.spigot().sendMessage(pageLink);
 
 
         p.sendMessage(" §f§lあなたの所持金:"+getBalanceString(uuid) + " §6§lアイテム評価額:$"+getPriceString(totalEstimated));
@@ -1771,13 +1767,7 @@ public class MarketData {
 
         Utility.sendHoverText(p, " 過去の注文を参照する => §9§n[注文履歴]","注文の履歴を表示します /mce log","/mce log");
 
-
-        //      ユーザーデータがあるか
-        UserData ud = new UserData(this.plugin);
-        ud.data = this.plugin.data;
-        if(ud != null){
-            ud.showEarnings(p,p.getUniqueId().toString());
-        }
+        userData.showEarnings(p,p.getUniqueId().toString());
 
 
         return true;

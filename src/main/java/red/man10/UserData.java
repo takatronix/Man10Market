@@ -20,7 +20,6 @@ public class UserData {
 
     UserData(MarketPlugin plugin){
         this.plugin = plugin;
-        this.data = plugin.data;
     }
 
     class UserAssetsHistory{
@@ -46,6 +45,7 @@ public class UserData {
     //     get user information
     ////////////////////////////////////////////
     UserInformation getUserInformation(String uuid){
+
 
         String sql = "select * from user_index where uuid='"+uuid+"';";
         ResultSet rs = data.mysql.query(sql);
@@ -110,7 +110,7 @@ public class UserData {
         }
 
         if(ui.balance < money){
-            plugin.data.showError(uuid,"残額より多くはひきだせない");
+            data.showError(uuid,"残額より多くはひきだせない");
             return false;
         }
 
@@ -120,9 +120,9 @@ public class UserData {
 
         if(ret){
             this.plugin.vault.deposit(UUID.fromString(uuid),money);
-            plugin.data.showMessage(uuid,Utility.getColoredPriceString(money)+"§f§l口座に追加されました");
+            data.showMessage(uuid,Utility.getColoredPriceString(money)+"§f§l口座に追加されました");
         }else{
-            plugin.data.showError(uuid,"口座からの引き出しに失敗した");
+            data.showError(uuid,"口座からの引き出しに失敗した");
 
         }
 
@@ -243,11 +243,6 @@ public class UserData {
             return 0;
         }
         String uuid = p.getUniqueId().toString();
-
-
-
-
-
 
 
         //

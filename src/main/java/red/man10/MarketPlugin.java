@@ -33,6 +33,7 @@ import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
@@ -50,34 +51,32 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     String  prefix = "§8§l[§4§lm§2§lMarket§8§l]";
 
-
-    ItemBank itemBank = new ItemBank();
-    MarketData data = null;
     MarketVault vault = null;
-    MarketSignEvent sign = null;
 
-    UserData userData = null;
 
     public double buyLimitRatio = 10;
     public double sellLimitRatio = 10;
-
     public boolean isMarketOpen = false;
 
 
 
     public void updateCurrentPriceListOnBackground(Player p){
 
-        new BukkitRunnable() {
 
-            @Override
-            public void run() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+
                 p.sendMessage("現在値更新中");
+                MarketData data = new MarketData(this);
                 data.updatePriceAll();
                 p.sendMessage("現在値更新終了");
 
-            }
 
-        }.runTaskLater(this, 20);
+            } catch (Exception e) {
+                Bukkit.getLogger().info(e.getMessage());
+                System.out.println(e.getMessage());
+            }
+        });
     }
 
 
@@ -95,6 +94,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //      成り行きアイテム購入
     public boolean itemBuy(Player p, String target, int amount){
 
+        MarketData data = new MarketData(this);
 
         if(!checkPermission(p,Settings.itemBuyPermission)){
             return false;
@@ -138,20 +138,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         //      アイテムを減らせた
-        if(itemBank.reduceItem(uuid,item.id,ret) == false){
+        if(data.itemBank.reduceItem(uuid,item.id,ret) == false){
             opLog(p.getName()+"のアイテムを減らすことに失敗した");
             return false;
         }
 
-
-/*
-
-        ItemBank.ItemStorage storage = itemBank.getItemStorage(uuid,item.id);
-
-        long newAmount = storage.amount - ret;
-        itemBank.updateItemStorage(uuid,item.id,newAmount);
-
-*/
         ItemStack itemStack = MarketData.itemFromBase64(item.base64);
         if(itemStack == null){
             showError(p,"アイテム生成に失敗");
@@ -227,6 +218,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             return false;
         }
 
+        MarketData data = new MarketData(this);
+
         MarketData.ItemIndex itemIndex = data.getItemPrice(target);
         if(itemIndex == null){
             showError(p,"対象アイテムが見つからない");
@@ -266,7 +259,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         String uuid = p.getUniqueId().toString();
         //this.itemBank.sendItemToStorage(uuid,itemIndex.id,amount);
 
-        if(itemBank.addItem(uuid,itemIndex.id,amount) == false){
+        if(data.itemBank.addItem(uuid,itemIndex.id,amount) == false){
 
             showError(p,"アイテムバンクへの登録に失敗しました");
             opLog(p.getName()+"のItemSell時のアイテムバンク登録失敗");
@@ -298,6 +291,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //      成り行き購入
     public boolean marketBuy(Player p, String target, int amount){
 
+
+        MarketData data = new MarketData(this);
+
         if (checkMarketClosed(p)) {
             return false;
         }
@@ -322,6 +318,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     ///////////////////////////////
     //      成り行き売り
     public boolean marketSell(Player p, String target, int amount){
+
+
+        MarketData data = new MarketData(this);
 
         if (checkMarketClosed(p)) {
             return false;
@@ -350,6 +349,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public boolean cancelAll(Player p,String playerName) {
 
         ArrayList<MarketData.OrderInfo> orders = null;
+        MarketData data = new MarketData(this);
 
         String uuid = null;
         if(playerName == null){
@@ -369,6 +369,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
     //  注文キャンセル
     public boolean updatePrice(Player p,String idOrKey) {
+
+        MarketData data = new MarketData(this);
+
         MarketData.ItemIndex item = data.getItemPrice(idOrKey);
         if(item == null){
             showError(p,"そのアイテムはみつからない");
@@ -421,6 +424,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             return false;
         }
 
+        MarketData data = new MarketData(this);
+
         MarketData.OrderInfo order = data.getOrderByOrderId(orderNo);
         if(order == null){
             showError(p,"そのIDはみつからない");
@@ -456,44 +461,43 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     //  注文表示
     public boolean showOrder(Player p,String target){
+        MarketData data = new MarketData(this);
 
 
         //  引数なし->自分の注文
         if(target == null){
-            return showOrderOfUser(p,p.getUniqueId().toString());
+            return showOrderOfUser(data,p,p.getUniqueId().toString());
         }
-
-
         //
         MarketData.ItemIndex pr = data.getItemPrice(target);
         if(pr != null){
             if(pr.key != null){
-                return showOrderOfItem(p,pr.id);
+                return showOrderOfItem(data,p,pr.id);
             }
         }
 
         Player player = Bukkit.getPlayer(target);
         if(player == null) {
-            return showOrderOfUserName(p,target);
+            return showOrderOfUserName(data,p,target);
         }
         if(player != null){
-            return showOrderOfUser(p,player.getUniqueId().toString());
+            return showOrderOfUser(data,p,player.getUniqueId().toString());
         }
         return false;
     }
 
-    public boolean showOrderOfUser(Player p,String uuid){
+    public boolean showOrderOfUser(MarketData data,Player p,String uuid){
         ArrayList<MarketData.OrderInfo> orders = data.getOrderOfUser(p,uuid);
         showOrders(p,orders);
         return true;
     }
 
-    public boolean showOrderOfUserName(Player p,String name){
+    public boolean showOrderOfUserName(MarketData data,Player p,String name){
         ArrayList<MarketData.OrderInfo> orders = data.getOrderOfPlayerName(p,name);
         showOrders(p,orders);
         return true;
     }
-    public boolean showOrderOfItem(Player p,int item_id){
+    public boolean showOrderOfItem(MarketData data,Player p,int item_id){
         ArrayList<MarketData.OrderInfo> orders = data.getOrderOfItem(p,item_id);
         showOrders(p,orders);
         return true;
@@ -509,6 +513,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     public boolean showOrders(Player p, ArrayList<MarketData.OrderInfo> orders){
 
+        MarketData data = new MarketData(this);
 
         sendClickableMessage(p,"xxx","http://man10.red");
         p.sendMessage("§d§l---------[注文リスト]-----------");
@@ -529,16 +534,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
             Utility.sendHoverText(p, order,"クリックすると注文がキャンセルされます","/mce cancel "+o.id);
 
-
-/*
-            //  クリックキャンセルイベント
-            ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mce cancel "+o.id);
-            HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(order + "§f§lをキャンセルします").create());
-
-            BaseComponent[] cancel = new ComponentBuilder("§f§l§n[CANCEL]").event(hoverEvent).event(clickEvent). create();
-            BaseComponent[] orderText = new ComponentBuilder( order).append(cancel).create();
-            p.spigot().sendMessage(orderText);
-*/
             count++;
         }
         if(count == 0){
@@ -549,30 +544,14 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             Utility.sendHoverText(p, "         §c§n[全ての注文をキャンセル/Cancel All]","クリックすると全ての注文がキャンセルされます","/mce cancelall");
         }
         showMainMenuLink(p);
-/*
-        //////////////////////////////////////////
-        //      ホバーテキストとイベントを作成する
-        HoverEvent hoverEvent = null;
-        if(hoverText != null){
-            BaseComponent[] hover = new ComponentBuilder(hoverText).create();
-            hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover);
-        }
+        data.close();
 
-        //////////////////////////////////////////
-        //   クリックイベントを作成する
-        ClickEvent clickEvent = null;
-        if(command != null){
-            clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND,command);
-        }
-
-        BaseComponent[] message = new ComponentBuilder(text).event(hoverEvent).event(clickEvent). create();
-        p.spigot().sendMessage(message);
-*/
         return true;
     }
     ///////////////////////////////
     //         板情報を表示する
     public boolean showOrderBook(Player p,int item_id,int limit){
+        MarketData data = new MarketData(this);
 
         MarketData.ItemIndex item = data.getItemPrice(String.valueOf(item_id));
         String uuid = p.getUniqueId().toString();
@@ -612,6 +591,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         if(buyList.size() == 0){
             p.sendMessage("§9買い注文がありません");
         }
+        data.close();
 
         return true;
     }
@@ -622,6 +602,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         if (checkMarketClosed(p)) {
             return false;
         }
+        MarketData data = new MarketData(this);
 
         if(data.orderBuy(p,idOrKey,price,amount)){
             showMessage(p,"買い注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
@@ -637,6 +618,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     //      アイテムの値段を表示
     public boolean showPrice(Player p,String idOrKey){
 
+
+        MarketData data = new MarketData(this);
         MarketData.ItemIndex item = null;
 
         //  IDが指定されてないければ手持ちのアイテム
@@ -660,16 +643,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         //      板表示
         showOrderBook(p,item.id,-1);
-       // showMessage(p,"-----------------");
-        //showMessage(p,"現在価格:$" + data.getPriceString(item.price) +"/個 $"+  data.getPriceString(st)+"/1Stack");
-        //showMessage(p,"§c§l売り注文数(Sell):"+item.sell +"/§9§l買い注文数(Buy):"+item.buy);
-
-
-
 
         long itemCount = 0;
         double itemPrice = 0;
-        ItemBank.ItemStorage storage = itemBank.getItemStorage(p.getUniqueId().toString(),item.id);
+        ItemBank.ItemStorage storage = data.itemBank.getItemStorage(p.getUniqueId().toString(),item.id);
         if(storage != null){
             itemCount = storage.amount;
             itemPrice = itemCount * item.price;
@@ -698,6 +675,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
         showMainMenuLink(p);
+        data.close();
 
         return true;
     }
@@ -709,12 +687,15 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             return false;
         }
 
+        MarketData data = new MarketData(this);
 
         if(data.orderSell(p,idOrKey,price,amount)){
             showMessage(p,"売り注文成功 $"+ data.getPriceString(price) + "/"+amount+"個" );
+            data.close();
             return true;
         }
         showError(p,"売り注文失敗");
+        data.close();
 
         return false;
     }
@@ -739,6 +720,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
         }
 
+
+        MarketData data = new MarketData(this);
         MarketData.ItemIndex result =  data.getItemPrice(p,item);
         if(result.result == false){
             showError(p,"このアイテムは登録対象外です");
@@ -747,9 +730,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         String uuid = p.getUniqueId().toString();
 
-        ItemBank.ItemStorage store = itemBank.getItemStorage(uuid,result.id);
+        ItemBank.ItemStorage store = data.itemBank.getItemStorage(uuid,result.id);
      //   this.itemBank.sendItemToStorage(uuid,result.id,amount);
-        if(itemBank.addItem(uuid,result.id,amount) == false){
+        if(data.itemBank.addItem(uuid,result.id,amount) == false){
             showError(p,"アイテムバンクへの登録に失敗しました");
             return false;
         }
@@ -759,7 +742,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         int from = item.getAmount();
         item.setAmount(from - amount);
 
-
+        data.close();
         return true;
     }
 
@@ -767,11 +750,12 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     public boolean withdrawAll(Player p){
 
+        MarketData data = new MarketData(this);
 
-        UserData.UserInformation ui = userData.getUserInformation(p.getUniqueId().toString());
+        UserData.UserInformation ui = data.userData.getUserInformation(p.getUniqueId().toString());
 
 
-        return userData.withdraw(p.getUniqueId().toString(),ui.balance);
+        return data.userData.withdraw(p.getUniqueId().toString(),ui.balance);
 
 
     }
@@ -807,6 +791,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public boolean showLog(Player p,String target,int offset) {
 
         p.sendMessage("§9§l-----------[注文履歴]-------------");
+        MarketData data = new MarketData(this);
 
         String uuidTarget = p.getUniqueId().toString();
         if (target != null) {
@@ -818,32 +803,15 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         boolean ret = data.showTransaction(p, uuidTarget, offset);
 
         showMainMenuLink(p);
+        data.close();
         return ret;
 
     }
     //  アイテムリスト表示
     public void showMenu(Player p,int pageNo){
-
+        MarketData data = new MarketData(this);
         data.showItemList(p,pageNo);
-
-    }
-    public void showItemBank(Player p){
-
-/*
-        //////////////////////////////////////////
-        //   クリックイベントを作成する
-
-        ClickEvent clickStore = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mib store");
-        BaseComponent[] storeLink = new ComponentBuilder("§2§l§n[アイテムを預ける]").event(clickStore).create();
-
-
-        ClickEvent clickTake = new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/mib take");
-        BaseComponent[] takLink = new ComponentBuilder("§4§l§n[アイテムを引き出す]").event(clickTake).create();
-
-        String br = "    ";
-        BaseComponent[] pageLink = new ComponentBuilder(br).append(storeLink).append("   §f§l/   ").append(takLink).append("").create();
-        p.spigot().sendMessage(pageLink);
-*/
+        data.close();
     }
 
     // アイテム登録
@@ -856,6 +824,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             return;
         }
 
+        MarketData data = new MarketData(this);
 
         if(data.registerItem(p,item,key,price,tick)){
            showMessage(p,"マーケットにアイテムを登録しました");
@@ -872,24 +841,20 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         serverMessage("§bMan10 Central Exchange loading....");
 
 
-
-
+/*
+        MarketData data = new MarketData(this);
 
 
         if(data == null){
             serverMessage("§cDatabase Error");
             return;
         }
+*/
 
-        itemBank = new ItemBank();
-        itemBank.data = data;
-        itemBank.plugin = this;
-        data.itemBank = itemBank;
+        Bukkit.getLogger().info("init item bank");
 
 
-
-
-                this.isMarketOpen =  getConfig().getBoolean("marketOpen",false);
+        this.isMarketOpen =  getConfig().getBoolean("marketOpen",false);
 
         if(isMarketOpen){
             serverMessage("§e§lMan10中央取引所オープンしました！ /MCE");
@@ -897,6 +862,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             serverMessage("§e§lMan10中央取引所クローズ中です");
         }
 
+        Bukkit.getLogger().info("load config done");
     }
 
 
@@ -935,52 +901,59 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+
+
+        Bukkit.getLogger().info("setup maps");
+
         ////////////////////////////////
         //      マップレンダラ初期化
         MappRenderer.setup(this);
+        Bukkit.getLogger().info("setup maps done !");
 
 
         // Plugin startup logic
         getServer().getPluginManager().registerEvents (this,this);
         getCommand("mce").setExecutor(new MarketCommand(this));
 
+        Bukkit.getLogger().info("MarketCommand");
+
+
         getCommand("balance").setExecutor(new BalanceCommand(this));
         getCommand("bal").setExecutor(new BalanceCommand(this));
         getCommand("mbal").setExecutor(new BalanceCommand(this));
 
+        Bukkit.getLogger().info("BalanceCommand");
 
         vault = new MarketVault(this);
-        data = new MarketData(this);
+        //MarketData data = new MarketData(this);
+        Bukkit.getLogger().info("Vault完了");
 
         this.saveDefaultConfig();
         this.loadConfig();
+        Bukkit.getLogger().info("config loaded -> register funcs");
+
+
+/*
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+
+                //      マップ関用関数登録
+                MarketChart.plugin = this;
+                MarketChart.registerFuncs();
+
+            } catch (Exception e) {
+                Bukkit.getLogger().info(e.getMessage());
+                System.out.println(e.getMessage());
+            }
+        });
+*/
 
         //      マップ関用関数登録
-        MarketChart.registerFuncs();
         MarketChart.plugin = this;
-
+        MarketChart.registerFuncs();
 
         Bukkit.getServer().broadcastMessage(prefix+"Started");
 
-        Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
-            @Override
-            public void run() {
-
-                //  すべての値段を更新
-                data.updatePriceAll();
-
-                //      グローバルニュース
-                data.news.broadCastNews();;
-
-            }
-            //  １時間
-        }, 0, 20*60*60);
-
-
-        userData = new UserData(this);
-        userData.data = this.data;
-
-        sign = new MarketSignEvent(this);
     }
 
     @Override
@@ -988,38 +961,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         // Plugin shutdown logic
     }
 
-    @EventHandler
-    public void onSigncreate(SignChangeEvent e){
-        if(e.getLine(0).equalsIgnoreCase("[Man10market]")){
-            if(!e.getPlayer().hasPermission("red.man10.market.sign.create")){
-                e.getPlayer().sendMessage(prefix + "§4あなたにマーケット看板を作成する権限はありません!");
-                e.getBlock().breakNaturally();
-                return;
-            }
-            sign.Signcreate(e.getPlayer(),e.getBlock().getLocation(),e.getLine(1));
-            e.setLine(0,prefix);
-            String line3 = e.getLine(3);
-            if (line3.equalsIgnoreCase("[買う]")) {
-                e.setLine(3,"§2§l[買う]");
-            }else if (line3.equalsIgnoreCase("[売る]")) {
-                e.setLine(3,"§4§l[売る]");
-            }else if (line3.equalsIgnoreCase("[現在値]")) {
-                e.setLine(3,"§6§l[現在値]");
-            }else if (line3.equalsIgnoreCase("[buy]")) {
-                e.setLine(3,"§2§l[buy]");
-            }else if (line3.equalsIgnoreCase("[sell]")) {
-                e.setLine(3,"§4§l[sell]");
-            }else if (line3.equalsIgnoreCase("[price]")) {
-                e.setLine(3,"§6§l[price]");
-            }else if (line3.equalsIgnoreCase("[menu]")) {
-            e.setLine(3,"§1§l[menu]");
-             }
-            else if (line3.equalsIgnoreCase("[メニュー]")) {
-                e.setLine(3,"§1§l[メニュー]");
-            }
-
-        }
-    }
 
     @EventHandler
     public void onItemInteract(PlayerInteractEntityEvent event){
@@ -1079,6 +1020,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         }
     }
 
+    /*
     @EventHandler
     public void onBreak(BlockBreakEvent e) {
         Player p = e.getPlayer();
@@ -1095,55 +1037,60 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             }
         }
     }
-
+*/
 
 
     //
-    @EventHandler void onPlayerJoin(PlayerJoinEvent e){
+    @EventHandler void onPlayerJoin(PlayerJoinEvent event){
 
 
-        Player p = e.getPlayer();
+        Player p = event.getPlayer();
         Bukkit.getLogger().info(p.getName()+" onPlayerJoin");
 
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Bukkit.getLogger().info(p.getName()+"updating history");
 
-                userData.updateUserAssetsHistory(p);
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+
+                MarketData data = new MarketData(this);
+
+                data.userData.updateUserAssetsHistory(p);
 
 
                 String uuid = p.getUniqueId().toString();
-                UserData.UserInformation ui = userData.getUserInformation(uuid);
+                UserData.UserInformation ui = data.userData.getUserInformation(uuid);
                 if(ui == null){
                     Bukkit.getLogger().info(p.getName()+"のUserデータを作成中");
-                    userData.insertUserInformation(uuid);
+                    data.userData.insertUserInformation(uuid);
                 }
 
                 p.chat("/bal");
 
 
+            } catch (Exception e) {
+                Bukkit.getLogger().info(e.getMessage());
+                System.out.println(e.getMessage());
             }
-
-        }.runTaskLater(this, 1);
+        });
 
 
     }
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent e){
+    public void onPlayerQuit(PlayerQuitEvent event){
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
+        Player p = event.getPlayer();
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
 
-                Player p = e.getPlayer();
-                userData.updateUserAssetsHistory(p);
+                MarketData data = new MarketData(this);
+
+                data.userData.updateUserAssetsHistory(p);
 
 
-
+            } catch (Exception e) {
+                Bukkit.getLogger().info(e.getMessage());
+                System.out.println(e.getMessage());
             }
-        }.runTaskLater(this, 1);
-
+        });
     }
 }
