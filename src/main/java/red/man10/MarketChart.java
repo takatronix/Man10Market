@@ -287,8 +287,18 @@ public class MarketChart {
 
             int no = items.get(n).id;
 
+
+            //          マップ描写
             MappRenderer.draw( "price:"+no,0,(String key,int mapId,Graphics2D g) -> {
                 drawPrice(data,g,getId(key));
+                return true;
+            });
+            MappRenderer.draw( "buy:"+no,0,(String key,int mapId,Graphics2D g) -> {
+                drawBuy(data,g,getId(key));
+                return true;
+            });
+            MappRenderer.draw( "sell:"+no,0,(String key,int mapId,Graphics2D g) -> {
+                drawSell(data,g,getId(key));
                 return true;
             });
 
@@ -296,11 +306,6 @@ public class MarketChart {
                 String[] item = key.split(":");
                 player.chat("/mce price "+item[1]);
                 return false;
-            });
-
-            MappRenderer.draw( "buy:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                drawBuy(data,g,getId(key));
-                return true;
             });
 
             MappRenderer.displayTouchEvent("buy:"+no,(String key,int mapId,Player player, int x,int y) ->{
@@ -333,10 +338,7 @@ public class MarketChart {
                 return false;
             });
 
-            MappRenderer.draw( "sell:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                drawSell(data,g,getId(key));
-                return false;
-            });
+
 
             MappRenderer.displayTouchEvent("sell:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
@@ -370,154 +372,6 @@ public class MarketChart {
     }
 
 
-
-    public static void registerFuncsDefault(){
-
-
-        createBalanceApp();
-
-
-      //  registerPriceMap();
-
-
-
-
-
-        MarketData dataIndex = new MarketData(plugin);
-        ArrayList<MarketData.ItemIndex> items = dataIndex.getItemIndexList("select * from item_index order by id;");
-        dataIndex.close();
-
-        int     itemmax = items.size();
-
-
-
-
-
-
-
-        //
-        for (int n = 0;n < itemmax;n++){
-
-            int no = items.get(n).id;
-
-            Bukkit.getLogger().info("id:"+no+"登録");
-            MappRenderer.draw( "price:"+no,0,(String key,int mapId,Graphics2D g) -> {
-
-
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-                        MarketData data = new MarketData(plugin);
-                        drawPrice(data,g,getId(key));
-                        data.close();
-                    } catch (Exception e) {
-                        Bukkit.getLogger().info(e.getMessage());
-                        System.out.println(e.getMessage());
-                    }
-                });
-
-
-                return true;
-//                return drawPrice(g,getId(key));
-            });
-
-            MappRenderer.displayTouchEvent("price:"+no,(String key,int mapId,Player player, int x,int y) ->{
-                String[] item = key.split(":");
-                player.chat("/mce price "+item[1]);
-                return false;
-            });
-
-
-            MappRenderer.draw( "buy:"+no,0,(String key,int mapId,Graphics2D g) -> {
-
-
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-
-                        MarketData data = new MarketData(plugin);
-                        drawBuy(data,g,getId(key));
-                        data.close();
-
-                    } catch (Exception e) {
-                        Bukkit.getLogger().info(e.getMessage());
-                        System.out.println(e.getMessage());
-                    }
-                });
-
-
-//                return drawBuy(g,getId(key));
-                return true;
-
-            });
-
-            MappRenderer.displayTouchEvent("buy:"+no,(String key,int mapId,Player player, int x,int y) ->{
-                String[] item = key.split(":");
-                int item_id = Integer.parseInt(item[1]);
-
-
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-
-                        MarketData data = new MarketData(plugin);
-                        MarketData.ItemIndex index = data.getItemPrice(item_id);
-                        plugin.itemBuy(player,""+item_id , index.lot);
-                        data.close();
-                    } catch (Exception e) {
-                        Bukkit.getLogger().info(e.getMessage());
-                        System.out.println(e.getMessage());
-                    }
-                });
-
-
-
-                return false;
-            });
-
-            MappRenderer.draw( "sell:"+no,0,(String key,int mapId,Graphics2D g) -> {
-
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-
-                        MarketData data = new MarketData(plugin);
-                        drawSell(data,g,getId(key));
-                        data.close();
-
-                    } catch (Exception e) {
-                        Bukkit.getLogger().info(e.getMessage());
-                        System.out.println(e.getMessage());
-                    }
-                });
-
-                return true;
-
-
-         ///       return drawSell(g,getId(key));
-            });
-
-            MappRenderer.displayTouchEvent("sell:"+no,(String key,int mapId,Player player, int x,int y) ->{
-                String[] item = key.split(":");
-                int item_id = Integer.parseInt(item[1]);
-
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-
-                        MarketData data = new MarketData(plugin);
-                        MarketData.ItemIndex index = data.getItemPrice(item_id);
-                        data.close();
-
-                        plugin.itemSell(player,""+item_id , index.lot);
-
-                    } catch (Exception e) {
-                        Bukkit.getLogger().info(e.getMessage());
-                        System.out.println(e.getMessage());
-                    }
-                });
-
-                return false;
-            });
-
-        }
-
-    }
 
 
 
@@ -712,8 +566,7 @@ public class MarketChart {
     //      現在値を表示
     static boolean drawSell(MarketData data,Graphics2D g,int id){
 
-
-        //      高速化・キャッシュにあればそれを参照/mc
+        //      高速化・キャッシュにあればそれを参照
         MarketData.ItemIndex item = MarketPlugin.priceMap.get(id);
         if(item == null){
             item = data.getItemPrice(id);
@@ -722,6 +575,7 @@ public class MarketChart {
         if(item == null){
             return false;
         }
+
 
         //      背景を黒に
         g.setColor(Color.black);
