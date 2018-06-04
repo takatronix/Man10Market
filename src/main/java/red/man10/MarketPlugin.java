@@ -178,6 +178,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         {
             if ((item != null) && item.getType() == itemCheck.getType() && (item.getAmount() > 0))
             {
+                if(item.getDurability() != itemCheck.getDurability()){
+                    Bukkit.getLogger().info("getDurability error");
+                    continue;
+                }
 
                 //      item meta がある
                 if(itemCheck.getItemMeta() != null){
