@@ -38,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,6 +49,9 @@ import static red.man10.MarketCommand.checkPermission;
 public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
+
+    //      価格帯マップ
+    static public  HashMap<Integer,MarketData.ItemIndex> priceMap = new HashMap<>();
 
     String  prefix = "§8§l[§4§lm§2§lMarket§8§l]";
 

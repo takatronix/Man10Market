@@ -306,8 +306,30 @@ public class MarketChart {
             MappRenderer.displayTouchEvent("buy:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
                 int item_id = Integer.parseInt(item[1]);
-                MarketData.ItemIndex index = data.getItemPrice(item_id);
-                plugin.itemBuy(player,""+item_id , index.lot);
+
+
+                //      高速化・キャッシュにあればそれを参照
+                MarketData.ItemIndex index = MarketPlugin.priceMap.get(item_id);
+                if(index == null){
+                    Bukkit.getLogger().info("item:"+item_id + " is null use db");
+                    index = data.getItemPrice(item_id);
+                }
+
+
+                int lot = index.lot;
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    try {
+                        plugin.itemBuy(player,""+item_id ,lot);
+
+                    } catch (Exception e) {
+                        Bukkit.getLogger().info(e.getMessage());
+                        System.out.println(e.getMessage());
+                    }
+                });
+
+
+            //    MarketData.ItemIndex index = data.getItemPrice(item_id);
+
                 return false;
             });
 
@@ -319,8 +341,28 @@ public class MarketChart {
             MappRenderer.displayTouchEvent("sell:"+no,(String key,int mapId,Player player, int x,int y) ->{
                 String[] item = key.split(":");
                 int item_id = Integer.parseInt(item[1]);
-                MarketData.ItemIndex index = data.getItemPrice(item_id);
-                plugin.itemSell(player,""+item_id , index.lot);
+//                MarketData.ItemIndex index = data.getItemPrice(item_id);
+
+
+                //      高速化・キャッシュにあればそれを参照
+                MarketData.ItemIndex index = MarketPlugin.priceMap.get(item_id);
+                if(index == null){
+                    Bukkit.getLogger().info("buy item:"+item_id + " is null use db");
+
+                    index = data.getItemPrice(item_id);
+                }
+
+                int lot = index.lot;
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    try {
+                        plugin.itemSell(player,""+item_id ,lot);
+
+                    } catch (Exception e) {
+                        Bukkit.getLogger().info(e.getMessage());
+                        System.out.println(e.getMessage());
+                    }
+                });
+
                 return false;
             });
         }
@@ -486,7 +528,14 @@ public class MarketChart {
 
     //      現在値を表示
     static boolean drawPrice(MarketData data,Graphics2D g,int id){
-        MarketData.ItemIndex item = data.getItemPrice(id);
+
+
+        //      高速化・キャッシュにあればそれを参照
+        MarketData.ItemIndex item = MarketPlugin.priceMap.get(id);
+        if(item == null){
+            item = data.getItemPrice(id);
+        }
+
         if(item == null){
             return false;
         }
@@ -512,11 +561,6 @@ public class MarketChart {
         g.setFont(new Font( "SansSerif", Font.BOLD ,titleSize ));
 
         MappDraw.drawShadowString(g,item.key,Color.WHITE,Color.BLACK,5,20);
-
- //       g.drawString(item.key,10,20);
-
-      // g.setFont(new Font( "SansSerif", Font.BOLD ,14 ));
-
 
 
         g.setFont(new Font( "SansSerif", Font.BOLD ,20 ));
@@ -611,7 +655,12 @@ public class MarketChart {
     static boolean drawBuy(MarketData data,Graphics2D g,int id){
 
 
-        MarketData.ItemIndex item = data.getItemPrice(id);
+        //      高速化・キャッシュにあればそれを参照
+        MarketData.ItemIndex item = MarketPlugin.priceMap.get(id);
+        if(item == null){
+            item = data.getItemPrice(id);
+        }
+
         if(item == null){
             return false;
         }
@@ -628,11 +677,6 @@ public class MarketChart {
         g.setColor(Color.WHITE);
         g.setFont(new Font( "SansSerif", Font.PLAIN ,14 ));
 
-      //  MappDraw.drawShadowString(g,item.key,Color.WHITE,Color.BLACK,10,20);
-
-        //       g.drawString(item.key,10,20);
-
-        // g.setFont(new Font( "SansSerif", Font.BOLD ,14 ));
 
 
         g.setColor(Color.GREEN);
@@ -669,7 +713,12 @@ public class MarketChart {
     static boolean drawSell(MarketData data,Graphics2D g,int id){
 
 
-        MarketData.ItemIndex item = data.getItemPrice(id);
+        //      高速化・キャッシュにあればそれを参照/mc
+        MarketData.ItemIndex item = MarketPlugin.priceMap.get(id);
+        if(item == null){
+            item = data.getItemPrice(id);
+        }
+
         if(item == null){
             return false;
         }

@@ -622,6 +622,16 @@ public class MarketData {
         boolean ret = this.mysql.execute(sql);
 
 
+        //    高速検索用インデックス
+        current.buy = buy;
+        current.sell = sell;
+        current.minPrice = min;
+        current.maxPrice = max;
+        current.bid = bid;
+        current.ask = ask;
+        MarketPlugin.priceMap.put(current.id,current);
+
+
 
 
         Calendar datetime = Calendar.getInstance();
