@@ -494,6 +494,8 @@ public class MappRenderer extends MapRenderer implements Listener {
 
 
             for (Entity en : entities) {
+
+
                 //     アイテムフレーム以外は無視
                 if (en instanceof ItemFrame != true) {
                     continue;
@@ -505,7 +507,13 @@ public class MappRenderer extends MapRenderer implements Listener {
                     continue;
                 }
 
-                //      DurabilityにいれてあるのがマップID
+                ///
+                Player p = e.getPlayer();
+                if(p == null){
+                    continue;
+                }
+
+                //    DurabilityにいれてあるのがマップID
                 int mapId = (int)item.getDurability();
                 String key = findKey(mapId);
                 if(key == null){
@@ -516,7 +524,7 @@ public class MappRenderer extends MapRenderer implements Listener {
                 //      ボタン用メソッドをコール
                 PlatePushFunction func = plateFunctions.get(key);
                 if(func != null){
-                    Bukkit.getLogger().info("プレートが踏まれた => map key = "+key);
+                    Bukkit.getLogger().info("プレートが踏まれた => map key = "+key+" player:"+e.getPlayer().getName() + "actio:・"+e.getAction());
                     if(func.onPlatePush(key,mapId,e.getPlayer())){
                         refresh(key);
                     }

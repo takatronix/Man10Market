@@ -200,15 +200,25 @@ public class MarketChart {
 
         MappRenderer.buttonEvent("balance", (String key, int mapId,Player player) -> {
 
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                try {
 
-            Graphics2D g = MappRenderer.getGraphics(mapId);
-            g.setColor(Color.black);
-            g.fillRect(0,0,127,127);
-            g.drawString("取得中",20,20);
+                    MarketData data = new MarketData(plugin);
+                    Graphics2D g = MappRenderer.getGraphics(mapId);
+                    g.fillRect(0,0,128,128);
+                    showBalance(data,g,player);
 
-            return  true;
+
+                } catch (Exception e) {
+                    Bukkit.getLogger().info(e.getMessage());
+                    System.out.println(e.getMessage());
+                }
+            });
+            return true;
         });
 
+
+        /*
     MappRenderer.plateEvent("balance", (String key, int mapId,Player player) -> {
 
 
@@ -231,7 +241,7 @@ public class MarketChart {
 
             return true;
         });
-
+*/
     }
 
 
