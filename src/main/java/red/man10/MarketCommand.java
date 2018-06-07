@@ -369,7 +369,7 @@ public class MarketCommand implements CommandExecutor {
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
-                    plugin.itemSell(p,args[1],Integer.parseInt(args[2]));
+                        plugin.itemSell(p,args[1],Integer.parseInt(args[2]));
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
                     System.out.println(e.getMessage());
@@ -499,7 +499,8 @@ public class MarketCommand implements CommandExecutor {
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
-                    cancelProc(p,args);
+                        cancelProc(p,args);
+
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
                     System.out.println(e.getMessage());
@@ -518,7 +519,8 @@ public class MarketCommand implements CommandExecutor {
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
-                    cancelAllProc(p,args);
+                        cancelAllProc(p,args);
+
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
                     System.out.println(e.getMessage());

@@ -96,7 +96,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     ///////////////////////////////
     //      成り行きアイテム購入
-    public boolean itemBuy(Player p, String target, int amount){
+    synchronized public boolean itemBuy(Player p, String target, int amount){
 
         MarketData data = new MarketData(this);
 
@@ -208,7 +208,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     ///////////////////////////////
     //     アイテム成り行き売り
-    public boolean itemSell(Player p, String target, int amount){
+    synchronized public boolean itemSell(Player p, String target, int amount){
 
 
         if(!checkPermission(p,Settings.itemSellPermission)){
@@ -297,7 +297,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     ///////////////////////////////
     //      成り行き購入
-    public boolean marketBuy(Player p, String target, int amount){
+    synchronized public boolean marketBuy(Player p, String target, int amount){
 
 
         MarketData data = new MarketData(this);
@@ -325,7 +325,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
     ///////////////////////////////
     //      成り行き売り
-    public boolean marketSell(Player p, String target, int amount){
+    synchronized public boolean marketSell(Player p, String target, int amount){
 
 
         MarketData data = new MarketData(this);
@@ -354,7 +354,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     //      すべての注文をキャンセルする
-    public boolean cancelAll(Player p,String playerName) {
+    synchronized public boolean cancelAll(Player p,String playerName) {
 
         ArrayList<MarketData.OrderInfo> orders = null;
         MarketData data = new MarketData(this);
@@ -413,7 +413,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
     //  注文キャンセル
-    public boolean cancelOrder(Player p,String target) {
+    synchronized public boolean cancelOrder(Player p,String target) {
 
 
 
@@ -605,7 +605,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
     ///  売り注文を出す
-    public boolean orderBuy(Player p,String idOrKey,double price,int amount){
+    synchronized public boolean orderBuy(Player p,String idOrKey,double price,int amount){
 
         if (checkMarketClosed(p)) {
             return false;
@@ -689,7 +689,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
     ///  売り注文を出す
-    public boolean orderSell(Player p,String idOrKey,double price,int amount){
+    synchronized public boolean orderSell(Player p,String idOrKey,double price,int amount){
 
         if (checkMarketClosed(p)) {
             return false;
