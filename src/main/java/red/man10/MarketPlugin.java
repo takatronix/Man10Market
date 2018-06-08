@@ -754,18 +754,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return true;
     }
 
-    //ArrayList<ChartMapRenderer> mapList = new ArrayList<ChartMapRenderer>();
 
-    public boolean withdrawAll(Player p){
-
+    synchronized public boolean withdrawAll(Player p){
         MarketData data = new MarketData(this);
-
         UserData.UserInformation ui = data.userData.getUserInformation(p.getUniqueId().toString());
-
-
         return data.userData.withdraw(p.getUniqueId().toString(),ui.balance);
-
-
     }
 
     public boolean giveMap(Player p,String target){
@@ -782,16 +775,12 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         return true;
     }
+
     public int updateMapList(int item_id,String name,String price){
-
-
-
         MappRenderer.refresh("price:"+item_id);
         MappRenderer.refresh("buy:"+item_id);
         MappRenderer.refresh("sell:"+item_id);
         MappRenderer.refresh("chart:"+item_id);
-
-
         return 0;
     }
 
