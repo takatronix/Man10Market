@@ -1259,7 +1259,7 @@ public class MarketData {
 
                 if(this.payMoney(uuid,o.item_id,o.price,amount) == false){
                     String playerName = player.getName();
-                    opLog(playerName+"のMarketBuyは金がたらないので注文キャンセルされた(1)");
+                    //opLog(playerName+"のMarketBuyは金がたらないので注文キャンセルされた(1)");
                     return totalAmount;
                 }
 
@@ -1291,7 +1291,7 @@ public class MarketData {
             else if(o.amount < amount){
 
                 if(payMoney(uuid,o.item_id,o.price,o.amount) == false) {
-                    opLog(player.getName()+"のMarketBuyは金がたらないので注文キャンセルされた(3)");
+                   // opLog(player.getName()+"のMarketBuyは金がたらないので注文キャンセルされた(3)");
                     return totalAmount;
                 }
 
@@ -1326,7 +1326,7 @@ public class MarketData {
 
                 // opLog("marketBuy=:"+o.player +":amount:"+o.amount +" price:"+o.price);
                 if (payMoney(uuid, item_id, o.price, amount) == false) {
-                    opLog(player.getName() + "のMarketBuyは金がたらないので注文キャンセルされた(5)");
+                   // opLog(player.getName() + "のMarketBuyは金がたらないので注文キャンセルされた(5)");
                     return totalAmount;
                 }
 
