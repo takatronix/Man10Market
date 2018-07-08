@@ -1,5 +1,10 @@
 package red.man10;
 
+import org.bukkit.Bukkit;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -160,10 +165,111 @@ public class MarketHistory {
         }
         return null;
     }
-    ArrayList<Candle> getHourCandles(int item_id){
-        String sql = "select * from history_hour where item_id =" + item_id +" order by id desc limit 128;";
+
+    boolean saveHourCSV(String path,int item_id,int n){
+
+        ArrayList<Candle> list = getHourCandles(item_id,n);
+
+
+    //    File dir = new File(path + item_id);
+     //   dir.mkdir();
+
+
+        String filePath =  path + item_id +"/hour.csv";
+
+
+        Bukkit.getLogger().info("file writing"+filePath);
+        try{
+            File file = new File(filePath);
+            FileWriter filewriter = new FileWriter(file);
+            filewriter.write("Date,Open,High,Low,Close,Volume\n");
+            for(Candle c : list){
+                String date = c.year + "/" +c.month + "/" + c.day+ " "+c.hour;
+                String line = date + ","+c.open + ","+c.high+","+c.low +","+c.close +","+c.volume +"\n";
+                filewriter.write(line);
+            }
+
+            filewriter.close();
+        }catch(IOException e){
+            System.out.println(e);
+            Bukkit.getLogger().info("error:"+e.getMessage());
+            return false;
+        }
+        Bukkit.getLogger().info("done:"+filePath);
+
+        return true;
+    }
+
+
+    boolean saveIndexCSV(String path, MarketData.ItemIndex current){
+
+
+        File dir = new File(path + current.id);
+        dir.mkdir();
+
+
+        String filePath =  path + current.id +"/index.csv";
+        Bukkit.getLogger().info("file writing"+filePath);
+        try{
+            File file = new File(filePath);
+            FileWriter filewriter = new FileWriter(file);
+
+            String line = current.key + "\t"+ Utility.getPriceString(current.price)+"\t"+"http://man10.red/mce/image/item"+current.id+".png";
+            filewriter.write(line);
+
+            filewriter.close();
+        }catch(IOException e){
+            System.out.println(e);
+            Bukkit.getLogger().info("error:"+e.getMessage());
+            return false;
+        }
+        Bukkit.getLogger().info("done:"+filePath);
+
+        return true;
+    }
+
+    boolean saveDayCSV(String path,int item_id,int n){
+
+        ArrayList<Candle> list = getDayCandles(item_id,n);
+
+
+     //  File dir = new File(path + item_id);
+     //   dir.mkdir();
+
+
+        String filePath =  path + item_id +"/day.csv";
+        Bukkit.getLogger().info("file writing"+filePath);
+        try{
+            File file = new File(filePath);
+            FileWriter filewriter = new FileWriter(file);
+            filewriter.write("Date,Open,High,Low,Close,Volume\n");
+            for(Candle c : list){
+                String date = String.format("%04d/%02d/%02d",c.year,c.month,c.day);
+                String line = date + ","+c.open + ","+c.high+","+c.low +","+c.close +","+c.volume +"\n";
+                filewriter.write(line);
+            }
+
+            filewriter.close();
+        }catch(IOException e){
+            System.out.println(e);
+            Bukkit.getLogger().info("error:"+e.getMessage());
+            return false;
+        }
+        Bukkit.getLogger().info("done:"+filePath);
+
+        return true;
+    }
+
+
+    ArrayList<Candle> getHourCandles(int item_id,int n){
+        String sql = "select * from history_hour where item_id =" + item_id +" order by id desc limit "+n+";";
         return getCandleList(sql);
     }
+    ArrayList<Candle> getDayCandles(int item_id,int n){
+        String sql = "select * from history_day where item_id =" + item_id +" order by id desc limit "+n+";";
+        return getCandleList(sql);
+    }
+
     //         キャンドルリストを得る
     ArrayList<Candle> getCandleList(String sql){
         ResultSet rs = data.mysql.query(sql);
@@ -187,6 +293,7 @@ public class MarketHistory {
                 candle.day = rs.getInt("day");
                 candle.hour = rs.getInt("hour");
                 candle.min = rs.getInt("min");
+                candle.volume = rs.getInt("volume");
                 ret.add(candle);
             }
             rs.close();

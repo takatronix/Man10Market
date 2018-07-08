@@ -61,6 +61,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public double buyLimitRatio = 10;
     public double sellLimitRatio = 10;
     public boolean isMarketOpen = false;
+    public String csvPath = null;
+
 
 
 
@@ -72,7 +74,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
                 p.sendMessage("現在値更新中");
                 MarketData data = new MarketData(this);
-                data.updatePriceAll();
+                data.updatePriceAll(p);
                 p.sendMessage("現在値更新終了");
 
 
@@ -375,7 +377,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         showMessage(p,""+ret+"件の注文をキャンセルしました");
         return true;
     }
-    //  注文キャンセル
+
+
+
     public boolean updatePrice(Player p,String idOrKey) {
 
         MarketData data = new MarketData(this);
@@ -681,6 +685,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         }
 
 
+        p.sendMessage("§bチャートを表示  => §n"+"http://man10.red/mce/"+item.id);
+
 
         showMainMenuLink(p);
         data.close();
@@ -850,7 +856,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         Bukkit.getLogger().info("init item bank");
 
-
+        this.csvPath = getConfig().getString("csvPath","");
         this.isMarketOpen =  getConfig().getBoolean("marketOpen",false);
 
         if(isMarketOpen){
@@ -866,7 +872,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
 
 
-    //      ログメッセージ
+    //      ログメッセージji
     void log(String text){
         getLogger().info(text);
     }

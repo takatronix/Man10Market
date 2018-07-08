@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -202,12 +203,18 @@ public class MarketData {
 
 
     //
-    public int updatePriceAll(){
+    public int updatePriceAll(Player p){
         ArrayList<ItemIndex> items = getItemIndexList("select * from item_index where disabled = 0 order by id;");
 
         int ret = 0;
         for(ItemIndex item: items){
+            p.sendMessage(item.key+"を更新中");
             updateCurrentPrice(item.id);
+
+
+
+
+
             ret++;
         }
 
@@ -629,6 +636,7 @@ public class MarketData {
         current.maxPrice = max;
         current.bid = bid;
         current.ask = ask;
+        current.price = price;
         MarketPlugin.priceMap.put(current.id,current);
 
 
@@ -655,8 +663,15 @@ public class MarketData {
 
         Bukkit.getLogger().info("現在値更新中:"+item_id + " price:"+current.price);
 
+
+
+        history.saveIndexCSV(plugin.csvPath,current);
+        history.saveHourCSV(plugin.csvPath,current.id,500);
+        history.saveDayCSV(plugin.csvPath,current.id,365);
+
         return ret;
     }
+
 
 
     //      オーダー更新
@@ -1831,6 +1846,23 @@ public class MarketData {
         mysql.close();
         */
        // return true;
+    }
+
+    public int updateChartData(){
+
+
+
+        ArrayList<ItemIndex> items = getItemIndexList("select * from item_index where disabled = 0 order by id;");
+
+        int ret = 0;
+        for(ItemIndex item: items){
+            updateCurrentPrice(item.id);
+            ret++;
+        }
+
+
+
+        return 0;
     }
 
 

@@ -128,6 +128,32 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
 
+
+
+        //      upate chartdata
+        if(command.equalsIgnoreCase("updatechart")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
+
+
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                try {
+                    MarketData data = new MarketData(plugin);
+                    data.updateChartData();
+
+                } catch (Exception e) {
+                    Bukkit.getLogger().info(e.getMessage());
+                    System.out.println(e.getMessage());
+                }
+            });
+
+            return true;
+        }
+
+
+
+
         if(command.equalsIgnoreCase("news")){
             if(!checkPermission(p,Settings.newsPermission)){
                 return false;

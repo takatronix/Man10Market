@@ -650,7 +650,7 @@ public class MarketChart {
         g.drawString("$"+data.getPriceString(item.price),10,50);
 
 
-        ArrayList<MarketHistory.Candle> candles = data.history.getHourCandles(id);
+        ArrayList<MarketHistory.Candle> candles = data.history.getHourCandles(id,128);
         double max = 0;
         double min = 999999999;
         for(MarketHistory.Candle candle: candles){
