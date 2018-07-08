@@ -368,7 +368,7 @@ public class MarketCommand implements CommandExecutor {
             }
 
             if(args.length != 3){
-                p.sendMessage("§2§l/mce marketsell [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                p.sendMessage("§2§l/mce marketsell [id/key] [個数] - 成り行き注文（買値の高い順に売る)");
                 return false;
             }
 
@@ -389,7 +389,7 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length != 3){
-                p.sendMessage("§2§l/mce sell [id/key] [個数] - アイテム成り行き売り（市場価格で購入)");
+                p.sendMessage("§2§l/mce sell [id/key] [個数] - アイテム成り行き売り（買値の高い順に売る)");
                 return false;
             }
 
@@ -436,7 +436,7 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length != 3){
-                p.sendMessage("§2§l/mce marketbuy [id/key] [個数] - 成り行き注文（市場価格で購入)");
+                p.sendMessage("§2§l/mce marketbuy [id/key] [個数] - 成り行き注文（売値の安い順に購入)");
                 return false;
             }
 
@@ -457,7 +457,7 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length != 3){
-                p.sendMessage("§2§l/mce buy [id/key] [個数] - アイテム注文（市場価格で購入)");
+                p.sendMessage("§2§l/mce buy [id/key] [個数] - アイテム注文（売値の安い順に購入)");
                 return false;
             }
 
