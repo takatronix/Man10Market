@@ -36,6 +36,7 @@ public class Settings {
     static String orderBuyPermission = "red.man10.market.orderbuy";
     static String orderSellPermission = "red.man10.market.ordersell";
 
+    static String itemPayPermission = "red.man10.market.itemPay";
 
     public static String closedMessage = "マーケットはクローズ中です。オープンするまでおまちください";
 }

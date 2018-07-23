@@ -27,6 +27,10 @@ public class PayItemCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         Player p = (Player) sender;
+        if (checkPermission(p, Settings.itemPayPermission)) {
+            p.sendMessage("§cYou don't have permission");
+            return false;
+        }
 
         if(args.length == 0) {
             p.sendMessage("§e==========[ItemPay]===========");
