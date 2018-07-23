@@ -177,5 +177,22 @@ public class ItemBank {
         return ret;
     }
 
+    public boolean setItem(String uuid,int item_id,long amount){
+        //      アイテムストレージになければ初期登録
+        ItemStorage store = getItemStorage(uuid,item_id);
+        if(store.item_key == null){
+            return this.insertItemStorage(uuid,item_id,amount);
+        }
+        // MarketData data = new MarketData(plugin);
+
+        //      追加
+        boolean ret = data.mysql.execute("update item_storage set amount = "+amount+" where uuid='"+uuid+"' and item_id="+item_id+";");
+        UpdateUserAsset(uuid);
+
+        data.showMessage(uuid,"§c§lアイテムバンクの"+store.item_key+"が"+Utility.getColoredItemString(amount)+"§c§lにセットされました");
+
+        return ret;
+    }
+
 
 }

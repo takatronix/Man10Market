@@ -582,6 +582,57 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
 
+        // 7/23 IK追加 アイテムバンクビュアー
+        if(command.equalsIgnoreCase("ibview")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
+            if(args.length == 2){
+                Player target = Bukkit.getPlayer(args[1]);
+                if(target == null){
+                    p.sendMessage("§4§lそのプレイヤーはオフライン");
+                    return false;
+                }
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.viewOtherMIB(p, target.getUniqueId(), target.getName()));
+                return true;
+            }else if(args.length == 3){
+                Player target = Bukkit.getPlayer(args[1]);
+                if(target == null){
+                    p.sendMessage("§4§lそのプレイヤーはオフライン");
+                    return false;
+                }
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.viewOtherMIB(p, target.getUniqueId(), args[2], target.getName()));
+                return true;
+            }
+            p.sendMessage("/mce ibview [player名] (id) 他人のmib情報を見る");
+            return false;
+        }
+
+        // 7/23 IK追加 アイテムバンクセッター
+        if(command.equalsIgnoreCase("ibedit")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
+            if(args.length == 4){
+                Player target = Bukkit.getPlayer(args[1]);
+                if(target == null){
+                    p.sendMessage("§4§lそのプレイヤーはオフライン");
+                    return false;
+                }
+                long amount;
+                try{
+                    amount = Long.parseLong(args[3]);
+                }catch (NumberFormatException e){
+                    p.sendMessage("§4§l個数が数字ではない");
+                    return false;
+                }
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.setOtherMIB(p, target.getUniqueId(), args[2], amount, target.getName()));
+                return true;
+            }
+            p.sendMessage("/mce ibedit [player名] [id/key] [個数] 他人のmibデータをセットする");
+            return false;
+        }
+
 
 
         return true;
@@ -628,10 +679,13 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
         p.sendMessage("/mce cancellall  全ての注文をキャンセルする");
         p.sendMessage("§c§l/mce userlog (user) ユーザーの注文履歴");
+        p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
 
         p.sendMessage("§c§l/mce register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
         p.sendMessage("§c/mce unregister - 手にもったアイテムをマーケットから削除する");
 
+        p.sendMessage("§c§l/mce ibview [player名] (id) 他人のmib情報を見る");
+        p.sendMessage("§c§l/mce ibedit [player名] [id] [個数] 他人のmibデータをセットする");
     }
 
     static public boolean checkPermission(Player p,String permission){

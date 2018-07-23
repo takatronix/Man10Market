@@ -58,6 +58,9 @@ public class MarketData {
         this.userData = new UserData(plugin);
         this.userData.data = this;
 
+        // 7/23 Mr_IK追加、ItemBankSeeにpluginとdataを渡す
+        ItemBankSee.EnableLoad(this);
+
     }
 
     public void close(){
