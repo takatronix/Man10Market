@@ -109,6 +109,18 @@ public class MarketDatabase {
             "  `lock` tinyint(1) DEFAULT NULL,\n" +
             "  PRIMARY KEY (`id`)\n" +
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+
+    // 7/23 IK追加、itempay log table
+    static String ipay_log="CREATE TABLE `ipay_log` (\n" +
+            "  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\n" +
+            "  `from_uuid` varchar(40) DEFAULT NULL,\n" +
+            "  `from_name` varchar(20) DEFAULT NULL,\n" +
+            "  `to_uuid` varchar(40) DEFAULT NULL,\n" +
+            "  `to_name` varchar(20) DEFAULT NULL,\n" +
+            "  `item_id` int(11) DEFAULT NULL,\n" +
+            "  `amount` int(11) DEFAULT NULL,\n" +
+            "  PRIMARY KEY (`id`)\n" +
+            ") ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 }
 
 

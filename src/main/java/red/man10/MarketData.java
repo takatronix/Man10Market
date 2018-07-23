@@ -61,6 +61,9 @@ public class MarketData {
         // 7/23 Mr_IK追加、ItemBankSeeにpluginとdataを渡す
         ItemBankSee.EnableLoad(this);
 
+        // 7/23 IK追加、PayItemにpluginとdataを渡す
+        PayItem.EnableLoad(this);
+
     }
 
     public void close(){

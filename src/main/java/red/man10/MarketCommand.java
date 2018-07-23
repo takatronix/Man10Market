@@ -8,6 +8,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.omg.CORBA.INTERNAL;
 
+import java.util.UUID;
+
+import static red.man10.PayItem.containPlayer;
+
 public class MarketCommand implements CommandExecutor {
     private final MarketPlugin plugin;
 
@@ -588,20 +592,24 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length == 2){
-                Player target = Bukkit.getPlayer(args[1]);
-                if(target == null){
-                    p.sendMessage("§4§lそのプレイヤーはオフライン");
-                    return false;
-                }
-                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.viewOtherMIB(p, target.getUniqueId(), target.getName()));
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                    String touuid = null;
+                    if ((touuid = containPlayer(args[1])) == null) {
+                        p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
+                        return;
+                    }
+                    ItemBankSee.viewOtherMIB(p, UUID.fromString(touuid), args[1]);
+                });
                 return true;
             }else if(args.length == 3){
-                Player target = Bukkit.getPlayer(args[1]);
-                if(target == null){
-                    p.sendMessage("§4§lそのプレイヤーはオフライン");
-                    return false;
-                }
-                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.viewOtherMIB(p, target.getUniqueId(), args[2], target.getName()));
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                    String touuid = null;
+                    if ((touuid = containPlayer(args[1])) == null) {
+                        p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
+                        return;
+                    }
+                    ItemBankSee.viewOtherMIB(p, UUID.fromString(touuid),args[2], args[1]);
+                });
                 return true;
             }
             p.sendMessage("/mce ibview [player名] (id) 他人のmib情報を見る");
@@ -614,10 +622,10 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length == 4){
-                Player target = Bukkit.getPlayer(args[1]);
-                if(target == null){
-                    p.sendMessage("§4§lそのプレイヤーはオフライン");
-                    return false;
+                String touuid;
+                if ((touuid = containPlayer(args[1])) == null) {
+                    p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
+                    return true;
                 }
                 long amount;
                 try{
@@ -626,7 +634,7 @@ public class MarketCommand implements CommandExecutor {
                     p.sendMessage("§4§l個数が数字ではない");
                     return false;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.setOtherMIB(p, target.getUniqueId(), args[2], amount, target.getName()));
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.setOtherMIB(p, UUID.fromString(touuid), args[2], amount, args[1]));
                 return true;
             }
             p.sendMessage("/mce ibedit [player名] [id/key] [個数] 他人のmibデータをセットする");
