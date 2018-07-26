@@ -56,8 +56,26 @@ public class PayItem {
             from.sendMessage(ib.plugin.prefix+"§c§l必要数: "+amount+"個");
             return;
         }
-        ib.reduceItem(from.getUniqueId().toString(),itemIndex.id,amount);
-        ib.addItem(touuid,itemIndex.id,amount);
+        if(!ib.reduceItem(from.getUniqueId().toString(),itemIndex.id,amount)) {
+            ib.data.showError(from.getUniqueId().toString(),"アイテムの引き出しに失敗した(重大)");
+            ib.data.opLog(from.getName()+"のipayがSQLエラーで失敗した");
+            ib.data.opLog("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
+                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+            ib.plugin.log("Error: itemPayにてSQL接続失敗、Logを残します。");
+            ib.plugin.log("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
+                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+            return;
+        }
+        if(!ib.addItem(touuid, itemIndex.id, amount)) {
+            ib.data.showError(from.getUniqueId().toString(),"アイテムの追加に失敗した(重大)");
+            ib.data.opLog(from.getName()+"のipayがSQLエラーで失敗した");
+            ib.data.opLog("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
+                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+            ib.plugin.log("Error: itemPayにてSQL接続失敗、Logを残します。");
+            ib.plugin.log("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
+                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+            return;
+        }
         if(!createPayLog(from,touuid,to,itemIndex.id,amount)){
             ib.plugin.log("Error: payLogにてSQL接続失敗、Logを残します。");
             ib.plugin.log("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
@@ -92,10 +110,10 @@ public class PayItem {
 
         ResultSet rs = ib.data.mysql.query(sql);
         if(rs == null){
+            ib.data.mysql.close();
             return loglist;
         }
-        try
-        {
+        try {
             while(rs.next()) {
                 PayLog log = new PayLog();
                 log.amount = rs.getInt("amount");

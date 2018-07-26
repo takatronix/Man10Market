@@ -31,7 +31,6 @@ public class PayItemCommand implements CommandExecutor {
             p.sendMessage("§cYou don't have permission");
             return false;
         }
-
         if(args.length == 0) {
             p.sendMessage("§e==========[ItemPay]===========");
             p.sendMessage("§e/ipay [player名] [id/key] [個数] : アイテムを送る");
