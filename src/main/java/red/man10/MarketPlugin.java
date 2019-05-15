@@ -664,6 +664,8 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         p.sendMessage("§bチャートを表示  => §n"+"http://man10.red/mce/"+item.id);
 
+        Utility.sendHoverText(p,  " §c§l§n所持数ランキング" ,"ランキング表示\\§c§l/mce ranking "+item.id ,"/mce ranking "+item.id );
+
 
         showMainMenuLink(p);
         data.close();

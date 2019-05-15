@@ -212,18 +212,11 @@ public class MarketData {
         for(ItemIndex item: items){
             p.sendMessage(item.key+"を更新中");
             updateCurrentPrice(item.id);
-
-
-
-
-
             ret++;
         }
 
         return  ret;
     }
-
-
 
 
     public int cancelOrderList(ArrayList<OrderInfo> orders){

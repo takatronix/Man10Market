@@ -10,16 +10,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.UUID;
 
+
 public class ItemBank {
 
 
     MarketPlugin plugin = null;
     MarketData data = null;
 
-    class ItemStorage{
+    public class ItemStorage{
         int item_id;
         String item_key;
         long amount;
+        String player;
     }
 
     //      プレイヤーの持っているストレージリストを得る
@@ -44,6 +46,7 @@ public class ItemBank {
                 storage.item_id = rs.getInt("item_id");
                 storage.item_key = rs.getString("key");
                 storage.amount = rs.getLong("amount");
+
                 list.add(storage);
             }
             rs.close();
@@ -60,6 +63,69 @@ public class ItemBank {
 
     }
 
+    long getTotalAmount(int item_id){
+        long ret =0;
+        String sql = "select sum(amount) from item_storage where item_id="+item_id;
+        ResultSet rs = data.mysql.query(sql);
+
+        if(rs == null){
+            return 0;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                ret = rs.getLong("sum(amount)");
+            }
+            rs.close();
+        }
+        catch (SQLException e)
+        {
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return 0;
+        }
+        data.mysql.close();
+        return ret;
+    }
+
+    //      ランキングを得る
+    public ArrayList<ItemBank.ItemStorage> getAmountRanking(int itemId, int limit, int offset){
+
+        //MarketData data = new MarketData(plugin);
+        String sql = "select * from item_storage where item_id= "+itemId+" order by amount desc limit "+limit + " offset "+offset;
+
+
+        ArrayList<ItemBank.ItemStorage> list = new ArrayList<ItemBank.ItemStorage>();
+
+        ResultSet rs = data.mysql.query(sql);
+        //  Bukkit.getLogger().info(sql);
+        if(rs == null){
+            return list;
+        }
+        try
+        {
+            while(rs.next())
+            {
+                ItemBank.ItemStorage storage = new ItemBank.ItemStorage();
+                storage.item_id = rs.getInt("item_id");
+                storage.item_key = rs.getString("key");
+                storage.amount = rs.getLong("amount");
+                storage.player = rs.getString("player");
+                list.add(storage);
+            }
+            rs.close();
+        }
+        catch (SQLException e)
+        {
+            Bukkit.getLogger().info("Error executing a query: " + e.getErrorCode());
+            return list;
+        }
+
+
+        data.mysql.close();
+        return list;
+
+    }
 
 
     //      アイテムアイテムバンクから取得

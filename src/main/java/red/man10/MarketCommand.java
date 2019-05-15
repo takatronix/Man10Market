@@ -154,7 +154,36 @@ public class MarketCommand implements CommandExecutor {
         }
 
 
+        if(command.equalsIgnoreCase("ranking")){
+            if(!checkPermission(p,Settings.rankingPermission)){
+                return false;
+            }
 
+            //p.sendMessage("arg:"+args.length);
+
+            if(args.length < 2){
+                p.sendMessage("mce ranking [item or key] (offset)");
+                return false;
+            }
+            int offset = 0;
+            if(args.length >= 3){
+                offset = Integer.parseInt(args[2]);
+            }
+
+            final int o = offset;
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                try {
+                    ItemRanking ranking = new ItemRanking(plugin);
+
+                    ranking.showRanking(p,args[1],o);
+
+                } catch (Exception e) {
+                    Bukkit.getLogger().info(e.getMessage());
+                }
+            });
+
+            return true;
+        }
 
         if(command.equalsIgnoreCase("news")){
             if(!checkPermission(p,Settings.newsPermission)){

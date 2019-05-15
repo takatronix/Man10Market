@@ -36,5 +36,7 @@ public class Settings {
 
     static String itemPayPermission = "red.man10.market.itemPay";
 
+    static String rankingPermission = "red.man10.market.ranking";
+
     public static String closedMessage = "マーケットはクローズ中です。オープンするまでおまちください";
 }
