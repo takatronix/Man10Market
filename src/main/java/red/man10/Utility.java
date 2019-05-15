@@ -30,7 +30,7 @@ public class Utility {
 
 
     public static String getJpBal(double balance){
-        int val = (int)balance;
+        long val = (long)balance;
         String addition = "";
         String form = "万";
         long man = val/10000;
