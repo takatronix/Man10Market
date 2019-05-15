@@ -1,6 +1,5 @@
 package red.man10;
 
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;

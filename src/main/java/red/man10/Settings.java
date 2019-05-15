@@ -1,7 +1,5 @@
 package red.man10;
 
-import org.bukkit.entity.Player;
-
 public class Settings {
 
     static String versionName = "2019/05/15";

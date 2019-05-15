@@ -1,8 +1,8 @@
 package red.man10;
+
 import org.bukkit.Effect;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
-
 
 import java.util.ArrayList;
 

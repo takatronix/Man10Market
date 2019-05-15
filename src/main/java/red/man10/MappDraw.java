@@ -1,7 +1,6 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
-import red.man10.MappRenderer;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -244,7 +244,7 @@ public class UserData {
         }
         String uuid = p.getUniqueId().toString();
 
-        Bukkit.getLogger().info("data.itemBank.getStorageList :" + p.getName());
+       // Bukkit.getLogger().info("data.itemBank.getStorageList :" + p.getName());
 
         //
         ArrayList<ItemBank.ItemStorage> list = data.itemBank.getStorageList(uuid);
@@ -286,7 +286,7 @@ public class UserData {
         data.mysql.execute("delete from user_assets_history "+where+";");
 
         double bal = plugin.vault.getBalance(UUID.fromString(uuid));
-        Bukkit.getLogger().info("get balcne"+ bal);
+       // Bukkit.getLogger().info("get balcne"+ bal);
 
 
         String sql = "insert into user_assets_history values(0,'"+uuid+"','"+ p.getName()+"',"+bal+","
