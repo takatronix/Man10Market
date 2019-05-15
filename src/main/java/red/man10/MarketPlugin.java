@@ -1,6 +1,6 @@
 package red.man10;
 
-import javafx.scene.chart.Chart;
+
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;

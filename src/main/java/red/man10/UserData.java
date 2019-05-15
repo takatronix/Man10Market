@@ -239,11 +239,12 @@ public class UserData {
     int updateUserAssetsHistory(Player p){
 
         if(p == null){
-            Bukkit.getLogger().info("updateUserAssetsHistory nullt");
+            Bukkit.getLogger().info("updateUserAssetsHistory null");
             return 0;
         }
         String uuid = p.getUniqueId().toString();
 
+        Bukkit.getLogger().info("data.itemBank.getStorageList :" + p.getName());
 
         //
         ArrayList<ItemBank.ItemStorage> list = data.itemBank.getStorageList(uuid);
@@ -262,12 +263,15 @@ public class UserData {
             MarketData.ItemIndex index  = data.getItemPrice(storage.item_id);
             estimatedValue += index.price * storage.amount;
 
+            //Bukkit.getLogger().info("key:"+storage.item_key +"$" + index.price * storage.amount);
+
             if(!itemList.isEmpty()){
                 itemList += " ";
             }
             itemList += index.id+":"+storage.amount;
         }
 
+        Bukkit.getLogger().info("price checked");
 
 
         Calendar datetime = Calendar.getInstance();
@@ -282,6 +286,7 @@ public class UserData {
         data.mysql.execute("delete from user_assets_history "+where+";");
 
         double bal = plugin.vault.getBalance(UUID.fromString(uuid));
+        Bukkit.getLogger().info("get balcne"+ bal);
 
 
         String sql = "insert into user_assets_history values(0,'"+uuid+"','"+ p.getName()+"',"+bal+","

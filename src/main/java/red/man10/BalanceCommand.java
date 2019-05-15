@@ -7,7 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import sun.jvm.hotspot.oops.Mark;
+
 
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
@@ -110,7 +110,11 @@ public class BalanceCommand  implements CommandExecutor {
     boolean showBalanceUUID(Player p, String uuid)
     {
 
+       // Bukkit.getLogger().info(p.getDisplayName()+"の残高チェック中");
+
+       // p.sendMessage(p.getDisplayName()+"の残高チェック中...:"+ uuid);
         double bal = 0;
+
         Player target = Bukkit.getPlayer(UUID.fromString(uuid));
 
         if(target != null){
@@ -192,6 +196,10 @@ public class BalanceCommand  implements CommandExecutor {
     boolean showBalance(Player sender, String playerName)
     {
 
+        Bukkit.getLogger().info("showBalance:"+playerName);
+
+
+
         String uuid = null;
 
         if (playerName == null) {
@@ -204,6 +212,7 @@ public class BalanceCommand  implements CommandExecutor {
             }
         }
 
+//        Bukkit.getLogger().info("uuid:"+uuid);
 
         if ((uuid == null) && (playerName != null))
         {

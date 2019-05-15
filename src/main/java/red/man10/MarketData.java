@@ -91,8 +91,9 @@ public class MarketData {
         int sell;
         int buy;
         boolean result;
-        int disabled;
+        int     Fdisabled;
         String base64;
+        int disabled;
         int lot;
         String getString(){
             return "ItemIndex:"+id+" "+key+" price:"+price+" bid:"+bid+" ask:"+ask + " sell:"+sell + " buy:"+buy;
@@ -1064,6 +1065,10 @@ public class MarketData {
             showError(p.getUniqueId().toString(), "0個以下の注文はできない");
             return false;
         }
+        if(item.disabled != 0){
+            showError(p.getUniqueId().toString(), "このアイテムは売買できない");
+            return false;
+        }
 
         ///  値段の正当性チェック
         if(price > item.price * plugin.buyLimitRatio){
@@ -1249,6 +1254,11 @@ public class MarketData {
             return -1;
         }
 
+        if(current.disabled != 0){
+            showError(uuid,"このアイテムは売却できません");
+            return -1;
+        }
+
         int ret = marketSell(uuid,current.id,amount);
         if(ret == -1) {
             return -1;
@@ -1265,6 +1275,7 @@ public class MarketData {
             showError(uuid, "0個以下の注文はできない");
             return 0;
         }
+
 
         Player player = Bukkit.getPlayer(UUID.fromString(uuid));
 
@@ -1477,6 +1488,10 @@ public class MarketData {
             plugin.showError(p,"アイテムの個数がたりません");
             return false;
         }
+        if(item.disabled != 0){
+            showError(p.getUniqueId().toString(), "このアイテムは売買できない");
+            return false;
+        }
 
 
         ///  値段の正当性チェック
@@ -1614,7 +1629,7 @@ public class MarketData {
 
     ///  現在値を得る
     public ItemIndex  getItemPrice(int item_id){
-        ArrayList<ItemIndex>  list = getItemIndexList("select * from item_index where  id = "+item_id+" and disabled = 0;");
+        ArrayList<ItemIndex>  list = getItemIndexList("select * from item_index where id = "+item_id+" ");
         if(list == null){
             return null;
         }

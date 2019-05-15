@@ -281,8 +281,11 @@ public class MarketCommand implements CommandExecutor {
                 plugin.giveMap(p,args[1]);
                 return true;
             }
+            p.sendMessage("§c§l/mce map buy:番号");
+            p.sendMessage("§c§l/mce map sell:番号");
+            p.sendMessage("§c§l/mce map price:番号");
 
-            plugin.giveMap(p,null);
+           // plugin.giveMap(p,null);
             return true;
         }
 
