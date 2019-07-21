@@ -664,7 +664,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         p.sendMessage("§bチャートを表示  => §n"+"http://man10.red/mce/"+item.id);
 
-        Utility.sendHoverText(p,  " §c§l§n所持数ランキング" ,"ランキング表示\\§c§l/mce ranking "+item.id ,"/mce ranking "+item.id );
+        Utility.sendHoverText(p,  "§e§l最小注文金額 $"+ item.tick+"§c§l§n => 所持数ランキング" ,"ランキング表示\\§c§l/mce ranking "+item.id ,"/mce ranking "+item.id );
 
 
         showMainMenuLink(p);
@@ -818,6 +818,26 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         }
 
     }
+
+    public void setTick(Player p,String idOrKey,double tick){
+
+        MarketData data = new MarketData(this);
+
+        MarketData.ItemIndex item = data.getItemPrice(idOrKey);
+        if(item == null){
+            showError(p,"そのアイテムは存在しない");
+            return;
+        }
+        if(data.setTickPrice(item.id,tick) == false){
+            showError(p,"値段設定に失敗した");
+            return;
+        }
+
+
+        p.sendMessage(item.key+"のtick値を"+tick+"に変更しました");
+    }
+
+
 
     void loadConfig(){
         serverMessage("§bMan10 Central Exchange loading....");

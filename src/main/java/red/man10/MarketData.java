@@ -90,6 +90,7 @@ public class MarketData {
         String base64;
         int disabled;
         int lot;
+        double tick;
         String getString(){
             return "ItemIndex:"+id+" "+key+" price:"+price+" bid:"+bid+" ask:"+ask + " sell:"+sell + " buy:"+buy;
         }
@@ -495,6 +496,15 @@ public class MarketData {
         String sql = "insert into price_history values(0,"+item_id+","+price+",'"+currentTime()+"');";
         return mysql.execute(sql);
     }
+
+    //      tick値を設定する
+    public boolean setTickPrice(int item_id,double tick){
+
+        String sql = "update item_index set tick="+tick+" where id="+item_id+";";
+        return mysql.execute(sql);
+    }
+
+
 
 
     //      測定する price/bid/ask
@@ -1076,6 +1086,16 @@ public class MarketData {
             }
         }
 
+        if(price % item.tick != 0){
+            double rest = price % item.tick;
+            double rprice = price - rest + item.tick;
+            plugin.showError(p,"アイテムの最低購入単位は"+item.tick+"円です。" + rprice+"円の買い注文にしてください");
+            return false;
+        }
+
+
+
+
 
         double bal = plugin.vault.getBalance(p.getUniqueId());
         if(bal < price*amount){
@@ -1500,6 +1520,15 @@ public class MarketData {
             }
         }
 
+        if(price % item.tick != 0){
+            double rest = price % item.tick;
+            double rprice = price - rest ;
+            plugin.showError(p,"アイテムの最低購入単位は"+item.tick+"円です。" + rprice+"円の売り注文にしてください");
+            return false;
+        }
+
+
+
 
         return true;
     }
@@ -1599,6 +1628,7 @@ public class MarketData {
                 item.disabled = rs.getInt("disabled");
                 item.lot = rs.getInt("lot");
                 item.base64 = rs.getString("base64");
+                item.tick =  rs.getDouble("tick");
                 item.result = true;
                 ret.add(item);
             }

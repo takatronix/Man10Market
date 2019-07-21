@@ -234,6 +234,23 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
 
+
+        if(command.equalsIgnoreCase("tick")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
+
+
+            if(args.length != 3){
+                p.sendMessage("§c§l/mce tick 1)登録名称 2) [item or key]  3)ティック(値動き幅) アイテムの値動き幅を設定する");
+                return false;
+            }
+
+            plugin.setTick(p,args[1], Double.parseDouble(args[2]));
+            return true;
+        }
+
+
         ////////////////
         //    リスト
         if(command.equalsIgnoreCase("menu")){
@@ -718,6 +735,7 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("/mce cancellall  全ての注文をキャンセルする");
         p.sendMessage("§c§l/mce userlog (user) ユーザーの注文履歴");
         p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
+        p.sendMessage("§c§l/mce tick (id/key) price  金額の最低変化量を設定する");
 
         p.sendMessage("§c§l/mce register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
         p.sendMessage("§c/mce unregister - 手にもったアイテムをマーケットから削除する");
