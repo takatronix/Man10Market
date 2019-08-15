@@ -1906,7 +1906,7 @@ public class MarketData {
 
 
     public String getPriceString(double price){
-        return String.format("%,d",(int)(price));
+        return String.format("%,d",(long)(price));
     }
     //1,301 などを1301.0に変換する
     public Double getPricedouble(String price){
