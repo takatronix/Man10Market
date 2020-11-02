@@ -279,40 +279,40 @@ public class MarketChart {
 
         int     item_max = items.size();
 
-        for (int n = 0;n < item_max;n++){
+        for (MarketData.ItemIndex itemIndex : items) {
 
-            int no = items.get(n).id;
+            int no = itemIndex.id;
 
 
             //          マップ描写
-            MappRenderer.draw( "price:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                drawPrice(data,g,getId(key));
+            MappRenderer.draw("price:" + no, 0, (String key, int mapId, Graphics2D g) -> {
+                drawPrice(data, g, getId(key));
                 return true;
             });
-            MappRenderer.draw( "buy:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                drawBuy(data,g,getId(key));
+            MappRenderer.draw("buy:" + no, 0, (String key, int mapId, Graphics2D g) -> {
+                drawBuy(data, g, getId(key));
                 return true;
             });
-            MappRenderer.draw( "sell:"+no,0,(String key,int mapId,Graphics2D g) -> {
-                drawSell(data,g,getId(key));
+            MappRenderer.draw("sell:" + no, 0, (String key, int mapId, Graphics2D g) -> {
+                drawSell(data, g, getId(key));
                 return true;
             });
 
-            MappRenderer.displayTouchEvent("price:"+no,(String key,int mapId,Player player, int x,int y) ->{
+            MappRenderer.displayTouchEvent("price:" + no, (String key, int mapId, Player player, int x, int y) -> {
                 String[] item = key.split(":");
-                player.chat("/mce price "+item[1]);
+                player.chat("/mce price " + item[1]);
                 return false;
             });
 
-            MappRenderer.displayTouchEvent("buy:"+no,(String key,int mapId,Player player, int x,int y) ->{
+            MappRenderer.displayTouchEvent("buy:" + no, (String key, int mapId, Player player, int x, int y) -> {
                 String[] item = key.split(":");
                 int item_id = Integer.parseInt(item[1]);
 
 
                 //      高速化・キャッシュにあればそれを参照
                 MarketData.ItemIndex index = MarketPlugin.priceMap.get(item_id);
-                if(index == null){
-                    Bukkit.getLogger().info("item:"+item_id + " is null use db");
+                if (index == null) {
+                    Bukkit.getLogger().info("item:" + item_id + " is null use db");
                     index = data.getItemPrice(item_id);
                 }
 
@@ -320,7 +320,7 @@ public class MarketChart {
                 int lot = index.lot;
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                     try {
-                        plugin.itemBuy(player,""+item_id ,lot);
+                        plugin.itemBuy(player, "" + item_id, lot);
 
                     } catch (Exception e) {
                         Bukkit.getLogger().info(e.getMessage());
@@ -329,14 +329,13 @@ public class MarketChart {
                 });
 
 
-            //    MarketData.ItemIndex index = data.getItemPrice(item_id);
+                //    MarketData.ItemIndex index = data.getItemPrice(item_id);
 
                 return false;
             });
 
 
-
-            MappRenderer.displayTouchEvent("sell:"+no,(String key,int mapId,Player player, int x,int y) ->{
+            MappRenderer.displayTouchEvent("sell:" + no, (String key, int mapId, Player player, int x, int y) -> {
                 String[] item = key.split(":");
                 int item_id = Integer.parseInt(item[1]);
 //                MarketData.ItemIndex index = data.getItemPrice(item_id);
@@ -344,8 +343,8 @@ public class MarketChart {
 
                 //      高速化・キャッシュにあればそれを参照
                 MarketData.ItemIndex index = MarketPlugin.priceMap.get(item_id);
-                if(index == null){
-                    Bukkit.getLogger().info("buy item:"+item_id + " is null use db");
+                if (index == null) {
+                    Bukkit.getLogger().info("buy item:" + item_id + " is null use db");
 
                     index = data.getItemPrice(item_id);
                 }
@@ -353,7 +352,7 @@ public class MarketChart {
                 int lot = index.lot;
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                     try {
-                        plugin.itemSell(player,""+item_id ,lot);
+                        plugin.itemSell(player, "" + item_id, lot);
 
                     } catch (Exception e) {
                         Bukkit.getLogger().info(e.getMessage());

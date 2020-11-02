@@ -215,7 +215,7 @@ public class ItemBank {
 
         data.showMessage(uuid,"§f§lアイテムバンクから"+store.item_key+"が"+Utility.getColoredItemString(amount)+"§f§l引き出されました");
 
-        Utility.playSound(uuid,Sound.BLOCK_NOTE_PLING);
+        Utility.playSound(uuid,Sound.BLOCK_NOTE_BLOCK_PLING);
 
         return ret;
     }

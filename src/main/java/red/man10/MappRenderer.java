@@ -6,7 +6,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -14,20 +13,24 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.*;
+import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.map.MinecraftFont;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import static java.lang.Math.sqrt;
@@ -60,12 +63,34 @@ public class MappRenderer extends MapRenderer implements Listener {
     //      Singleton
     private static MappRenderer sharedInstance = new MappRenderer();
     private MappRenderer() {
-        Bukkit.getLogger().info("MappRenderer created..");
+        log("MappRenderer created..");
     }
     public static MappRenderer getInstance() {
         return sharedInstance;
     }
     public static VaultManager vaultManager;
+
+    static int getMapId(ItemStack map){
+
+        // return (int)map.getDurability();
+        if (map.getType().equals(Material.FILLED_MAP) && map.hasItemMeta()) {
+            MapMeta meta = (MapMeta) map.getItemMeta();
+            return meta.getMapView().getId();
+        }
+
+        return 0;
+    }
+    static void setMapId(ItemStack item,int mapId){
+        item.setDurability((short)mapId);
+        MapMeta meta = (MapMeta) item.getItemMeta();
+        meta.setMapId(mapId);
+        item.setItemMeta(meta);
+    }
+
+    static void log(String text){
+        if(debugMode)
+            Bukkit.getLogger().info(text);
+    }
 
 
     ///////////////////////////////////////////////
@@ -113,6 +138,10 @@ public class MappRenderer extends MapRenderer implements Listener {
     public interface PlayerPitchFunction{
         boolean onPlayerPitchChanged(String key,int mapId,Player player,double angle,double velocity);
     }
+    @FunctionalInterface
+    public interface PlayerChatFunction{
+        boolean onPlayerChat(String key,int mapId,AsyncPlayerChatEvent event);
+    }
 
 
     //     画面タッチ
@@ -131,18 +160,19 @@ public class MappRenderer extends MapRenderer implements Listener {
         //      イベントを通知してやる（ボタン検出用)
         MappRenderer.onPlayerInteractEvent(e);
     }
+
+
     @EventHandler
     public void onPlayerToggleSneak(PlayerToggleSneakEvent e) {
 
         //      プレイヤーがマップを持っていなければ抜け　
         Player player = e.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if(item.getType() != Material.MAP) {
+        if(item.getType() != Material.FILLED_MAP) {
             return;
         }
 
-        int mapID = (int)item.getDurability();
-
+        int mapID = getMapId(item);
 
 
         Boolean isSneaking = player.isSneaking();
@@ -161,6 +191,16 @@ public class MappRenderer extends MapRenderer implements Listener {
 
     }
 
+
+    //      マウスカーソル情報
+    static class Cursor{
+        int x;
+        int y;
+        boolean show;
+    }
+    static HashMap<Integer,Cursor> mouseCursor = new HashMap<>();
+
+
     static HashMap<Player,Vector> userMovingVec = new HashMap<>();
 
     @EventHandler    public void onMove(PlayerMoveEvent e) {
@@ -168,11 +208,11 @@ public class MappRenderer extends MapRenderer implements Listener {
         //      プレイヤーがマップを持っていなければ抜け　
         Player player = e.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if(item.getType() != Material.MAP) {
+        if(item.getType() != Material.FILLED_MAP) {
             return;
         }
 
-        int mapID = (int)item.getDurability();
+        int mapID = getMapId(item);
 
 
         Vector lastMovingVec = userMovingVec.get(player);
@@ -205,6 +245,39 @@ public class MappRenderer extends MapRenderer implements Listener {
 
     }
 
+    @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+
+
+        //      プレイヤーがマップを持っていなければ抜け　
+        //    Player player = event.getPlayer();
+
+        /*
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if(item.getType() != Material.FILLED_MAP) {
+            return;
+        }
+        int mapID = (int)item.getDurability();
+        String key = findKey(mapID);
+        if(key == null){
+            return;
+        }
+*/
+
+        for(MappRenderer r:renderers) {
+
+            PlayerChatFunction func =  chatFunctions.get(r.key);
+            if(func != null){
+                Bukkit.getLogger().info("event chat");
+                if(func.onPlayerChat(r.key,r.mapId,event)){
+                    refresh(key);
+                }
+            }
+        }
+    }
+
+
+
     ///////////////////////////////////////////////
     //      "key" ->　関数　をハッシュマップに保存
     static HashMap<String,DrawFunction> drawFunctions = new HashMap<>();
@@ -215,8 +288,6 @@ public class MappRenderer extends MapRenderer implements Listener {
     static HashMap<String,InitFunction> initfunctions = new HashMap<>();
     public static void init(String key,InitFunction func){
         initfunctions.put(key,func);
-
-
     }
 
 
@@ -264,9 +335,16 @@ public class MappRenderer extends MapRenderer implements Listener {
     public static void playerPitchEvent(String key,PlayerPitchFunction func){
         pitchFunctions.put(key,func);
     }
+
     static HashMap<String,PlayerYawFunction> yawFunctions = new HashMap<>();
     public static void playerYawEvent(String key,PlayerYawFunction func){
         yawFunctions.put(key,func);
+    }
+
+    //    chatイベントを追加
+    static HashMap<String,PlayerChatFunction> chatFunctions = new HashMap<>();
+    public static void playerChatEvent(String key,PlayerChatFunction func){
+        chatFunctions.put(key,func);
     }
 
 
@@ -323,8 +401,6 @@ public class MappRenderer extends MapRenderer implements Listener {
     //      描画更新があれば反映
     public void onTick(){
 
-
-
         if (refreshOnce){
             refreshOnce = false;
             draw();
@@ -342,7 +418,10 @@ public class MappRenderer extends MapRenderer implements Listener {
         }
 
     }
-
+    @EventHandler
+    public void onMapInitialize(MapInitializeEvent e) {
+        log("onMapInitialize");
+    }
     //////////////////////////////////////////////////////////////////////
     //    このイベントは本人がマップを持った場合1tick
     //    他者がみる場合は1secの周期でよばれるため高速描写する必要がある
@@ -350,6 +429,7 @@ public class MappRenderer extends MapRenderer implements Listener {
     @Override
     public void render(MapView map, MapCanvas canvas, Player player) {
 
+        //  log("render");
         //     オフスクリーンバッファからコピー
         if(updateMapOnce){
             canvas.drawImage(0,0,bufferedImage);
@@ -362,9 +442,11 @@ public class MappRenderer extends MapRenderer implements Listener {
             }
             updateCount++;
         }
-
         renderCount++;
     }
+
+
+
 
     static public boolean onPlayerInteractEntityEvent(PlayerInteractEntityEvent e){
 
@@ -373,12 +455,11 @@ public class MappRenderer extends MapRenderer implements Listener {
             //  クリックしたアイテムフレームのアイテムがマップでなければ抜け
             ItemFrame frame = (ItemFrame) ent;
             ItemStack item = frame.getItem();
-            if(item.getType() != Material.MAP) {
+            if(item.getType() != Material.FILLED_MAP) {
                 return false;
             }
 
-            //      DurabilityにいれてあるのがマップID
-            int mapId = (int)item.getDurability();
+            int mapId = getMapId(item);
             String key = findKey(mapId);
             if(key == null){
                 return false;
@@ -394,7 +475,7 @@ public class MappRenderer extends MapRenderer implements Listener {
             World world = e.getPlayer().getWorld();
 
             //      叩いたブロックのBB
-            BoundingBox bb = new BoundingBox(block);
+            BoundingBox bb = block.getBoundingBox();
 
 
             double rayDistance = 3;
@@ -404,7 +485,7 @@ public class MappRenderer extends MapRenderer implements Listener {
             RayTrace rayTrace = new RayTrace(player.getEyeLocation().toVector(),player.getEyeLocation().getDirection());
             //     ベクトル表示
             if(debugMode){
-               // rayTrace.highlight(player.getWorld(),rayDistance,rayAccuracy);
+                // rayTrace.highlight(player.getWorld(),rayDistance,rayAccuracy);
             }
 
             //      ディスプレイの　左上、右上をもとめる
@@ -430,15 +511,15 @@ public class MappRenderer extends MapRenderer implements Listener {
 
 
             if(debugMode){
-                world.playEffect(topLeft.toLocation(world), Effect.COLOURED_DUST,0);
-                world.playEffect(bottomRight.toLocation(world), Effect.COLOURED_DUST,0);
+                world.playEffect(topLeft.toLocation(world), Effect.SMOKE,0);
+                world.playEffect(bottomRight.toLocation(world), Effect.SMOKE,0);
             }
 
             //      視線とブロックの交差点
             Vector hit = rayTrace.positionOfIntersection(bb,rayDistance,rayAccuracy);
             if(hit != null){
                 //      タッチした場所を光らす
-              //  world.playEffect(hit.toLocation(world), Effect.COLOURED_DUST,0);
+                //  world.playEffect(hit.toLocation(world), Effect.COLOURED_DUST,0);
 
                 double aDis = hit.distance(topLeft);
                 Vector left = topLeft.setY(hit.getY());
@@ -446,13 +527,13 @@ public class MappRenderer extends MapRenderer implements Listener {
                 double y = sqrt(aDis*aDis - xDis*xDis);
                 double dx = (double)128 * xDis;
                 double dy = (double)128 * y;
-              //  dx -= 4;
-              //  dy -= 4;
+                //  dx -= 4;
+                //  dy -= 4;
 
                 int px = (int)dx;
                 int py = (int)dy;
 
-               // player.sendMessage(px+","+py);
+                // player.sendMessage(px+","+py);
 
                 //      タッチイベントを通知
                 DisplayTouchFunction func =  touchFunctions.get(key);
@@ -465,7 +546,7 @@ public class MappRenderer extends MapRenderer implements Listener {
             }
             //      回転イベントをキャンセル
             e.setCancelled(true);
-           return true;
+            return true;
         }
         return false;
     }
@@ -477,25 +558,22 @@ public class MappRenderer extends MapRenderer implements Listener {
 
         Block clickedBlock = e.getClickedBlock();
         if(clickedBlock == null){
-            return 0;
+            return -1;
         }
         Location loc = clickedBlock.getLocation();
 
         /////////////////////////////////////////////////////
         //      プレートを踏んだ
-        if(clickedBlock.getType()== Material.STONE_PLATE
-                || clickedBlock.getType()== Material.GOLD_PLATE
-                || clickedBlock.getType()== Material.IRON_PLATE
-                ){
+        if(clickedBlock.getType()== Material.STONE_PRESSURE_PLATE){
 
             // Bukkit.getLogger().info("踏んだ ");
 
-             Collection<Entity> entities = getNearbyEntities(loc,2);
-
+            Collection<Entity> entities = getNearbyEntities(loc,2);
+            if(e.getPlayer() == null){
+                return -1;
+            }
 
             for (Entity en : entities) {
-
-
                 //     アイテムフレーム以外は無視
                 if (en instanceof ItemFrame != true) {
                     continue;
@@ -503,18 +581,12 @@ public class MappRenderer extends MapRenderer implements Listener {
                 //     アイテムフレームにあるのはマップか？
                 ItemFrame frame = (ItemFrame) en;
                 ItemStack item = frame.getItem();
-                if(item.getType() != Material.MAP) {
+                if(item.getType() != Material.FILLED_MAP) {
                     continue;
                 }
 
-                ///
-                Player p = e.getPlayer();
-                if(p == null){
-                    continue;
-                }
-
-                //    DurabilityにいれてあるのがマップID
-                int mapId = (int)item.getDurability();
+                //      DurabilityにいれてあるのがマップID
+                int mapId = getMapId(item);
                 String key = findKey(mapId);
                 if(key == null){
                     continue;
@@ -524,7 +596,7 @@ public class MappRenderer extends MapRenderer implements Listener {
                 //      ボタン用メソッドをコール
                 PlatePushFunction func = plateFunctions.get(key);
                 if(func != null){
-                    Bukkit.getLogger().info("プレートが踏まれた => map key = "+key+" player:"+e.getPlayer().getName() + "actio:・"+e.getAction());
+                    Bukkit.getLogger().info("プレートが踏まれた => map key = "+key);
                     if(func.onPlatePush(key,mapId,e.getPlayer())){
                         refresh(key);
                     }
@@ -545,14 +617,13 @@ public class MappRenderer extends MapRenderer implements Listener {
         }
 
 
-        if(     clickedBlock.getType()== Material.WOOD_BUTTON
-                || clickedBlock.getType()== Material.STONE_BUTTON
+        if(  clickedBlock.getType()== Material.STONE_BUTTON
                 /*
                 ||   clickedBlock.getType()== Material.STONE_PLATE
                 || clickedBlock.getType()== Material.GOLD_PLATE
                 || clickedBlock.getType()== Material.IRON_PLATE
 */
-                ) {
+        ) {
 
 
 
@@ -567,12 +638,11 @@ public class MappRenderer extends MapRenderer implements Listener {
                 //     アイテムフレームにあるのはマップか？
                 ItemFrame frame = (ItemFrame) en;
                 ItemStack item = frame.getItem();
-                if(item.getType() != Material.MAP) {
+                if(item.getType() != Material.FILLED_MAP) {
                     continue;
                 }
 
-                //      DurabilityにいれてあるのがマップID
-                int mapId = (int)item.getDurability();
+                int mapId = getMapId(item);
                 String key = findKey(mapId);
                 if(key == null){
                     continue;
@@ -655,7 +725,7 @@ public class MappRenderer extends MapRenderer implements Listener {
             int id = Integer.parseInt(split[0]);
             String  key = ids;
             if(split.length == 2){
-                 key = split[1];
+                key = split[1];
             }
 
             //     mapIDから新規にマップを作成する
@@ -703,67 +773,60 @@ public class MappRenderer extends MapRenderer implements Listener {
 
     static public List<String>getAppList(){
         List<String> list = new ArrayList<>(drawFunctions.keySet());
-       return list;
+        return list;
     }
 
     //////////////////////////////////////////
     /// 　   描画用マップを取得する
     ///     key : 描画を切り替えるためのキー
-   static public ItemStack getMapItem(JavaPlugin plugin,String key) {
+    static public ItemStack getMapItem(JavaPlugin plugin,String key) {
 
 
-       if(drawFunctions.get(key) == null){
-
-
-           return null;
-       }
+        if(drawFunctions.get(key) == null){
+            return null;
+        }
 
 
         Configuration config = plugin.getConfig();
 
         List<String> mlist = config.getStringList("Maps");
 
-        ItemStack m = new ItemStack(Material.MAP);
-        MapView map = Bukkit.createMap(Bukkit.getWorlds().get(0));
+        ItemStack m = new ItemStack(Material.FILLED_MAP);
+        MapView mapView = Bukkit.createMap(Bukkit.getWorlds().get(0));
+        int mapId = mapView.getId();
 
-        //      mapID,keyのフォーマットで必要データを保存;
-       int mapId = (int) map.getId();
+        setMapId(m,mapId);
+
+        log("map"+mapId+" ");
         mlist.add(mapId + "," + key);
 
         //      設定データ保存
         config.set("Maps", mlist);
         plugin.saveConfig();
 
-        for (MapRenderer mr : map.getRenderers()) {
-            map.removeRenderer(mr);
+        //     for (MapRenderer mr : mapView.getRenderers()) {
+        //        mapView.removeRenderer(mr);
+        //    }
+        mapView.getRenderers().clear();
+
+        MappRenderer renderer = new MappRenderer();
+        renderer.key = key;
+        renderer.refreshOnce = true;
+        renderer.updateMapOnce = true;
+        renderer.mapId = mapId;
+        mapView.addRenderer(renderer);
+
+        //       識別用に保存
+        renderers.add(renderer);
+        //      初期化を呼ぶ　
+        InitFunction func = initfunctions.get(key);
+        if(func != null) {
+            if(func.onInit(key,mapId)){
+                refresh(key);
+            }
         }
 
-       MappRenderer renderer = new MappRenderer();
-       renderer.key = key;
-       renderer.refreshOnce = true;
-       renderer.updateMapOnce = true;
-       renderer.mapId = mapId;
-       map.addRenderer(renderer);
-
-
-
-
-       ItemMeta im = m.getItemMeta();
-       im.addEnchant(Enchantment.DURABILITY, 1, true);
-       m.setItemMeta(im);
-       m.setDurability(map.getId());
-
-       //       識別用に保存
-       renderers.add(renderer);
-       //      初期化を呼ぶ　
-       InitFunction func = initfunctions.get(key);
-       if(func != null) {
-           if(func.onInit(key,mapId)){
-               refresh(key);
-           }
-       }
-
-       return m;
+        return m;
     }
 
     //      mapIdからキーを検索
@@ -839,10 +902,10 @@ public class MappRenderer extends MapRenderer implements Listener {
         //      向きの違いから検出しマウスのベロシティを求める
         for(Player p:Bukkit.getOnlinePlayers()){
             ItemStack item = p.getInventory().getItemInMainHand();
-            if(item.getType() != Material.MAP){
+            if(item.getType() != Material.FILLED_MAP){
                 continue;
             }
-            int mapID = item.getDurability();
+            int mapID = getMapId(item);
             String key = findKey(mapID);
             if(key == null){
                 continue;
@@ -901,6 +964,33 @@ public class MappRenderer extends MapRenderer implements Listener {
 
                 lastYawMap.put(p,(Double)velocity);
             }
+
+
+            ////////////////////////////////////////
+            //      マウスカーソル処理
+            ////////////////////////////////////////
+            Cursor cur = mouseCursor.get(mapID);
+            if(cur != null){
+                if(cur.show){
+                    cur.x += velocity;
+                    cur.y += pitchVelocity;
+
+                    if(cur.x < 0){
+                        cur.x = 0;
+                    }
+                    if(cur.y < 0){
+                        cur.y = 0;
+                    }
+                    if(cur.x > 127){
+                        cur.x = 127;
+                    }
+                    if(cur.y > 127){
+                        cur.y = 127;
+                    }
+
+                }
+            }
+
         }
 
         //      マップごとのTick処理
@@ -923,7 +1013,7 @@ public class MappRenderer extends MapRenderer implements Listener {
         return ;
     }
 
-    
+
     static public Graphics2D getGraphics(int mapId){
         for(MappRenderer renderer:renderers){
             if(renderer.mapId == mapId){
@@ -1015,5 +1105,30 @@ public class MappRenderer extends MapRenderer implements Listener {
     //      キャッシュからイメージ取りだし
     static BufferedImage image(String  key){
         return imageMap.get(key);
+    }
+
+    /////////////////////////////////////////////
+    static public void showCursor(int mapId){
+
+        Cursor cur = mouseCursor.get(mapId);
+        if(cur == null){
+            cur = new Cursor();
+            cur.x = 64;
+            cur.y = 64;
+        }
+        cur.show = true;
+        mouseCursor.put(mapId,cur);
+
+    }
+    static public void hideCursor(int mapId){
+        Cursor cur = mouseCursor.get(mapId);
+        if(cur == null){
+            cur = new Cursor();
+
+        }
+        cur.show = false;
+        mouseCursor.put(mapId,cur);
+
+
     }
 }
