@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -1934,13 +1935,18 @@ public class MarketData {
             itemName = item.getType().toString();
         }
 
+        int damage = 0;
+        if (item instanceof Damageable){
+            damage = ((Damageable)item).getDamage();
+        }
+
         boolean ret = mysql.execute("insert into item_index values(0,"
                 +"'" +uuid +"',"
                 +"'" +playerName +"',"
                 +"'" +key +"',"
                 +"'" +itemName +"',"
                 +"'" +itemType +"',"
-                +"" +item.getDurability() +","
+                +"" +damage +","
 
                 +initialPrice +","
                 +initialPrice+","

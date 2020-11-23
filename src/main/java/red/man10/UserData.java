@@ -1,8 +1,6 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
@@ -86,48 +84,49 @@ public class UserData {
 
     boolean deposit(String uuid,double money){
 
-        UserInformation ui = getUserInformation(uuid);
-        if(ui == null){
-            if(insertUserInformation(uuid) == false){
-                return false;
-            }
-        }
-
-
-        //      追加
-        boolean ret = data.mysql.execute("update user_index set balance = balance + "+money+" where uuid='"+uuid+"';");
-
-
-        return true;
-    }
-
-
-    boolean withdraw(String uuid,double money){
-
-        UserInformation ui = getUserInformation(uuid);
-        if(ui == null){
-            return false;
-        }
-
-        if(ui.balance < money){
-            data.showError(uuid,"残額より多くはひきだせない");
-            return false;
-        }
-
-        boolean ret = data.mysql.execute("update user_index set balance = balance - "+money+" where uuid='"+uuid+"';");
-
-
-
-        if(ret){
-            this.plugin.vault.deposit(UUID.fromString(uuid),money);
-            data.showMessage(uuid,Utility.getColoredPriceString(money)+"§f§l口座に追加されました");
-        }else{
-            data.showError(uuid,"口座からの引き出しに失敗した");
-
-        }
+//        UserInformation ui = getUserInformation(uuid);
+//        if(ui == null){
+//            if(insertUserInformation(uuid) == false){
+//                return false;
+//            }
+//        }
+//
+//
+//        //      追加
+//        boolean ret = data.mysql.execute("update user_index set balance = balance + "+money+" where uuid='"+uuid+"';");
+//
+        plugin.bankAPI.deposit(UUID.fromString(uuid),money,"Man10Market deposit");
 
         return true;
     }
+
+
+//    boolean withdraw(String uuid,double money){
+//
+//        UserInformation ui = getUserInformation(uuid);
+//        if(ui == null){
+//            return false;
+//        }
+//
+//        if(ui.balance < money){
+//            data.showError(uuid,"残額より多くはひきだせない");
+//            return false;
+//        }
+//
+//        boolean ret = data.mysql.execute("update user_index set balance = balance - "+money+" where uuid='"+uuid+"';");
+//
+//
+//
+//        if(ret){
+//            this.plugin.vault.deposit(UUID.fromString(uuid),money);
+//            data.showMessage(uuid,Utility.getColoredPriceString(money)+"§f§l口座に追加されました");
+//        }else{
+//            data.showError(uuid,"口座からの引き出しに失敗した");
+//
+//        }
+//
+//        return true;
+//    }
 
 
 

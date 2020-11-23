@@ -15,7 +15,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.java.JavaPlugin;
+import red.man10.man10offlinebank.BankAPI;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +42,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     public boolean isMarketOpen = false;
     public String csvPath = null;
 
-
+    public BankAPI bankAPI = new BankAPI(this);
 
 
     public void updateCurrentPriceListOnBackground(Player p){
@@ -157,10 +159,13 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         {
             if ((item != null) && item.getType() == itemCheck.getType() && (item.getAmount() > 0))
             {
-                if(item.getDurability() != itemCheck.getDurability()){
-                    Bukkit.getLogger().info("getDurability error");
-                    continue;
+                if (itemCheck instanceof Damageable){
+                    if(((Damageable) item).getDamage() != ((Damageable) itemCheck).getDamage()){
+                        Bukkit.getLogger().info("getDurability error");
+                        continue;
+                    }
                 }
+
 
                 //      item meta がある
                 if(itemCheck.getItemMeta() != null){
@@ -740,11 +745,11 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
 
-    synchronized public boolean withdrawAll(Player p){
-        MarketData data = new MarketData(this);
-        UserData.UserInformation ui = data.userData.getUserInformation(p.getUniqueId().toString());
-        return data.userData.withdraw(p.getUniqueId().toString(),ui.balance);
-    }
+//    synchronized public boolean withdrawAll(Player p){
+//        MarketData data = new MarketData(this);
+//        UserData.UserInformation ui = data.userData.getUserInformation(p.getUniqueId().toString());
+//        return data.userData.withdraw(p.getUniqueId().toString(),ui.balance);
+//    }
 
     public boolean giveMap(Player p,String target){
 
