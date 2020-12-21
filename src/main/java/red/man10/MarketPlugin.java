@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.java.JavaPlugin;
-import red.man10.man10offlinebank.BankAPI;
+import red.man10.man10bank.BankAPI;
 
 import java.util.ArrayList;
 import java.util.HashMap;

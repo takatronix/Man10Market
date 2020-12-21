@@ -123,7 +123,7 @@ public class BalanceCommand  implements CommandExecutor {
 
         p.sendMessage("§e§l===============[§f§l" + asset.player + "の資産§e§l]==============");
         p.sendMessage("所持金:" + Utility.getColoredPriceString(bal));
-        p.sendMessage("§e§l口座残高:"+ plugin.bankAPI.getBalance(UUID.fromString(uuid)));
+        p.sendMessage("口座残高:"+ plugin.bankAPI.getBalance(UUID.fromString(uuid)));
 
 
         showAssetUUID(p, uuid);
@@ -192,7 +192,7 @@ public class BalanceCommand  implements CommandExecutor {
                 uuid = p.getUniqueId().toString();
             }
         }
-        
+
         if ((uuid == null) && (playerName != null))
         {
             uuid = data.userData.getUUID(playerName);

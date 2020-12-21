@@ -6,6 +6,8 @@ authors: [takatronix]
 description: Minecraft Market System
 website: http://man10.red
 api-version: 1.16
+depend:
+   - Man10OfflineBank
 commands:
    mce:
       description: Man10 Minecraft Market System
