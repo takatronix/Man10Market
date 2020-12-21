@@ -48,7 +48,7 @@ public class MarketHistory {
         Candle candle = getHourCandle(item_id,year,month,day,hour);
         if(candle == null){
             // data.opLog("candle == nul -> instert");
-            if(data.mysql.execute("insert into history_hour values(0,"+item_id+","+price+","+price+","+price+","+price+","+volume+","+year+","+month+","+day+","+hour+","+minute+");") == false){
+            if(!data.mysql.execute("insert into history_hour values(0," + item_id + "," + price + "," + price + "," + price + "," + price + "," + volume + "," + year + "," + month + "," + day + "," + hour + "," + minute + ");")){
                 data.opLog("Candle insert error");
                 return false;
             }

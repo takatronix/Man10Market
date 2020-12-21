@@ -17,7 +17,7 @@ public class ItemBank {
     MarketPlugin plugin = null;
     MarketData data = null;
 
-    public class ItemStorage{
+    public static class ItemStorage{
         int item_id;
         String item_key;
         long amount;
@@ -106,7 +106,7 @@ public class ItemBank {
         {
             while(rs.next())
             {
-                ItemBank.ItemStorage storage = new ItemBank.ItemStorage();
+                ItemBank.ItemStorage storage = new ItemStorage();
                 storage.item_id = rs.getInt("item_id");
                 storage.item_key = rs.getString("key");
                 storage.amount = rs.getLong("amount");

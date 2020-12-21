@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -20,44 +21,45 @@ public class MarketCommand implements CommandExecutor {
     }
 
 
-    public boolean cancelProc(Player p,String[] args){
+    public void cancelProc(Player p, String[] args){
 
         if(!checkPermission(p,Settings.cancelPermission)){
-            return false;
+            return;
         }
         if(args.length == 2){
-            return plugin.cancelOrder(p,args[1]);
+            plugin.cancelOrder(p, args[1]);
+            return;
         }
         p.sendMessage("/mce cancel [order_id] 注文をキャンセルする");
-        return false;
     }
 
-    public  boolean cancelAllProc(Player p,String[] args){
+    public void cancelAllProc(Player p, String[] args){
 
 
 
         if(!checkPermission(p,Settings.cancelPermission)){
-            return false;
+            return;
         }
 
         if(args.length == 1){
-            return plugin.cancelAll(p,null);
+            plugin.cancelAll(p, null);
+            return;
         }
 
         //  管理者は人の注文をキャンセルできる
         if(p.hasPermission(Settings.adminPermission)){
             if(args.length == 2){
-                return plugin.cancelAll(p,args[1]);
+                plugin.cancelAll(p, args[1]);
+                return;
             }
         }
 
         p.sendMessage("/mce cancelall すべての注文をキャンセルする");
-        return false;
     }
 
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
 
         Player p = (Player) sender;
 
@@ -168,11 +170,7 @@ public class MarketCommand implements CommandExecutor {
         }
 
         if(command.equalsIgnoreCase("news")){
-            if(!checkPermission(p,Settings.newsPermission)){
-                return false;
-            }
-
-            return true;
+            return checkPermission(p, Settings.newsPermission);
         }
 
 
@@ -383,7 +381,7 @@ public class MarketCommand implements CommandExecutor {
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
 
-                    plugin.orderSell(p, args[1], (double) (int) Double.parseDouble(args[2]), Integer.parseInt(args[3]));
+                    plugin.orderSell(p, args[1], (int) Double.parseDouble(args[2]), Integer.parseInt(args[3]));
 
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
@@ -452,7 +450,7 @@ public class MarketCommand implements CommandExecutor {
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
-                    plugin.orderBuy(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+                    plugin.orderBuy(p,args[1], (int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
                     System.out.println(e.getMessage());
@@ -622,22 +620,22 @@ public class MarketCommand implements CommandExecutor {
             }
             if(args.length == 2){
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-                    String touuid = null;
-                    if ((touuid = containPlayer(args[1])) == null) {
+                    String toUUID;
+                    if ((toUUID = containPlayer(args[1])) == null) {
                         p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
                         return;
                     }
-                    ItemBankSee.viewOtherMIB(p, UUID.fromString(touuid), args[1]);
+                    ItemBankSee.viewOtherMIB(p, UUID.fromString(toUUID), args[1]);
                 });
                 return true;
             }else if(args.length == 3){
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-                    String touuid = null;
-                    if ((touuid = containPlayer(args[1])) == null) {
+                    String toUUID;
+                    if ((toUUID = containPlayer(args[1])) == null) {
                         p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
                         return;
                     }
-                    ItemBankSee.viewOtherMIB(p, UUID.fromString(touuid),args[2], args[1]);
+                    ItemBankSee.viewOtherMIB(p, UUID.fromString(toUUID),args[2], args[1]);
                 });
                 return true;
             }
@@ -651,8 +649,8 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length == 4){
-                String touuid;
-                if ((touuid = containPlayer(args[1])) == null) {
+                String toUUID;
+                if ((toUUID = containPlayer(args[1])) == null) {
                     p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
                     return true;
                 }
@@ -663,7 +661,7 @@ public class MarketCommand implements CommandExecutor {
                     p.sendMessage("§4§l個数が数字ではない");
                     return false;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.setOtherMIB(p, UUID.fromString(touuid), args[2], amount, args[1]));
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.setOtherMIB(p, UUID.fromString(toUUID), args[2], amount, args[1]));
                 return true;
             }
             p.sendMessage("/mce ibedit [player名] [id/key] [個数] 他人のmibデータをセットする");

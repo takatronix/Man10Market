@@ -5,7 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import red.man10.man10offlinebank.BankAPI;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -15,7 +15,7 @@ public class BalanceCommand  implements CommandExecutor {
     private final MarketPlugin plugin;
 
 
-    MarketData data = null;
+    MarketData data;
 
     //      コンストラクタ
     public BalanceCommand(MarketPlugin plugin) {
@@ -25,7 +25,7 @@ public class BalanceCommand  implements CommandExecutor {
 
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
 
         if(!(sender instanceof Player)) {
             sender.sendMessage("プレイヤーのみ実行できます");
@@ -104,10 +104,7 @@ public class BalanceCommand  implements CommandExecutor {
     void showBalanceUUID(Player p, String uuid)
     {
 
-       // Bukkit.getLogger().info(p.getDisplayName()+"の残高チェック中");
-
-       // p.sendMessage(p.getDisplayName()+"の残高チェック中...:"+ uuid);
-        double bal = 0;
+        double bal;
 
         Player target = Bukkit.getPlayer(UUID.fromString(uuid));
 
@@ -117,7 +114,7 @@ public class BalanceCommand  implements CommandExecutor {
             }
         }
 
-        UserData.UserAssetsHistory asset = data.userData.getUserAsset(uuid.toString());
+        UserData.UserAssetsHistory asset = data.userData.getUserAsset(uuid);
         if(asset == null){
             return;
         }
@@ -166,7 +163,7 @@ public class BalanceCommand  implements CommandExecutor {
         }
 
         String command = "/mce order";
-        if(p.getUniqueId().toString().equalsIgnoreCase(uuid) == false){
+        if(!p.getUniqueId().toString().equalsIgnoreCase(uuid)){
             command += " "+orderPlyer;
         }
 
@@ -178,7 +175,7 @@ public class BalanceCommand  implements CommandExecutor {
 
     }
 
-    boolean showBalance(Player sender, String playerName)
+    void showBalance(Player sender, String playerName)
     {
 
         Bukkit.getLogger().info("showBalance:"+playerName);
@@ -188,17 +185,14 @@ public class BalanceCommand  implements CommandExecutor {
         String uuid = null;
 
         if (playerName == null) {
-            Player p = sender;
-            uuid = p.getPlayer().getUniqueId().toString();
+            uuid = sender.getPlayer().getUniqueId().toString();
         } else {
             Player p = Bukkit.getPlayer(playerName);
             if(p != null){
                 uuid = p.getUniqueId().toString();
             }
         }
-
-//        Bukkit.getLogger().info("uuid:"+uuid);
-
+        
         if ((uuid == null) && (playerName != null))
         {
             uuid = data.userData.getUUID(playerName);
@@ -207,12 +201,11 @@ public class BalanceCommand  implements CommandExecutor {
 
         if (uuid == null) {
             sender.sendMessage("プレイヤーはこのサーバに存在していません");
-            return false;
+            return;
         }
 
         showBalanceUUID(sender, uuid);
 
-        return false;
     }
 
 }
