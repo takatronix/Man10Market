@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import red.man10.man10offlinebank.BankAPI;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -26,8 +27,9 @@ public class BalanceCommand  implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
-        if((sender instanceof Player) == false) {
+        if(!(sender instanceof Player)) {
             sender.sendMessage("プレイヤーのみ実行できます");
+            return false;
         }
         if(args.length > 2){
             sender.sendMessage("/balance/bal/mbal/mblance [playername]");
@@ -36,7 +38,6 @@ public class BalanceCommand  implements CommandExecutor {
 
         if(args.length == 1){
             if(sender.hasPermission(Settings.showBalanceOther)){
-
 
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                     try {
@@ -75,23 +76,21 @@ public class BalanceCommand  implements CommandExecutor {
     UserData.UserAssetsHistory last = null;
 
 
-    boolean showAssetUUID(CommandSender p, String uuid)
+    void showAssetUUID(CommandSender p, String uuid)
     {
         String sql = "select * from user_assets_history where uuid = '" + uuid + "' order by id desc limit 2;";
 
 
         ArrayList<UserData.UserAssetsHistory> his = data.userData.getAssetHistory(sql);
         if (his.size() == 0) {
-            return false;
+            return;
         }
 
 
-        today = ((UserData.UserAssetsHistory)his.get(0));
-
-
+        today = his.get(0);
 
         if (his.size() == 2) {
-            last = ((UserData.UserAssetsHistory)his.get(1));
+            last = his.get(1);
         }
 
         Utility.sendHoverText((Player)p, "§a§l--------[アイテムバンク] => §a§n/mib", "クリックするとアイテムバンクを開きます", "/mib");
@@ -100,10 +99,9 @@ public class BalanceCommand  implements CommandExecutor {
         p.sendMessage(ret);
 
 
-        return true;
     }
 
-    boolean showBalanceUUID(Player p, String uuid)
+    void showBalanceUUID(Player p, String uuid)
     {
 
        // Bukkit.getLogger().info(p.getDisplayName()+"の残高チェック中");
@@ -121,40 +119,34 @@ public class BalanceCommand  implements CommandExecutor {
 
         UserData.UserAssetsHistory asset = data.userData.getUserAsset(uuid.toString());
         if(asset == null){
-            return false;
+            return;
         }
         bal = asset.bal;
 
 
-
-
         p.sendMessage("§e§l===============[§f§l" + asset.player + "の資産§e§l]==============");
-        String balMessage = "口座残高:" + Utility.getColoredPriceString(bal);
-
-        p.sendMessage(balMessage);
+        p.sendMessage("所持金:" + Utility.getColoredPriceString(bal));
+        p.sendMessage("§e§l口座残高:"+ plugin.bankAPI.getBalance(UUID.fromString(uuid)));
 
 
         showAssetUUID(p, uuid);
         showOrderUUID(p, uuid);
 
-        data.userData.showEarnings(p,uuid);
+//        data.userData.showEarnings(p,uuid);
 
-        return true;
     }
 
-    boolean showOrderUUID(Player p, String uuid)
+    void showOrderUUID(Player p, String uuid)
     {
         MarketData data = new MarketData(plugin);
         ArrayList<MarketData.OrderInfo> orders = data.getOrderOfUser(p, uuid);
         if (orders == null) {
-            return false;
+            return;
         }
 
         if (orders.size() == 0) {
-            return false;
+            return;
         }
-
-
 
         long buyAmount = 0L;
         long sellAmount = 0L;
@@ -184,9 +176,6 @@ public class BalanceCommand  implements CommandExecutor {
         p.sendMessage("§f売り注文評価額:" + Utility.getColoredPriceString(sellTotal) + " §f: " + Utility.getColoredItemString(sellAmount));
 
 
-
-
-        return true;
     }
 
     boolean showBalance(Player sender, String playerName)

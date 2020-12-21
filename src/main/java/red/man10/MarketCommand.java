@@ -82,24 +82,6 @@ public class MarketCommand implements CommandExecutor {
         String command = args[0];
 
 
-//        //     withdraw
-//        if(command.equalsIgnoreCase("withdraw")){
-//            if(!checkPermission(p,Settings.withdraw)){
-//                return false;
-//            }
-//
-//            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-//                try {
-//                    plugin.withdrawAll(p);
-//                } catch (Exception e) {
-//                    Bukkit.getLogger().info(e.getMessage());
-//                    System.out.println(e.getMessage());
-//                }
-//            });
-//
-//            return true;
-//        }
-
         //      market broadcast
         if(command.equalsIgnoreCase("updateall")){
             if(!checkPermission(p,Settings.broadcastPermission)){

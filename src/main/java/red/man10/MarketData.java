@@ -1832,7 +1832,7 @@ public class MarketData {
 
         Utility.sendHoverText(p, " 過去の注文を参照する => §9§n[注文履歴]","注文の履歴を表示します /mce log","/mce log");
 
-        userData.showEarnings(p,p.getUniqueId().toString());
+//        userData.showEarnings(p,p.getUniqueId().toString());
 
 
         return true;

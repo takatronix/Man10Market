@@ -1068,12 +1068,12 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
                 data.userData.updateUserAssetsHistory(p);
 
 
-                String uuid = p.getUniqueId().toString();
-                UserData.UserInformation ui = data.userData.getUserInformation(uuid);
-                if(ui == null){
-                    Bukkit.getLogger().info(p.getName()+"のUserデータを作成中");
-                    data.userData.insertUserInformation(uuid);
-                }
+//                String uuid = p.getUniqueId().toString();
+//                UserData.UserInformation ui = data.userData.getUserInformation(uuid);
+//                if(ui == null){
+//                    Bukkit.getLogger().info(p.getName()+"のUserデータを作成中");
+//                    data.userData.insertUserInformation(uuid);
+//                }
 
                 p.chat("/bal");
 
