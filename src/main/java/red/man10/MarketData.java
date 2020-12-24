@@ -683,7 +683,7 @@ public class MarketData {
     public boolean updateOrder(int id,int amount){
         String sql = "update order_tbl set amount = "+amount+" where id = "+id+";";
         boolean ret = mysql.execute(sql);
-        if(ret == false){
+        if(!ret){
             opLog("オーダーの更新に失敗!! order_id:"+id+ " amount:"+amount);
         }
         return ret;
@@ -692,7 +692,7 @@ public class MarketData {
     public boolean deleteOrder(int id){
         String sql = "delete from order_tbl where id = "+id+";";
         boolean ret =  mysql.execute(sql);
-        if(ret == false){
+        if(!ret){
             opLog("オーダーの削除に失敗!! order_id:"+id);
         }
         return ret;
@@ -780,7 +780,7 @@ public class MarketData {
 
 
 
-        if(plugin.vault.withdraw(player.getUniqueId(),money) == false){
+        if(!plugin.vault.withdraw(player.getUniqueId(), money)){
             Player online = (Player)player;
             plugin.showError(online,"$"+getPriceString(money)+"の引き出しに失敗しました");
             return false;
@@ -974,7 +974,7 @@ public class MarketData {
                 //  買い注文数をへらす
                 int leftAmount = o.amount - amount;
              //   opLog("買い注文 < 売り注文 ->買い注文数をへらす 残り注文数"+leftAmount);
-                if(updateOrder(o.id,leftAmount) == false){
+                if(!updateOrder(o.id, leftAmount)){
                     showError(uuidBuyer,"(1)注文エラー");
                     //opLog("(1)buyExchange:"+o.player+"の注文更新に失敗");
                     continue;
@@ -983,7 +983,7 @@ public class MarketData {
                 //    購入できたぶんアイテムを届ける
                 //itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
 
-                if(itemBank.addItem(uuidBuyer,item_id,amount) == false){
+                if(!itemBank.addItem(uuidBuyer, item_id, amount)){
                     showError(uuidBuyer,"(2)購入できたアイテムをアイテムバンクへ届けられなかった");
                     //opLog("(2)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
                     continue;
@@ -1000,14 +1000,14 @@ public class MarketData {
             }else if(o.amount < amount){
               //  opLog("買い注文 >  売り注文 -> 売り注文を削除する order_id"+o.id + " 売り注文"+o.amount + " 買い注文:"+amount);
                 // オーダー削除
-                if(deleteOrder(o.id)==false){
+                if(!deleteOrder(o.id)){
                     showError(uuidBuyer,"(3)注文エラー");
                     //opLog("(3)buyExchange:"+o.player+"の注文削除失敗");
                     continue;
                 }
                 //    購入者へアイテムを届ける
                 //itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
-                if(itemBank.addItem(uuidBuyer,item_id,o.amount) == false){
+                if(!itemBank.addItem(uuidBuyer, item_id, o.amount)){
                     showError(uuidBuyer,"(4)購入できたアイテムをアイテムバンクへ届けられなかった");
                    //opLog("(4)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
                     continue;
@@ -1024,14 +1024,14 @@ public class MarketData {
             }else if(o.amount == amount){
                 opLog("買い注文 == 売り注文 -> 売り注文を削除する order_id"+o.id);
                 // オーダー削除
-                if(deleteOrder(o.id) == false){
+                if(!deleteOrder(o.id)){
                     showError(uuidBuyer,"(5)注文エラー");
                    //opLog("(5)buyExchange:"+o.player+"の注文削除失敗");
                     continue;
                 }
                 //    購入者へアイテムを届ける
         //        itemBank.sendItemToStorage(uuidBuyer,item_id,amount);
-                if(itemBank.addItem(uuidBuyer,item_id,amount) == false){
+                if(!itemBank.addItem(uuidBuyer, item_id, amount)){
                     showError(uuidBuyer,"(6)購入できたアイテムをアイテムバンクへ届けられなかった");
                     //opLog("(6)buyExchange:"+o.player+"へ購入できたアイテムをアイテムバンクへ届けられなかった");
                     continue;
@@ -1343,7 +1343,7 @@ public class MarketData {
                 }
 
                 //      購入者へアイテム送信
-                if(itemBank.addItem(uuid,o.item_id,o.amount) == false){
+                if(!itemBank.addItem(uuid, o.item_id, o.amount)){
                     opLog(player.getName()+"のMarketBuyのアイテム追加に失敗5 )");
                     return totalAmount;
                 }
@@ -1578,7 +1578,7 @@ public class MarketData {
                 +"'"+currentTime()+"'"
                 +");");
 
-        if(ret == false){
+        if(!ret){
             showError(uuid,"注文に失敗した！(重大)");
             opLog(p.getName()+"が、指値売りをしようとしたがSQLエラー発生"+idOrKey+" price:"+price+"amount:"+amount);
             return false;
@@ -1925,10 +1925,6 @@ public class MarketData {
         String itemName = item.getItemMeta().getDisplayName();
         String itemType = item.getType().toString();
 
-        if(itemName == null){
-            itemName = item.getType().toString();
-        }
-
         int damage = 0;
         if (item instanceof Damageable){
             damage = ((Damageable)item).getDamage();
@@ -1962,8 +1958,7 @@ public class MarketData {
     public String currentTime(){
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy'-'MM'-'dd' 'HH':'mm':'ss");
-        String currentTime = sdf.format(date);
-        return currentTime;
+        return sdf.format(date);
     }
 
     public static ItemStack itemFromBase64(String data) {
@@ -1992,8 +1987,8 @@ public class MarketData {
             items[0] = item;
             dataOutput.writeInt(items.length);
 
-            for (int i = 0; i < items.length; i++) {
-                dataOutput.writeObject(items[i]);
+            for (ItemStack itemStack : items) {
+                dataOutput.writeObject(itemStack);
             }
 
             dataOutput.close();

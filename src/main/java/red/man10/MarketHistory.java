@@ -14,7 +14,7 @@ public class MarketHistory {
     public  MarketPlugin plugin = null;
     public  MarketData data = null;
 
-    class Candle{
+    static class Candle{
         int id;
         int item_id;
         double high;
@@ -31,7 +31,7 @@ public class MarketHistory {
 
 
 
-    public boolean update(int item_id ,double price,int year,int month,int day,int hour,int minute){
+    public void update(int item_id , double price, int year, int month, int day, int hour, int minute){
 
         long dayVolume = data.getDayVolume(item_id,year,month,day);
         long hourVolume = data.getHourVolume(item_id,year,month,day,hour);
@@ -39,9 +39,8 @@ public class MarketHistory {
         updateHour(item_id,price,(int)hourVolume,year,month,day,hour);
 
 
-        return true;
     }
-    boolean updateHour(int item_id ,double price,int volume,int year,int month,int day,int hour){
+    void updateHour(int item_id , double price, int volume, int year, int month, int day, int hour){
         //  data.opLog("updateDay");
       //  int hour = 0;
         int minute = 0;
@@ -50,10 +49,10 @@ public class MarketHistory {
             // data.opLog("candle == nul -> instert");
             if(!data.mysql.execute("insert into history_hour values(0," + item_id + "," + price + "," + price + "," + price + "," + price + "," + volume + "," + year + "," + month + "," + day + "," + hour + "," + minute + ");")){
                 data.opLog("Candle insert error");
-                return false;
+                return;
             }
 
-            return true;
+            return;
         }
         //   data.opLog("candle -> update");
 
@@ -68,26 +67,24 @@ public class MarketHistory {
         }
         //  data.opLog("candle update");
 
-        if(data.mysql.execute("update history_hour set open="+candle.open + ",close="+candle.close + ",high="+candle.high + ",low="+candle.low+",volume="+candle.volume+" where id="+candle.id+";") == false){
+        if(!data.mysql.execute("update history_hour set open=" + candle.open + ",close=" + candle.close + ",high=" + candle.high + ",low=" + candle.low + ",volume=" + candle.volume + " where id=" + candle.id + ";")){
             data.opLog("Candle update error");
-            return false;
         }
 
-        return true;
     }
-    boolean updateDay(int item_id ,double price,int volume,int year,int month,int day){
+    void updateDay(int item_id , double price, int volume, int year, int month, int day){
       //  data.opLog("updateDay");
         int hour = 0;
         int minute = 0;
         Candle candle = getDayCandle(item_id,year,month,day);
         if(candle == null){
            // data.opLog("candle == nul -> instert");
-            if(data.mysql.execute("insert into history_day values(0,"+item_id+","+price+","+price+","+price+","+price+","+volume+","+year+","+month+","+day+","+hour+","+minute+");") == false){
+            if(!data.mysql.execute("insert into history_day values(0," + item_id + "," + price + "," + price + "," + price + "," + price + "," + volume + "," + year + "," + month + "," + day + "," + hour + "," + minute + ");")){
                 data.opLog("Candle insert error");
-                return false;
+                return;
             }
 
-            return true;
+            return;
         }
 
         candle.volume = volume;
@@ -100,12 +97,10 @@ public class MarketHistory {
         }
       //  data.opLog("candle update");
 
-        if(data.mysql.execute("update history_day set open="+candle.open + ",close="+candle.close + ",high="+candle.high + ",low="+candle.low+",volume="+candle.volume+" where id="+candle.id+";") == false){
+        if(!data.mysql.execute("update history_day set open=" + candle.open + ",close=" + candle.close + ",high=" + candle.high + ",low=" + candle.low + ",volume=" + candle.volume + " where id=" + candle.id + ";")){
             data.opLog("Candle update error");
-            return false;
         }
 
-        return true;
     }
 
     //      日足を得る
@@ -164,7 +159,7 @@ public class MarketHistory {
         return null;
     }
 
-    boolean saveHourCSV(String path,int item_id,int n){
+    void saveHourCSV(String path, int item_id, int n){
 
         ArrayList<Candle> list = getHourCandles(item_id,n);
 
@@ -191,15 +186,14 @@ public class MarketHistory {
         }catch(IOException e){
             System.out.println(e);
             Bukkit.getLogger().info("error:"+e.getMessage());
-            return false;
+            return;
         }
         Bukkit.getLogger().info("done:"+filePath);
 
-        return true;
     }
 
 
-    boolean saveIndexCSV(String path, MarketData.ItemIndex current){
+    void saveIndexCSV(String path, MarketData.ItemIndex current){
 
 
         File dir = new File(path + current.id);
@@ -219,14 +213,13 @@ public class MarketHistory {
         }catch(IOException e){
             System.out.println(e);
             Bukkit.getLogger().info("error:"+e.getMessage());
-            return false;
+            return;
         }
         Bukkit.getLogger().info("done:"+filePath);
 
-        return true;
     }
 
-    boolean saveDayCSV(String path,int item_id,int n){
+    void saveDayCSV(String path, int item_id, int n){
 
         ArrayList<Candle> list = getDayCandles(item_id,n);
 
@@ -251,11 +244,10 @@ public class MarketHistory {
         }catch(IOException e){
             System.out.println(e);
             Bukkit.getLogger().info("error:"+e.getMessage());
-            return false;
+            return;
         }
         Bukkit.getLogger().info("done:"+filePath);
 
-        return true;
     }
 
 
