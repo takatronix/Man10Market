@@ -180,7 +180,7 @@ public class MarketCommand implements CommandExecutor {
             if(!checkPermission(p,Settings.openPermission)){
                 return false;
             }
-            plugin.marketOpen(p,true);
+            plugin.marketOpen(true);
             return true;
         }
         //      market close
@@ -188,7 +188,7 @@ public class MarketCommand implements CommandExecutor {
             if(!checkPermission(p,Settings.closePermission)){
                 return false;
             }
-            plugin.marketOpen(p,false);
+            plugin.marketOpen(false);
             return true;
         }
 

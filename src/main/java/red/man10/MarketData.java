@@ -664,7 +664,7 @@ public class MarketData {
         plugin.sign.updateSign(current.key,price);
         plugin.sign.updateSign(String.valueOf(current.id),price);
 */
-        plugin.updateMapList(current.id,current.key,"$"+getPriceString(current.price));
+        plugin.updateMapList(current.id);
 
         Bukkit.getLogger().info("現在値更新中:"+item_id + " price:"+current.price);
 
