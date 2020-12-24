@@ -20,7 +20,7 @@ public class UserData {
         this.plugin = plugin;
     }
 
-    class UserAssetsHistory{
+    static class UserAssetsHistory{
         String uuid;
         String player;
         double bal;
@@ -34,52 +34,7 @@ public class UserData {
 
 
 
-    class UserInformation{
-        double balance;
-    }
 
-
-//    ////////////////////////////////////////////
-//    //     get user information
-//    ////////////////////////////////////////////
-//    UserInformation getUserInformation(String uuid){
-//
-//
-//        String sql = "select * from user_index where uuid='"+uuid+"';";
-//        ResultSet rs = data.mysql.query(sql);
-//        UserInformation ui = null;
-//        if(rs == null){
-//            return null;
-//        }
-//        try {
-//            while (rs.next()) {
-//                ui = new UserInformation();
-//                ui.balance = rs.getDouble("balance");
-//                break;
-//            }
-//            rs.close();
-//
-//        }catch(Exception e){
-//
-//        }
-//
-//        data.mysql.close();
-//        return ui;
-//    }
-
-
-//    boolean insertUserInformation(String uuid){
-//
-//        Player p = Bukkit.getPlayer(UUID.fromString(uuid));
-//        if(p == null){
-//            Bukkit.getLogger().info("insertUserInformation 取得失敗");
-//            return false;
-//        }
-//        Bukkit.getLogger().info("ユーザーデータ挿入中");
-//
-//        String sql = "insert into user_index values(0,'" + uuid + "','"+p.getName()+"',0,null,0,0);";
-//        return  data.mysql.execute(sql);
-//    }
 
 
     void deposit(String uuid, double money){
@@ -87,63 +42,6 @@ public class UserData {
         plugin.bankAPI.deposit(UUID.fromString(uuid),money,"Man10Market deposit");
 
     }
-
-
-//    boolean withdraw(String uuid,double money){
-//
-//        UserInformation ui = getUserInformation(uuid);
-//        if(ui == null){
-//            return false;
-//        }
-//
-//        if(ui.balance < money){
-//            data.showError(uuid,"残額より多くはひきだせない");
-//            return false;
-//        }
-//
-//        boolean ret = data.mysql.execute("update user_index set balance = balance - "+money+" where uuid='"+uuid+"';");
-//
-//
-//
-//        if(ret){
-//            this.plugin.vault.deposit(UUID.fromString(uuid),money);
-//            data.showMessage(uuid,Utility.getColoredPriceString(money)+"§f§l口座に追加されました");
-//        }else{
-//            data.showError(uuid,"口座からの引き出しに失敗した");
-//
-//        }
-//
-//        return true;
-//    }
-
-
-
-
-
-//    String  createJoinMessage(Player p){
-//
-//
-//        String sql = "select * from user_assets_history where uuid = '"+p.getUniqueId().toString()+"' order by id desc limit 2;";
-//
-//
-//        ArrayList<UserAssetsHistory> his = getAssetHistory(sql);
-//        if(his.size() == 0){
-//            return null;
-//        }
-//
-//        UserAssetsHistory today = his.get(0);
-//        UserAssetsHistory last =null;
-//
-//        //      前日データあり
-//        if(his.size() == 2){
-//            last = his.get(1);
-//        }
-//
-//        String ret = "§f§l残高:"+Utility.getPriceString(today.bal) + "§f§lアイテムバンク評価額:"+Utility.getPriceString(today.estimated_value) +" §f§lアイテム個数:"+Utility.getItemString((int)today.total_amount);
-//
-//
-//        return ret;
-//    }
 
     public UserAssetsHistory getUserAsset(String uuid){
         String sql = "select * from user_assets_history where uuid = '"+uuid+"' order by id desc limit 1;";
@@ -206,19 +104,6 @@ public class UserData {
         }
         return his.get(0).uuid;
     }
-
-
-
-//    //          売上を表示するs
-//    void showEarnings(Player p,String uuid){
-//        ///
-//        UserData.UserInformation ui = this.getUserInformation(uuid);
-//        if(ui != null){
-//            if(ui.balance != 0){
-//                Utility.sendHoverText(p,"§k§l $$$$ §f§l§nあなたの売上金額:"+Utility.getColoredPriceString(ui.balance) +" §l§n [引き出す] => /mce withdraw","クリックすると支払われます /mce withdraw","/mce withdraw");
-//            }
-//        }
-//    }
 
 
 
