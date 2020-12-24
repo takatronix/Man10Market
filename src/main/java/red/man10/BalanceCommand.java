@@ -60,7 +60,7 @@ public class BalanceCommand  implements CommandExecutor {
 
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
             try {
-                showBalance((Player)sender,null);
+                showBalance((Player)sender,sender.getName());
             } catch (Exception e) {
                 Bukkit.getLogger().info(e.getMessage());
                 System.out.println(e.getMessage());
@@ -185,7 +185,7 @@ public class BalanceCommand  implements CommandExecutor {
         String uuid = null;
 
         if (playerName == null) {
-            uuid = sender.getPlayer().getUniqueId().toString();
+            uuid = sender.getUniqueId().toString();
         } else {
             Player p = Bukkit.getPlayer(playerName);
             if(p != null){
@@ -193,8 +193,7 @@ public class BalanceCommand  implements CommandExecutor {
             }
         }
 
-        if ((uuid == null) && (playerName != null))
-        {
+        if ((uuid == null) && (playerName != null)) {
             uuid = data.userData.getUUID(playerName);
             sender.sendMessage("プレイヤーがDBからみつかりました UUID: "+uuid);
         }

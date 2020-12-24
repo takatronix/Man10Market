@@ -223,11 +223,11 @@ public class UserData {
 
 
     //      ユーザーの資産をアップデート
-    int updateUserAssetsHistory(Player p){
+    void updateUserAssetsHistory(Player p){
 
         if(p == null){
             Bukkit.getLogger().info("updateUserAssetsHistory null");
-            return 0;
+            return;
         }
         String uuid = p.getUniqueId().toString();
 
@@ -237,14 +237,14 @@ public class UserData {
         ArrayList<ItemBank.ItemStorage> list = data.itemBank.getStorageList(uuid);
 
         if(list.size() == 0){
-            return 0;
+            return;
         }
 
 
 
         long totalAmount = 0;
         double estimatedValue = 0;
-        String itemList = "";
+        StringBuilder itemList = new StringBuilder();
         for(ItemBank.ItemStorage storage:list){
             totalAmount += storage.amount;
             MarketData.ItemIndex index  = data.getItemPrice(storage.item_id);
@@ -252,10 +252,10 @@ public class UserData {
 
             //Bukkit.getLogger().info("key:"+storage.item_key +"$" + index.price * storage.amount);
 
-            if(!itemList.isEmpty()){
-                itemList += " ";
+            if(itemList.length() > 0){
+                itemList.append(" ");
             }
-            itemList += index.id+":"+storage.amount;
+            itemList.append(index.id).append(":").append(storage.amount);
         }
 
         Bukkit.getLogger().info("price checked");
@@ -287,14 +287,13 @@ public class UserData {
 
         if(!data.mysql.execute(sql)){
             plugin.showError(p,"個人データの更新に失敗");
-            return  -1;
+            return;
         }
 
 
         Bukkit.getLogger().info("ユーザーデータ更新成功"+p.getName());
 
 
-        return list.size();
     }
 
 }
