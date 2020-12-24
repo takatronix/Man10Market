@@ -123,7 +123,7 @@ public class BalanceCommand  implements CommandExecutor {
 
         p.sendMessage("§e§l===============[§f§l" + asset.player + "の資産§e§l]==============");
         p.sendMessage("所持金:" + Utility.getColoredPriceString(bal));
-        p.sendMessage("口座残高:"+ plugin.bankAPI.getBalance(UUID.fromString(uuid)));
+        p.sendMessage("口座残高:§e§l$"+ plugin.bankAPI.getBalance(UUID.fromString(uuid)));
 
 
         showAssetUUID(p, uuid);

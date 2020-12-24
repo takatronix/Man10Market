@@ -1074,8 +1074,9 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 //                    Bukkit.getLogger().info(p.getName()+"のUserデータを作成中");
 //                    data.userData.insertUserInformation(uuid);
 //                }
-
-                p.chat("/bal");
+                Bukkit.getScheduler().runTask(this, () -> {
+                    p.chat("/bal");
+                });
 
 
             } catch (Exception e) {
