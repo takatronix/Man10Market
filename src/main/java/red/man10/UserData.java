@@ -56,7 +56,7 @@ public class UserData {
 
     ArrayList<UserAssetsHistory> getAssetHistory(String sql){
 
-        ArrayList<UserAssetsHistory> ret = new ArrayList<UserAssetsHistory>();
+        ArrayList<UserAssetsHistory> ret = new ArrayList<>();
 
         ResultSet rs = data.mysql.query(sql);
         if(rs == null){
