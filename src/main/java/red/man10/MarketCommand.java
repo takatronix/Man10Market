@@ -696,9 +696,6 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("/mce cancelall  全ての注文をキャンセルする");
         p.sendMessage("/mce canceltem [id/key]");
 
-        p.sendMessage("/mce withdraw - 売上をすべて引き出す");
-
-
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§e created by takatronix http://twitter.com/takatronix");
         p.sendMessage("§e http://man10.red");
