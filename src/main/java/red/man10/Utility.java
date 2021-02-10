@@ -4,6 +4,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -53,7 +54,7 @@ public class Utility {
         //      ホバーテキストとイベントを作成する
         HoverEvent hoverEvent = null;
         if(hoverText != null){
-            BaseComponent[] hover = new ComponentBuilder(hoverText).create();
+            Text hover = new Text(hoverText);
             hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover);
         }
 
@@ -75,7 +76,7 @@ public class Utility {
         //      ホバーテキストとイベントを作成する
         HoverEvent hoverEvent = null;
         if(hoverText != null){
-            BaseComponent[] hover = new ComponentBuilder(hoverText).create();
+            Text hover = new Text(hoverText);
             hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover);
         }
 
