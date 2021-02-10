@@ -796,7 +796,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
     // アイテム削除
-    public void unregisterItem(Player p, String key) {
+    public void unregisterItem(Player p) {
         p.sendMessage("アイテム削除");
 
         ItemStack item = p.getInventory().getItemInMainHand();

@@ -236,6 +236,8 @@ public class MarketCommand implements CommandExecutor {
             if(!checkPermission(p,Settings.adminPermission)){
                 return false;
             }
+
+            plugin.unregisterItem(p);
         }
 
 
