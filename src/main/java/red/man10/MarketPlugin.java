@@ -699,7 +699,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         MarketData data = new MarketData(this);
         MarketData.ItemIndex result =  data.getItemPrice(p,item);
-        if(!result.result){
+        if(result.result){
             showError(p,"このアイテムは登録対象外です");
             return false;
         }
