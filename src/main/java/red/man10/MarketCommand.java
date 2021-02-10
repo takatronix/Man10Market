@@ -678,7 +678,6 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§e============== §d●§f●§a●§e Man10 Market §d●§f●§a● §e===============");
         p.sendMessage("§c-------アイテム登録--------------");
         p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
-        p.sendMessage("§2§l/mce restore [id/key] [個数] 倉庫からアイテムを引き出す");
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§2§l/mce list - 登録アイテムリストと価格を表示する");
         p.sendMessage("§2§l/mce price (id/key) - (id/Key/手に持ったアイテム)の金額を表示する");
