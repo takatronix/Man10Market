@@ -795,6 +795,25 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
     }
 
+    // アイテム削除
+    public void unregisterItem(Player p, String key) {
+        p.sendMessage("アイテム削除");
+
+        ItemStack item = p.getInventory().getItemInMainHand();
+        if(item.getAmount() != 1){
+            p.sendMessage("§4§lマーケットから削除するアイテムを手に一つもってコマンドを実行してください");
+            return;
+        }
+
+        MarketData data = new MarketData(this);
+
+        if (data.unregisterItem(p, item)) {
+            showMessage(p,"マーケットからアイテムを削除しました");
+        }else{
+            showError(p,"削除に失敗しました");
+        }
+    }
+
     public void setTick(Player p,String idOrKey,double tick){
 
         MarketData data = new MarketData(this);

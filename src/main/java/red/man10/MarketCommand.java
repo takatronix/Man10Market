@@ -230,6 +230,14 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
 
+        ////////////////
+        // 削除
+        if(command.equalsIgnoreCase("unregister")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
+        }
+
 
         ////////////////
         //    リスト

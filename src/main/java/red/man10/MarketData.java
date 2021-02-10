@@ -1954,6 +1954,19 @@ public class MarketData {
         return ret;
     }
 
+    // アイテム削除
+    public boolean unregisterItem(Player player, ItemStack item){
+        String playerName = player.getName();
+        String uuid = player.getUniqueId().toString();
+        String itemName = item.getItemMeta().getDisplayName();
+
+        boolean ret = mysql.execute("delete from item_index where itemName = '" + itemName + "';");
+
+        logTransaction(uuid,"unRegister",itemName, 0, 0,0,"");
+
+        return ret;
+    }
+
 
     public String currentTime(){
         Date date = new Date();
