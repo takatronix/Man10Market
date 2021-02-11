@@ -500,7 +500,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         MarketData data = new MarketData(this);
 
-        sendClickableMessage(p,"xxx","http://man10.red");
+        sendClickableMessage(p,prefix,"http://man10.red");
         p.sendMessage("§d§l---------[注文リスト]-----------");
         int count = 0;
         for(MarketData.OrderInfo o : orders){
