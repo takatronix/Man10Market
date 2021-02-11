@@ -238,7 +238,12 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
 
-            plugin.setTick(p,args[1], Double.parseDouble(args[2]));
+
+            try {
+                plugin.setTick(p, args[1], Double.parseDouble(args[2]));
+            }catch(NumberFormatException e) {
+                p.sendMessage("§4§lティックを数字にしてください。");
+            }
             return true;
         }
 
