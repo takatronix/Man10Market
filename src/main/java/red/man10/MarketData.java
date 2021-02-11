@@ -1958,9 +1958,10 @@ public class MarketData {
     public boolean unregisterItem(Player player, ItemStack item){
         String playerName = player.getName();
         String uuid = player.getUniqueId().toString();
+        String base64 = itemToBase64(item);
         String itemName = item.getItemMeta().getDisplayName();
 
-        boolean ret = mysql.execute("delete from item_index where itemName = '" + itemName + "';");
+        boolean ret = mysql.execute("delete from item_index where base64 = '" + base64 + "';");
 
         logTransaction(uuid,"unRegister",itemName, 0, 0,0,"");
 
