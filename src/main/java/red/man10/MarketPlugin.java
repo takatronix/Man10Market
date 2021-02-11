@@ -1,6 +1,8 @@
 package red.man10;
 
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.block.Sign;
@@ -434,8 +436,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         if(data.cancelOrderByOrderId(orderNo)){
            data.updateCurrentPrice(order.item_id);
 
-            p.sendMessage("注文ID:"+order.id +"をキャンセルしました");
-            p.chat("/mce order");
+           Bukkit.getScheduler().runTask(this, () -> {
+               p.sendMessage("注文ID:" + order.id + "をキャンセルしました");
+               p.chat("/mce order");
+           });
         }
 
     }
@@ -486,12 +490,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return true;
     }
 
-    public void sendClickableMessage(Player player, String message, String url) {
-        Bukkit.getServer().dispatchCommand(
-                Bukkit.getConsoleSender(),
-                "/tellraw " + player.getName() +
-                        " {text:\"" + message + "\",clickEvent:{action:open_url,value:\"" +
-                        url + "\"}}");
+    public void sendClickableMessage(Player player, String strmessage, String url) {
+        TextComponent message = new TextComponent(strmessage);
+        message.setClickEvent( new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+        player.sendMessage(message);
     }
 
     public void showOrders(Player p, ArrayList<MarketData.OrderInfo> orders){
