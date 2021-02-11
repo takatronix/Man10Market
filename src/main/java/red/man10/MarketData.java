@@ -778,7 +778,11 @@ public class MarketData {
 
        // opLog("payMoney: "+ uuid + " player:"+playerName);
 
-
+        if (plugin.vault.getBalance(player.getUniqueId()) - money <= 0) {
+            Player online = (Player)player;
+            plugin.showError(online,"$"+getPriceString(money)+"の引き出しに失敗しました");
+            return false;
+        }
 
         if(!plugin.vault.withdraw(player.getUniqueId(), money)){
             Player online = (Player)player;
