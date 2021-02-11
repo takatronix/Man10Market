@@ -5,7 +5,6 @@ public class Settings {
     static String versionName = "2019/05/15";
     static String adminPermission = "red.man10.market.admin";
 
-    static String withdraw = "red.man10.market.withdraw";
     static String deposit = "red.man10.market.deposit";
 
     static String showBalanceOther = "red.man10.market.balanceother";

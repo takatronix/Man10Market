@@ -1,6 +1,8 @@
 package red.man10;
 
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.block.Sign;
@@ -434,8 +436,10 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         if(data.cancelOrderByOrderId(orderNo)){
            data.updateCurrentPrice(order.item_id);
 
-            p.sendMessage("注文ID:"+order.id +"をキャンセルしました");
-            p.chat("/mce order");
+           Bukkit.getScheduler().runTask(this, () -> {
+               p.sendMessage("注文ID:" + order.id + "をキャンセルしました");
+               p.chat("/mce order");
+           });
         }
 
     }
@@ -486,19 +490,17 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         return true;
     }
 
-    public void sendClickableMessage(Player player, String message, String url) {
-        Bukkit.getServer().dispatchCommand(
-                Bukkit.getConsoleSender(),
-                "/tellraw " + player.getName() +
-                        " {text:\"" + message + "\",clickEvent:{action:open_url,value:\"" +
-                        url + "\"}}");
+    public void sendClickableMessage(Player player, String strmessage, String url) {
+        TextComponent message = new TextComponent(strmessage);
+        message.setClickEvent( new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+        player.sendMessage(message);
     }
 
     public void showOrders(Player p, ArrayList<MarketData.OrderInfo> orders){
 
         MarketData data = new MarketData(this);
 
-        sendClickableMessage(p,"xxx","http://man10.red");
+        sendClickableMessage(p,prefix,"http://man10.red");
         p.sendMessage("§d§l---------[注文リスト]-----------");
         int count = 0;
         for(MarketData.OrderInfo o : orders){
@@ -681,6 +683,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
 
+    @Deprecated
     public boolean storeItem(Player p,int amount){
 
         ItemStack item = p.getInventory().getItemInMainHand();
@@ -699,7 +702,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
 
         MarketData data = new MarketData(this);
         MarketData.ItemIndex result =  data.getItemPrice(p,item);
-        if(!result.result){
+        if(result.result){
             showError(p,"このアイテムは登録対象外です");
             return false;
         }
@@ -793,6 +796,25 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
             showError(p,"登録に失敗しました");
         }
 
+    }
+
+    // アイテム削除
+    public void unregisterItem(Player p) {
+        p.sendMessage("アイテム削除");
+
+        ItemStack item = p.getInventory().getItemInMainHand();
+        if(item.getAmount() != 1){
+            p.sendMessage("§4§lマーケットから削除するアイテムを手に一つもってコマンドを実行してください");
+            return;
+        }
+
+        MarketData data = new MarketData(this);
+
+        if (data.unregisterItem(p, item)) {
+            showMessage(p,"マーケットからアイテムを削除しました");
+        }else{
+            showError(p,"削除に失敗しました");
+        }
     }
 
     public void setTick(Player p,String idOrKey,double tick){
@@ -901,8 +923,6 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         getCommand("mbal").setExecutor(new BalanceCommand(this));
 
         Bukkit.getLogger().info("BalanceCommand");
-
-        getCommand("ipay").setExecutor(new PayItemCommand(this));
 
         Bukkit.getLogger().info("ItemPayCommand");
 

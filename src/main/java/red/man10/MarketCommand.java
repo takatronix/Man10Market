@@ -83,6 +83,18 @@ public class MarketCommand implements CommandExecutor {
 
         String command = args[0];
 
+        if (command.equalsIgnoreCase("list")) {
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                try {
+                    plugin.showMenu(p,0);
+                } catch (Exception e) {
+                    Bukkit.getLogger().info(e.getMessage());
+                    System.out.println(e.getMessage());
+                }
+            });
+            return false;
+        }
+
 
         //      market broadcast
         if(command.equalsIgnoreCase("updateall")){
@@ -228,6 +240,16 @@ public class MarketCommand implements CommandExecutor {
 
             plugin.setTick(p,args[1], Double.parseDouble(args[2]));
             return true;
+        }
+
+        ////////////////
+        // 削除
+        if(command.equalsIgnoreCase("unregister")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
+
+            plugin.unregisterItem(p);
         }
 
 
@@ -504,24 +526,6 @@ public class MarketCommand implements CommandExecutor {
 
         }
 
-
-
-        //    アイテム保存
-        if(command.equalsIgnoreCase("store")){
-            if(!checkPermission(p,Settings.adminPermission)){
-                return false;
-            }
-            if(args.length == 1){
-                return plugin.storeItem(p,-1);
-            }
-            if(args.length == 2){
-                return plugin.storeItem(p,Integer.parseInt(args[1]));
-            }
-            p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
-            return false;
-        }
-
-
         //    注文リスト
         if(command.equalsIgnoreCase("order")){
             if(!checkPermission(p,Settings.orderPermission)){
@@ -545,8 +549,7 @@ public class MarketCommand implements CommandExecutor {
                     System.out.println(e.getMessage());
                 }
             });
-
-
+            return false;
         }
 
 
@@ -676,9 +679,6 @@ public class MarketCommand implements CommandExecutor {
 
     void showHelp(CommandSender p){
         p.sendMessage("§e============== §d●§f●§a●§e Man10 Market §d●§f●§a● §e===============");
-        p.sendMessage("§c-------アイテム登録--------------");
-        p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
-        p.sendMessage("§2§l/mce restore [id/key] [個数] 倉庫からアイテムを引き出す");
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§2§l/mce list - 登録アイテムリストと価格を表示する");
         p.sendMessage("§2§l/mce price (id/key) - (id/Key/手に持ったアイテム)の金額を表示する");
@@ -697,9 +697,6 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("/mce cancelall  全ての注文をキャンセルする");
         p.sendMessage("/mce canceltem [id/key]");
 
-        p.sendMessage("/mce withdraw - 売上をすべて引き出す");
-
-
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§e created by takatronix http://twitter.com/takatronix");
         p.sendMessage("§e http://man10.red");
@@ -712,7 +709,7 @@ public class MarketCommand implements CommandExecutor {
     void showAdminHelp(CommandSender p){
         p.sendMessage("§c-----------Admin Commands---------------------");
         p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
-        p.sendMessage("/mce cancellall  全ての注文をキャンセルする");
+        p.sendMessage("§c§l/mce cancellall  全ての注文をキャンセルする");
         p.sendMessage("§c§l/mce userlog (user) ユーザーの注文履歴");
         p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
         p.sendMessage("§c§l/mce tick (id/key) price  金額の最低変化量を設定する");
