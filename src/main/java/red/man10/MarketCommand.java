@@ -514,24 +514,6 @@ public class MarketCommand implements CommandExecutor {
 
         }
 
-
-
-        //    アイテム保存
-        if(command.equalsIgnoreCase("store")){
-            if(!checkPermission(p,Settings.adminPermission)){
-                return false;
-            }
-            if(args.length == 1){
-                return plugin.storeItem(p,-1);
-            }
-            if(args.length == 2){
-                return plugin.storeItem(p,Integer.parseInt(args[1]));
-            }
-            p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
-            return false;
-        }
-
-
         //    注文リスト
         if(command.equalsIgnoreCase("order")){
             if(!checkPermission(p,Settings.orderPermission)){
@@ -685,8 +667,6 @@ public class MarketCommand implements CommandExecutor {
 
     void showHelp(CommandSender p){
         p.sendMessage("§e============== §d●§f●§a●§e Man10 Market §d●§f●§a● §e===============");
-        p.sendMessage("§c-------アイテム登録--------------");
-        p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§2§l/mce list - 登録アイテムリストと価格を表示する");
         p.sendMessage("§2§l/mce price (id/key) - (id/Key/手に持ったアイテム)の金額を表示する");
@@ -723,6 +703,7 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§c§l/mce tick (id/key) price  金額の最低変化量を設定する");
 
         p.sendMessage("§c§l/mce register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
+        p.sendMessage("§c/mce unregister - 手にもったアイテムをマーケットから削除する");
 
         p.sendMessage("§c§l/mce ibview [player名] (id) 他人のmib情報を見る");
         p.sendMessage("§c§l/mce ibedit [player名] [id] [個数] 他人のmibデータをセットする");
