@@ -1,8 +1,6 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
@@ -14,7 +12,7 @@ import java.util.UUID;
 
 public class UserData {
 
-    public  MarketPlugin plugin = null;
+    public  MarketPlugin plugin;
     public  MarketData data = null;
 
 
@@ -22,7 +20,7 @@ public class UserData {
         this.plugin = plugin;
     }
 
-    class UserAssetsHistory{
+    static class UserAssetsHistory{
         String uuid;
         String player;
         double bal;
@@ -36,126 +34,13 @@ public class UserData {
 
 
 
-    class UserInformation{
-        double balance;
-    }
-
-
-    ////////////////////////////////////////////
-    //     get user information
-    ////////////////////////////////////////////
-    UserInformation getUserInformation(String uuid){
-
-
-        String sql = "select * from user_index where uuid='"+uuid+"';";
-        ResultSet rs = data.mysql.query(sql);
-        UserInformation ui = null;
-        if(rs == null){
-            return null;
-        }
-        try {
-            while (rs.next()) {
-                ui = new UserInformation();
-                ui.balance = rs.getDouble("balance");
-                break;
-            }
-            rs.close();
-
-        }catch(Exception e){
-
-        }
-
-        data.mysql.close();
-        return ui;
-    }
-
-
-    boolean insertUserInformation(String uuid){
-
-        Player p = Bukkit.getPlayer(UUID.fromString(uuid));
-        if(p == null){
-            Bukkit.getLogger().info("insertUserInformation 取得失敗");
-            return false;
-        }
-        Bukkit.getLogger().info("ユーザーデータ挿入中");
-
-        String sql = "insert into user_index values(0,'" + uuid + "','"+p.getName()+"',0,null,0,0);";
-        return  data.mysql.execute(sql);
-    }
-
-
-    boolean deposit(String uuid,double money){
-
-        UserInformation ui = getUserInformation(uuid);
-        if(ui == null){
-            if(insertUserInformation(uuid) == false){
-                return false;
-            }
-        }
-
-
-        //      追加
-        boolean ret = data.mysql.execute("update user_index set balance = balance + "+money+" where uuid='"+uuid+"';");
-
-
-        return true;
-    }
-
-
-    boolean withdraw(String uuid,double money){
-
-        UserInformation ui = getUserInformation(uuid);
-        if(ui == null){
-            return false;
-        }
-
-        if(ui.balance < money){
-            data.showError(uuid,"残額より多くはひきだせない");
-            return false;
-        }
-
-        boolean ret = data.mysql.execute("update user_index set balance = balance - "+money+" where uuid='"+uuid+"';");
 
 
 
-        if(ret){
-            this.plugin.vault.deposit(UUID.fromString(uuid),money);
-            data.showMessage(uuid,Utility.getColoredPriceString(money)+"§f§l口座に追加されました");
-        }else{
-            data.showError(uuid,"口座からの引き出しに失敗した");
+    void deposit(String uuid, double money){
 
-        }
+        plugin.bankAPI.deposit(UUID.fromString(uuid),money,"Man10Market deposit");
 
-        return true;
-    }
-
-
-
-
-
-    String  createJoinMessage(Player p){
-
-
-        String sql = "select * from user_assets_history where uuid = '"+p.getUniqueId().toString()+"' order by id desc limit 2;";
-
-
-        ArrayList<UserAssetsHistory> his = getAssetHistory(sql);
-        if(his.size() == 0){
-            return null;
-        }
-
-        UserAssetsHistory today = his.get(0);
-        UserAssetsHistory last =null;
-
-        //      前日データあり
-        if(his.size() == 2){
-            last = his.get(1);
-        }
-
-        String ret = "§f§l残高:"+Utility.getPriceString(today.bal) + "§f§lアイテムバンク評価額:"+Utility.getPriceString(today.estimated_value) +" §f§lアイテム個数:"+Utility.getItemString((int)today.total_amount);
-
-
-        return ret;
     }
 
     public UserAssetsHistory getUserAsset(String uuid){
@@ -171,7 +56,7 @@ public class UserData {
 
     ArrayList<UserAssetsHistory> getAssetHistory(String sql){
 
-        ArrayList<UserAssetsHistory> ret = new ArrayList<UserAssetsHistory>();
+        ArrayList<UserAssetsHistory> ret = new ArrayList<>();
 
         ResultSet rs = data.mysql.query(sql);
         if(rs == null){
@@ -222,25 +107,12 @@ public class UserData {
 
 
 
-    //          売上を表示するs
-    void showEarnings(Player p,String uuid){
-        ///
-        UserData.UserInformation ui = this.getUserInformation(uuid);
-        if(ui != null){
-            if(ui.balance != 0){
-                Utility.sendHoverText(p,"§k§l $$$$ §f§l§nあなたの売上金額:"+Utility.getColoredPriceString(ui.balance) +" §l§n [引き出す] => /mce withdraw","クリックすると支払われます /mce withdraw","/mce withdraw");
-            }
-        }
-    }
-
-
-
     //      ユーザーの資産をアップデート
-    int updateUserAssetsHistory(Player p){
+    void updateUserAssetsHistory(Player p){
 
         if(p == null){
             Bukkit.getLogger().info("updateUserAssetsHistory null");
-            return 0;
+            return;
         }
         String uuid = p.getUniqueId().toString();
 
@@ -250,14 +122,14 @@ public class UserData {
         ArrayList<ItemBank.ItemStorage> list = data.itemBank.getStorageList(uuid);
 
         if(list.size() == 0){
-            return 0;
+            return;
         }
 
 
 
         long totalAmount = 0;
         double estimatedValue = 0;
-        String itemList = "";
+        StringBuilder itemList = new StringBuilder();
         for(ItemBank.ItemStorage storage:list){
             totalAmount += storage.amount;
             MarketData.ItemIndex index  = data.getItemPrice(storage.item_id);
@@ -265,10 +137,10 @@ public class UserData {
 
             //Bukkit.getLogger().info("key:"+storage.item_key +"$" + index.price * storage.amount);
 
-            if(!itemList.isEmpty()){
-                itemList += " ";
+            if(itemList.length() > 0){
+                itemList.append(" ");
             }
-            itemList += index.id+":"+storage.amount;
+            itemList.append(index.id).append(":").append(storage.amount);
         }
 
         Bukkit.getLogger().info("price checked");
@@ -298,16 +170,15 @@ public class UserData {
                 +itemList+"');";
 
 
-        if(data.mysql.execute(sql) == false){
+        if(!data.mysql.execute(sql)){
             plugin.showError(p,"個人データの更新に失敗");
-            return  -1;
+            return;
         }
 
 
         Bukkit.getLogger().info("ユーザーデータ更新成功"+p.getName());
 
 
-        return list.size();
     }
 
 }

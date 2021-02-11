@@ -9,26 +9,26 @@ import java.util.ArrayList;
 
 public class ItemRanking {
 
-    MarketPlugin plugin = null;
+    MarketPlugin plugin;
     MarketData data = null;
 
     public ItemRanking(MarketPlugin plugin){
         this.plugin = plugin;
     }
 
-    public boolean showRanking(Player p, String idOrKey,final int offset){
+    public void showRanking(Player p, String idOrKey, final int offset){
 
         data = new MarketData(this.plugin);
         MarketData.ItemIndex item = data.getItemPrice(idOrKey);
         if(item == null){
             plugin.showError(p,"そのアイテムはみつからない");
-            return false;
+            return;
         }
 
         MarketData.ItemIndex index = MarketPlugin.priceMap.get(item.id);
         if(index == null){
             Bukkit.getLogger().info("item:"+item.id + " is null use db");
-            index = data.getItemPrice(item.id);
+//            index = data.getItemPrice(item.id);
         }
 
 
@@ -59,11 +59,6 @@ public class ItemRanking {
         p.sendMessage("§7§l評価額(mce): " + Utility.getColoredPriceString(mce_totalprice) + " ("+Utility.getJpBal(mce_totalprice) + ")" );
 
 
-
-
-
-
-        return true;
     }
 
 

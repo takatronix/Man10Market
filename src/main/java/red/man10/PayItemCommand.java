@@ -2,9 +2,9 @@ package red.man10;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,9 +13,9 @@ import java.util.UUID;
 import static red.man10.MarketCommand.checkPermission;
 
 // 7/26 IK追加、 ItemPayのコマンドを扱うクラス
-public class PayItemCommand implements CommandExecutor {
+public class PayItemCommand {
     private final MarketPlugin plugin;
-    private HashMap<UUID,String> twotype = new HashMap<>();
+    private final HashMap<UUID,String> TWO_TYPE = new HashMap<>();
 
     //      コンストラクタ
     public PayItemCommand(MarketPlugin plugin) {
@@ -24,8 +24,8 @@ public class PayItemCommand implements CommandExecutor {
     }
 
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
+    @Deprecated
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player p = (Player) sender;
         if (!checkPermission(p, Settings.itemPayPermission)) {
             p.sendMessage("§cYou don't have permission");
@@ -55,12 +55,12 @@ public class PayItemCommand implements CommandExecutor {
         }else if(args.length == 2){
             if(args[0].equalsIgnoreCase("log")){
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-                    String touuid = null;
-                    if ((touuid = PayItem.containPlayer(args[1])) == null) {
+                    String toUUID;
+                    if ((toUUID = PayItem.containPlayer(args[1])) == null) {
                         p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
                         return;
                     }
-                    ArrayList<PayItem.PayLog> loglist = PayItem.viewLog(UUID.fromString(touuid));
+                    ArrayList<PayItem.PayLog> loglist = PayItem.viewLog(UUID.fromString(toUUID));
                     if (loglist == null || loglist.size() == 0) {
                         p.sendMessage("§c§lその人のログは存在しない");
                         return;
@@ -70,11 +70,11 @@ public class PayItemCommand implements CommandExecutor {
                 return true;
             }
         }else if(args.length == 3){
-            if(twotype.containsKey(p.getUniqueId())) {
-                if(twotype.get(p.getUniqueId()).equalsIgnoreCase(args[0]+" "+args[1]+" "+args[2])) {
-                    twotype.remove(p.getUniqueId());
+            if(TWO_TYPE.containsKey(p.getUniqueId())) {
+                if(TWO_TYPE.get(p.getUniqueId()).equalsIgnoreCase(args[0]+" "+args[1]+" "+args[2])) {
+                    TWO_TYPE.remove(p.getUniqueId());
                     Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-                        long amount = -1;
+                        long amount;
                         try {
                             amount = Long.parseLong(args[2]);
                         } catch (NumberFormatException e) {
@@ -87,7 +87,7 @@ public class PayItemCommand implements CommandExecutor {
                 }
             }
             p.sendMessage("§7§l確認: もう一度 /ipay "+args[0]+" "+args[1]+" "+args[2]+" と打ってください");
-            twotype.put(p.getUniqueId(),args[0]+" "+args[1]+" "+args[2]);
+            TWO_TYPE.put(p.getUniqueId(),args[0]+" "+args[1]+" "+args[2]);
             return true;
         }
         return false;

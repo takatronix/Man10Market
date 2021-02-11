@@ -1,11 +1,13 @@
 name: Man10Market
-version: ${project.version}
+version: 1.0
 main: red.man10.MarketPlugin
 prefix: Man10Market
 authors: [takatronix]
 description: Minecraft Market System
 website: http://man10.red
-
+api-version: 1.16
+depend:
+   - Man10OfflineBank
 commands:
    mce:
       description: Man10 Minecraft Market System
@@ -14,6 +16,4 @@ commands:
    mbal:
       description: Man10 Minecraft Market System
    balance:
-      description: Man10 Minecraft Market System
-   ipay:
       description: Man10 Minecraft Market System

@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -20,44 +21,45 @@ public class MarketCommand implements CommandExecutor {
     }
 
 
-    public boolean cancelProc(Player p,String[] args){
+    public void cancelProc(Player p, String[] args){
 
         if(!checkPermission(p,Settings.cancelPermission)){
-            return false;
+            return;
         }
         if(args.length == 2){
-            return plugin.cancelOrder(p,args[1]);
+            plugin.cancelOrder(p, args[1]);
+            return;
         }
         p.sendMessage("/mce cancel [order_id] 注文をキャンセルする");
-        return false;
     }
 
-    public  boolean cancelAllProc(Player p,String[] args){
+    public void cancelAllProc(Player p, String[] args){
 
 
 
         if(!checkPermission(p,Settings.cancelPermission)){
-            return false;
+            return;
         }
 
         if(args.length == 1){
-            return plugin.cancelAll(p,null);
+            plugin.cancelAll(p, null);
+            return;
         }
 
         //  管理者は人の注文をキャンセルできる
         if(p.hasPermission(Settings.adminPermission)){
             if(args.length == 2){
-                return plugin.cancelAll(p,args[1]);
+                plugin.cancelAll(p, args[1]);
+                return;
             }
         }
 
         p.sendMessage("/mce cancelall すべての注文をキャンセルする");
-        return false;
     }
 
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
 
         Player p = (Player) sender;
 
@@ -81,24 +83,18 @@ public class MarketCommand implements CommandExecutor {
 
         String command = args[0];
 
-
-        //     withdraw
-        if(command.equalsIgnoreCase("withdraw")){
-            if(!checkPermission(p,Settings.withdraw)){
-                return false;
-            }
-
+        if (command.equalsIgnoreCase("list")) {
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
-                    plugin.withdrawAll(p);
+                    plugin.showMenu(p,0);
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
                     System.out.println(e.getMessage());
                 }
             });
-
-            return true;
+            return false;
         }
+
 
         //      market broadcast
         if(command.equalsIgnoreCase("updateall")){
@@ -186,11 +182,7 @@ public class MarketCommand implements CommandExecutor {
         }
 
         if(command.equalsIgnoreCase("news")){
-            if(!checkPermission(p,Settings.newsPermission)){
-                return false;
-            }
-
-            return true;
+            return checkPermission(p, Settings.newsPermission);
         }
 
 
@@ -200,7 +192,7 @@ public class MarketCommand implements CommandExecutor {
             if(!checkPermission(p,Settings.openPermission)){
                 return false;
             }
-            plugin.marketOpen(p,true);
+            plugin.marketOpen(true);
             return true;
         }
         //      market close
@@ -208,7 +200,7 @@ public class MarketCommand implements CommandExecutor {
             if(!checkPermission(p,Settings.closePermission)){
                 return false;
             }
-            plugin.marketOpen(p,false);
+            plugin.marketOpen(false);
             return true;
         }
 
@@ -248,6 +240,16 @@ public class MarketCommand implements CommandExecutor {
 
             plugin.setTick(p,args[1], Double.parseDouble(args[2]));
             return true;
+        }
+
+        ////////////////
+        // 削除
+        if(command.equalsIgnoreCase("unregister")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
+
+            plugin.unregisterItem(p);
         }
 
 
@@ -401,7 +403,7 @@ public class MarketCommand implements CommandExecutor {
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
 
-                    plugin.orderSell(p, args[1], (double) (int) Double.parseDouble(args[2]), Integer.parseInt(args[3]));
+                    plugin.orderSell(p, args[1], (int) Double.parseDouble(args[2]), Integer.parseInt(args[3]));
 
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
@@ -470,7 +472,7 @@ public class MarketCommand implements CommandExecutor {
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
-                    plugin.orderBuy(p,args[1],(double)(int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
+                    plugin.orderBuy(p,args[1], (int)Double.parseDouble(args[2]),Integer.parseInt(args[3]));
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
                     System.out.println(e.getMessage());
@@ -524,24 +526,6 @@ public class MarketCommand implements CommandExecutor {
 
         }
 
-
-
-        //    アイテム保存
-        if(command.equalsIgnoreCase("store")){
-            if(!checkPermission(p,Settings.adminPermission)){
-                return false;
-            }
-            if(args.length == 1){
-                return plugin.storeItem(p,-1);
-            }
-            if(args.length == 2){
-                return plugin.storeItem(p,Integer.parseInt(args[1]));
-            }
-            p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
-            return false;
-        }
-
-
         //    注文リスト
         if(command.equalsIgnoreCase("order")){
             if(!checkPermission(p,Settings.orderPermission)){
@@ -565,8 +549,7 @@ public class MarketCommand implements CommandExecutor {
                     System.out.println(e.getMessage());
                 }
             });
-
-
+            return false;
         }
 
 
@@ -640,22 +623,22 @@ public class MarketCommand implements CommandExecutor {
             }
             if(args.length == 2){
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-                    String touuid = null;
-                    if ((touuid = containPlayer(args[1])) == null) {
+                    String toUUID;
+                    if ((toUUID = containPlayer(args[1])) == null) {
                         p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
                         return;
                     }
-                    ItemBankSee.viewOtherMIB(p, UUID.fromString(touuid), args[1]);
+                    ItemBankSee.viewOtherMIB(p, UUID.fromString(toUUID), args[1]);
                 });
                 return true;
             }else if(args.length == 3){
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-                    String touuid = null;
-                    if ((touuid = containPlayer(args[1])) == null) {
+                    String toUUID;
+                    if ((toUUID = containPlayer(args[1])) == null) {
                         p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
                         return;
                     }
-                    ItemBankSee.viewOtherMIB(p, UUID.fromString(touuid),args[2], args[1]);
+                    ItemBankSee.viewOtherMIB(p, UUID.fromString(toUUID),args[2], args[1]);
                 });
                 return true;
             }
@@ -669,8 +652,8 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
             if(args.length == 4){
-                String touuid;
-                if ((touuid = containPlayer(args[1])) == null) {
+                String toUUID;
+                if ((toUUID = containPlayer(args[1])) == null) {
                     p.sendMessage(plugin.prefix + "§c§lプレイヤーはこのサーバに存在していません");
                     return true;
                 }
@@ -681,7 +664,7 @@ public class MarketCommand implements CommandExecutor {
                     p.sendMessage("§4§l個数が数字ではない");
                     return false;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.setOtherMIB(p, UUID.fromString(touuid), args[2], amount, args[1]));
+                Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> ItemBankSee.setOtherMIB(p, UUID.fromString(toUUID), args[2], amount, args[1]));
                 return true;
             }
             p.sendMessage("/mce ibedit [player名] [id/key] [個数] 他人のmibデータをセットする");
@@ -696,9 +679,6 @@ public class MarketCommand implements CommandExecutor {
 
     void showHelp(CommandSender p){
         p.sendMessage("§e============== §d●§f●§a●§e Man10 Market §d●§f●§a● §e===============");
-        p.sendMessage("§c-------アイテム登録--------------");
-        p.sendMessage("§2§l/mce store (個数)- 手に持ったアイテムを倉庫にいれる");
-        p.sendMessage("§2§l/mce restore [id/key] [個数] 倉庫からアイテムを引き出す");
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§2§l/mce list - 登録アイテムリストと価格を表示する");
         p.sendMessage("§2§l/mce price (id/key) - (id/Key/手に持ったアイテム)の金額を表示する");
@@ -717,9 +697,6 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("/mce cancelall  全ての注文をキャンセルする");
         p.sendMessage("/mce canceltem [id/key]");
 
-        p.sendMessage("/mce withdraw - 売上をすべて引き出す");
-
-
         p.sendMessage("§c--------------------------------");
         p.sendMessage("§e created by takatronix http://twitter.com/takatronix");
         p.sendMessage("§e http://man10.red");
@@ -732,7 +709,7 @@ public class MarketCommand implements CommandExecutor {
     void showAdminHelp(CommandSender p){
         p.sendMessage("§c-----------Admin Commands---------------------");
         p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
-        p.sendMessage("/mce cancellall  全ての注文をキャンセルする");
+        p.sendMessage("§c§l/mce cancellall  全ての注文をキャンセルする");
         p.sendMessage("§c§l/mce userlog (user) ユーザーの注文履歴");
         p.sendMessage("§c§l/mce order (user/id/key) 注文を表示する");
         p.sendMessage("§c§l/mce tick (id/key) price  金額の最低変化量を設定する");

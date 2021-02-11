@@ -1,6 +1,7 @@
 package red.man10;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
@@ -36,12 +37,12 @@ public class PayItem {
             from.sendMessage(ib.plugin.prefix+"§c§l1個以上しか送れません");
             return;
         }
-        String touuid = null;
-        if((touuid = containPlayer(to)) == null){
+        String toUUID;
+        if((toUUID = containPlayer(to)) == null){
             from.sendMessage(ib.plugin.prefix+"§c§lプレイヤーはこのサーバに存在していません");
             return;
         }
-        if(from.getUniqueId().toString().equalsIgnoreCase(touuid)){
+        if(from.getUniqueId().toString().equalsIgnoreCase(toUUID)){
             from.sendMessage(ib.plugin.prefix+"§c§l自分自身には送れません");
             return;
         }
@@ -60,35 +61,40 @@ public class PayItem {
             ib.data.showError(from.getUniqueId().toString(),"アイテムの引き出しに失敗した(重大)");
             ib.data.opLog(from.getName()+"のipayがSQLエラーで失敗した");
             ib.data.opLog("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
-                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+                    +" To: "+toUUID+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
             ib.plugin.log("Error: itemPayにてSQL接続失敗、Logを残します。");
             ib.plugin.log("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
-                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+                    +" To: "+toUUID+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
             return;
         }
-        if(!ib.addItem(touuid, itemIndex.id, amount)) {
+        if(!ib.addItem(toUUID, itemIndex.id, amount)) {
             ib.data.showError(from.getUniqueId().toString(),"アイテムの追加に失敗した(重大)");
             ib.data.opLog(from.getName()+"のipayがSQLエラーで失敗した");
             ib.data.opLog("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
-                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+                    +" To: "+toUUID+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
             ib.plugin.log("Error: itemPayにてSQL接続失敗、Logを残します。");
             ib.plugin.log("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
-                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+                    +" To: "+toUUID+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
             return;
         }
-        if(!createPayLog(from,touuid,to,itemIndex.id,amount)){
+        if(!createPayLog(from,toUUID,to,itemIndex.id,amount)){
             ib.plugin.log("Error: payLogにてSQL接続失敗、Logを残します。");
             ib.plugin.log("From: "+from.getUniqueId().toString()+" Name: "+from.getName()
-                    +" To: "+touuid+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
+                    +" To: "+toUUID+" Name: "+to+" ItemId: "+ itemIndex.id+" Amount: "+amount);
         }
         from.sendMessage(ib.plugin.prefix+"§f§lあなたは§6§l"+to+"§f§lに§e§l"+itemIndex.key+"§f§lを§b§l"+amount+"個§f§l送りました");
-        if(Bukkit.getOfflinePlayer(UUID.fromString(touuid)).isOnline()){
-            Bukkit.getPlayer(UUID.fromString(touuid)).sendMessage(ib.plugin.prefix+"§6§l"+from.getName()+"§f§lさんから§e§l"+itemIndex.key+"§f§lが§b§l"+amount+"個§f§l送られてきました");
+
+        OfflinePlayer offP = Bukkit.getOfflinePlayer(UUID.fromString(toUUID));
+
+        if(offP.isOnline()){
+            Player onP = offP.getPlayer();
+            assert onP != null;
+            offP.getPlayer().sendMessage(ib.plugin.prefix+"§6§l"+from.getName()+"§f§lさんから§e§l"+itemIndex.key+"§f§lが§b§l"+amount+"個§f§l送られてきました");
         }
     }
 
     public static String containPlayer(String playerName){
-        String uuid = null;
+        String uuid;
         uuid = ib.data.userData.getUUID(playerName);
         return uuid;
     }
