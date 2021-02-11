@@ -683,6 +683,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
     }
 
 
+    @Deprecated
     public boolean storeItem(Player p,int amount){
 
         ItemStack item = p.getInventory().getItemInMainHand();
