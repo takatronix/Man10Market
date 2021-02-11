@@ -83,6 +83,18 @@ public class MarketCommand implements CommandExecutor {
 
         String command = args[0];
 
+        if (command.equalsIgnoreCase("list")) {
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                try {
+                    plugin.showMenu(p,0);
+                } catch (Exception e) {
+                    Bukkit.getLogger().info(e.getMessage());
+                    System.out.println(e.getMessage());
+                }
+            });
+            return false;
+        }
+
 
         //      market broadcast
         if(command.equalsIgnoreCase("updateall")){
