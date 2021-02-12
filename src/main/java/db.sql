@@ -33,8 +33,10 @@ create table history_day
     day     int    null,
     hour    int    null,
     min     int    null
-)
-    charset = utf8;
+)    charset = utf8;
+
+create index history_day_index
+    on history_day (item_id,year,month,day);
 
 create table history_hour
 (
@@ -51,8 +53,10 @@ create table history_hour
     day     int    null,
     hour    int    null,
     min     int    null
-)
-    charset = utf8;
+)   charset = utf8;
+
+create index history_hour_index
+    on history_day (item_id,year,month,day,hour);
 
 create table ipay_log
 (
