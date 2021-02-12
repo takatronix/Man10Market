@@ -1,4 +1,4 @@
-create table man10_market.exchange_history
+create table exchange_history
 (
     id          int unsigned auto_increment
         primary key,
@@ -16,10 +16,9 @@ create table man10_market.exchange_history
     day         int         null,
     hour        int         null,
     min         int         null
-)
-    charset = utf8;
+);
 
-create table man10_market.history_day
+create table history_day
 (
     id      int unsigned auto_increment
         primary key,
@@ -37,7 +36,7 @@ create table man10_market.history_day
 )
     charset = utf8;
 
-create table man10_market.history_hour
+create table history_hour
 (
     id      int unsigned auto_increment
         primary key,
@@ -55,7 +54,7 @@ create table man10_market.history_hour
 )
     charset = utf8;
 
-create table man10_market.ipay_log
+create table ipay_log
 (
     id        int unsigned auto_increment
         primary key,
@@ -68,7 +67,7 @@ create table man10_market.ipay_log
 )
     charset = utf8;
 
-create table man10_market.item_index
+create table item_index
 (
     id            int unsigned auto_increment
         primary key,
@@ -92,10 +91,13 @@ create table man10_market.item_index
     ask           double                  null,
     disabled      tinyint(1)   default 0  null,
     lot           int                     null
-)
-    charset = utf8;
+);
 
-create table man10_market.item_storage
+create index item_index_index
+	on item_index (item_key,disabled,item_key,base64);
+
+
+create table item_storage
 (
     id       int unsigned auto_increment
         primary key,
@@ -105,17 +107,19 @@ create table man10_market.item_storage
     `key`    varchar(256) null,
     amount   bigint       null,
     datetime datetime     null
-)
-    charset = utf8;
+);
 
-create table man10_market.order_history
+create index item_storage_index
+    on item_storage (uuid,item_id);
+
+create table order_history
 (
     id int unsigned auto_increment
         primary key
 )
     charset = utf8;
 
-create table man10_market.order_tbl
+create table order_tbl
 (
     id             int unsigned auto_increment
         primary key,
@@ -128,10 +132,13 @@ create table man10_market.order_tbl
     initial_amount int                     null,
     buy            tinyint(1)              null,
     datetime       datetime                null
-)
-    charset = utf8;
+);
 
-create table man10_market.price_history
+create index order_tbl_index
+	on order_tbl (uuid,player,item_id,buy,price);
+
+
+create table price_history
 (
     id       int unsigned auto_increment
         primary key,
@@ -141,7 +148,7 @@ create table man10_market.price_history
 )
     charset = utf8;
 
-create table man10_market.sign_location
+create table sign_location
 (
     id    int auto_increment
         primary key,
@@ -152,7 +159,7 @@ create table man10_market.sign_location
 )
     charset = utf8;
 
-create table man10_market.transaction_log
+create table transaction_log
 (
     id          int unsigned auto_increment
         primary key,
@@ -172,7 +179,7 @@ create table man10_market.transaction_log
 )
     charset = utf8;
 
-create table man10_market.user_assets_history
+create table user_assets_history
 (
     id                  int unsigned auto_increment
         primary key,
@@ -188,7 +195,7 @@ create table man10_market.user_assets_history
 )
     charset = utf8;
 
-create table man10_market.user_index
+create table user_index
 (
     id            int unsigned auto_increment
         primary key,
