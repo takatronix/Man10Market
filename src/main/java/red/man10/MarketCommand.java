@@ -238,7 +238,12 @@ public class MarketCommand implements CommandExecutor {
                 return false;
             }
 
-            plugin.setTick(p,args[1], Double.parseDouble(args[2]));
+
+            try {
+                plugin.setTick(p, args[1], Double.parseDouble(args[2]));
+            }catch(NumberFormatException e) {
+                plugin.showError(p,"§4§lティックを数字にしてください。");
+            }
             return true;
         }
 
@@ -715,7 +720,7 @@ public class MarketCommand implements CommandExecutor {
         p.sendMessage("§c§l/mce tick (id/key) price  金額の最低変化量を設定する");
 
         p.sendMessage("§c§l/mce register 1)登録名称 2)初期金額 3)ティック(値動き幅) - 手にもったアイテムをマーケットに登録する");
-        p.sendMessage("§c/mce unregister - 手にもったアイテムをマーケットから削除する");
+        p.sendMessage("§c§l/mce unregister - 手にもったアイテムをマーケットから削除する");
 
         p.sendMessage("§c§l/mce ibview [player名] (id) 他人のmib情報を見る");
         p.sendMessage("§c§l/mce ibedit [player名] [id] [個数] 他人のmibデータをセットする");
