@@ -761,6 +761,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         if (target != null) {
             data.showPlayerTransaction(p, target, offset);
             showMainMenuLink(p);
+            return;
         }
 
         showMainMenuLink(p);
