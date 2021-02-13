@@ -298,7 +298,7 @@ public class MarketCommand implements CommandExecutor {
 
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                     try {
-                        plugin.showLog(p,null,Integer.parseInt(args[1]));
+                        plugin.showLog(p,p.getName(),Integer.parseInt(args[1]));
 
                     } catch (Exception e) {
                         Bukkit.getLogger().info(e.getMessage());
@@ -311,7 +311,7 @@ public class MarketCommand implements CommandExecutor {
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                 try {
-                    plugin.showLog(p,null,0);
+                    plugin.showLog(p,p.getName(),0);
 
                 } catch (Exception e) {
                     Bukkit.getLogger().info(e.getMessage());
@@ -341,6 +341,9 @@ public class MarketCommand implements CommandExecutor {
         }
 
         if(command.equalsIgnoreCase("userlog")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
 
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
