@@ -356,7 +356,7 @@ public class MarketData {
         int n = offset+ 1;
         int next = offset + logs.size();
         String linkText = String.format("------No%d-:Total:%d----- => §d[更に読み込む]",n,total );
-        Utility.sendHoverText(p,linkText,"クリックするとさかのぼります","/mce userlog "+ player+" "+next);
+        Utility.sendHoverText(p,linkText,"クリックするとさかのぼります","/mce log "+ player+" "+next);
         return true;
     }
 
