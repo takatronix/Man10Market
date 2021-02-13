@@ -341,6 +341,9 @@ public class MarketCommand implements CommandExecutor {
         }
 
         if(command.equalsIgnoreCase("userlog")){
+            if(!checkPermission(p,Settings.adminPermission)){
+                return false;
+            }
 
 
             Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
