@@ -921,6 +921,7 @@ public final class MarketPlugin extends JavaPlugin implements Listener {
         getCommand("balance").setExecutor(new BalanceCommand(this));
         getCommand("bal").setExecutor(new BalanceCommand(this));
         getCommand("mbal").setExecutor(new BalanceCommand(this));
+        getCommand("ipay").setExecutor(new ItemPayCommand(this));
 
         Bukkit.getLogger().info("BalanceCommand");
 
