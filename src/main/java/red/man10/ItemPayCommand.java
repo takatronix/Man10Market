@@ -43,7 +43,7 @@ public class ItemPayCommand implements CommandExecutor {
 
         if (args.length == 3){
 
-            if (TWO_TYPE.get(p.getUniqueId()).equalsIgnoreCase(args[0]+" "+args[1]+" "+args[2])){
+            if (TWO_TYPE.get(p.getUniqueId()) != null && TWO_TYPE.get(p.getUniqueId()).equalsIgnoreCase(args[0]+" "+args[1]+" "+args[2])){
                 TWO_TYPE.remove(p.getUniqueId());
                 Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
                     long amount;
