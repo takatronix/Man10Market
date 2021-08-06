@@ -276,7 +276,9 @@ public class MarketChart {
 
         MarketData data = new MarketData(plugin);
         ArrayList<MarketData.ItemIndex> items = data.getItemIndexList("select * from item_index order by id;");
-
+        if(items == null){
+            return ;
+        }
         int     item_max = items.size();
 
         for (MarketData.ItemIndex itemIndex : items) {

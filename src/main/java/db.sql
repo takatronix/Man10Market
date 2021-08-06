@@ -98,7 +98,7 @@ create table item_index
 );
 
 create index item_index_index
-	on item_index (item_key,disabled,item_key,base64);
+	on item_index (item_key,disabled);
 
 
 create table item_storage

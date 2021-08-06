@@ -1032,15 +1032,19 @@ public class MappRenderer extends MapRenderer implements Listener {
     static public int listFolder(String directoryName,boolean subDir, ArrayList<File> files) {
         File directory = new File(directoryName);
 
-        File[] fList = directory.listFiles();
-        for (File file : fList) {
-            if (file.isFile()) {
-                files.add(file);
-            } else if (file.isDirectory()) {
-                if(subDir){
-                    listFolder(file.getAbsolutePath(), subDir,files);
+        try{
+            File[] fList = directory.listFiles();
+            for (File file : fList) {
+                if (file.isFile()) {
+                    files.add(file);
+                } else if (file.isDirectory()) {
+                    if(subDir){
+                        listFolder(file.getAbsolutePath(), subDir,files);
+                    }
                 }
             }
+        }catch (Exception e){
+            Bukkit.getLogger().warning(e.getMessage());
         }
         return files.size();
     }

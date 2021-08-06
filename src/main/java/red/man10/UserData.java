@@ -38,7 +38,6 @@ public class UserData {
 
 
     void deposit(String uuid, double money){
-
         plugin.bankAPI.deposit(UUID.fromString(uuid),money,"Man10Market deposit");
 
     }
